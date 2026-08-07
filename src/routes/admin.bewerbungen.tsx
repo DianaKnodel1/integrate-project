@@ -370,14 +370,18 @@ function AdminBewerbungenPage() {
     }).sort((a, b) => (b.lastActivity || "").localeCompare(a.lastActivity || ""));
   }, [applications, bookingByApp, landingById, profileByKey, emailConfirmedUserIds, mailSendEventsByApp, mailEventsByEmail, mailEventsByApp]);
 
-  // Gruppierte Tabs — statt 12 Chips nur 6 sinnvolle Buckets
+  // Chips folgen dem echten Weg des Bewerbers — so ist sofort sichtbar,
+  // an welcher Stelle Leute verloren gehen.
   const GROUPS: { key: string; label: string; emoji: string; phases: Phase[] }[] = [
-    { key: "alle",        label: "Alle",         emoji: "👥", phases: [] },
-    { key: "offen",       label: "Offen",        emoji: "📅", phases: ["termin_offen", "termin_gebucht"] },
-    { key: "interview",   label: "Interview",    emoji: "🎙", phases: ["interview_laeuft", "no_show", "abgesagt"] },
-    { key: "angenommen",  label: "Angenommen",   emoji: "✅", phases: ["angenommen"] },
-    { key: "abgelehnt",   label: "Abgelehnt",    emoji: "❌", phases: ["abgelehnt"] },
-    { key: "mitarbeiter", label: "Im Portal",    emoji: "🚀", phases: ["registriert", "email_bestaetigt", "onboarding_komplett", "mitarbeiter_aktiv"] },
+    { key: "alle",        label: "Alle",              emoji: "👥", phases: [] },
+    { key: "eingegangen", label: "Eingegangen",       emoji: "📥", phases: ["termin_offen"] },
+    { key: "termin",      label: "Termin gebucht",    emoji: "⏰", phases: ["termin_gebucht"] },
+    { key: "interview",   label: "Interview",         emoji: "🎙", phases: ["interview_laeuft", "auswertung_fehler"] },
+    { key: "no_show",     label: "Nicht erschienen",  emoji: "⚠️", phases: ["no_show"] },
+    { key: "abgesagt",    label: "Abgesagt",          emoji: "🚫", phases: ["abgesagt"] },
+    { key: "zusage",      label: "Zusage erteilt",    emoji: "✅", phases: ["angenommen"] },
+    { key: "abgelehnt",   label: "Abgelehnt",         emoji: "❌", phases: ["abgelehnt"] },
+    { key: "onboarded",   label: "Onboarded",         emoji: "🚀", phases: ["registriert", "email_bestaetigt", "onboarding_komplett", "mitarbeiter_aktiv"] },
   ];
   const groupOf = (p: Phase): string => GROUPS.find(g => g.phases.includes(p))?.key ?? "alle";
 
