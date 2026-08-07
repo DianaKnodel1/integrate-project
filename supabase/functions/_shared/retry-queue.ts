@@ -29,6 +29,12 @@ export const MAX_ATTEMPTS = 5;
 const BACKOFF_MIN = [10, 30, 120, 360, 720];
 export const MAX_AGE_HOURS = 72;
 const DEFAULT_LIMIT = 40;
+/**
+ * Karenzzeit für `pending`: eine gerade erst beanspruchte Mail (Claim vor dem
+ * SMTP-Versand) darf nicht sofort wiederholt werden — sonst geht sie doppelt
+ * raus, während der Erstversand noch läuft.
+ */
+const PENDING_GRACE_MIN = 30;
 
 export interface RetryRow {
   id: string;
@@ -113,6 +119,40 @@ export interface RetryRunOptions {
   logId?: string | null;
 }
 
+/** Stabile Kennung eines Nachversands — bewusst OHNE Zeitstempel, damit der
+ *  Unique-Index in der Datenbank einen zweiten identischen Versand ablehnt. */
+function retryKey(rowId: string): string {
+  return `retry:${rowId}`;
+}
+
+/**
+ * Prüft, ob dieselbe Mail (Empfänger + Vorlage) nachweislich schon zugestellt
+ * wurde — z. B. wenn der SMTP-Versand geklappt hat, das Ergebnis aber nicht
+ * mehr ins Log geschrieben werden konnte und die Zeile auf `pending` stehen
+ * blieb.
+ */
+async function alreadyDelivered(admin: any, row: RetryRow): Promise<boolean> {
+  const to = String(row.recipient_email ?? "").toLowerCase();
+  if (!to) return false;
+  const { data, error } = await admin
+    .from("email_send_log")
+    .select("id")
+    .eq("status", "sent")
+    .eq("template_name", row.template_name)
+    .ilike("recipient_email", to)
+    .gte("created_at", row.created_at)
+    .neq("id", row.id)
+    .limit(1);
+  if (error) return false; // fail-open: lieber prüfen als blockieren
+  return (data ?? []).length > 0;
+}
+
+function isUniqueViolation(err: any): boolean {
+  const code = String(err?.code ?? "");
+  const msg = `${err?.message ?? ""}`.toLowerCase();
+  return code === "23505" || msg.includes("duplicate key") || msg.includes("unique constraint");
+}
+
 export async function runRetryQueue(admin: any, opts: RetryRunOptions = {}) {
   const dryRun = opts.dryRun === true;
   const limit = Math.min(Number(opts.limit ?? DEFAULT_LIMIT) || DEFAULT_LIMIT, 200);
@@ -150,6 +190,24 @@ export async function runRetryQueue(admin: any, opts: RetryRunOptions = {}) {
     const decision = retryDecision(row);
     if (!decision.retryable) continue;
     if (!row.rendered_html || !row.rendered_subject || !row.recipient_email) continue;
+
+    // `pending` = Anspruch vor dem Versand. Erst nach Karenzzeit und nur, wenn
+    // die Mail nachweislich nicht doch schon rausging.
+    if (row.status === "pending" && !logId) {
+      const ageMin = (Date.now() - new Date(row.created_at).getTime()) / 60_000;
+      if (ageMin < PENDING_GRACE_MIN) continue;
+    }
+    if (!dryRun && (await alreadyDelivered(admin, row))) {
+      await admin.from("email_send_log").update({
+        status: row.status === "pending" ? "superseded" : row.status,
+        acknowledged_at: new Date().toISOString(),
+        retry_locked_until: null,
+        next_retry_at: null,
+        retry_reason: "already_delivered",
+      }).eq("id", row.id);
+      results.push({ id: row.id, to: row.recipient_email, status: "already_delivered" });
+      continue;
+    }
 
     considered++;
     if (dryRun) {
@@ -240,7 +298,7 @@ export async function runRetryQueue(admin: any, opts: RetryRunOptions = {}) {
       continue;
     }
 
-    await admin.from("email_send_log").insert({
+    const { error: insertErr } = await admin.from("email_send_log").insert({
       tenant_id: tenantId,
       template_name: row.template_name,
       recipient_email: row.recipient_email,
@@ -250,12 +308,19 @@ export async function runRetryQueue(admin: any, opts: RetryRunOptions = {}) {
       sender_email: senderEmail,
       metadata: {
         ...((row.metadata as any) ?? {}),
+        // Eigener, stabiler Ereignis-Schlüssel: der Schlüssel des Originals
+        // darf nicht kopiert werden (Unique-Index), ein Zeitstempel würde den
+        // Schutz aushebeln.
+        event_key: retryKey(row.id),
         source: "email-retry-queue",
         retried_from: row.id,
         retry_reason: decision.reason,
-        resend_nonce: `${row.id}-${Date.now()}`,
+        resend_nonce: retryKey(row.id),
       },
     });
+    if (insertErr && !isUniqueViolation(insertErr)) {
+      console.warn("[retry-queue] Log-Eintrag fehlgeschlagen:", insertErr.message);
+    }
 
     await admin.from("email_send_log").update({
       status: row.status === "pending" ? "superseded" : row.status,
