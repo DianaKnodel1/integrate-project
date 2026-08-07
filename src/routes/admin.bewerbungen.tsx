@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
-import { Users, Search, ExternalLink, Trash2, MailWarning } from "lucide-react";
+import { Users, Search, ExternalLink, Trash2, MailWarning, Archive } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
 import { deleteOrphanApplications, deleteApplication, bulkDeleteApplications } from "@/lib/admin-delete.functions";
+import { archiveOldApplications } from "@/lib/admin-maintenance.functions";
 import { resendRegistrationInvite } from "@/lib/application-stage.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -151,7 +152,8 @@ function phaseToStages(phase: Phase): Stage[] {
 
 const searchSchema = z.object({
   tab: z.enum([
-    "alle", "offen", "interview", "angenommen", "abgelehnt", "mitarbeiter",
+    "alle", "eingegangen", "termin", "interview", "no_show", "abgesagt",
+    "zusage", "abgelehnt", "onboarded",
   ]).optional().catch("alle"),
 });
 
@@ -167,12 +169,24 @@ function AdminBewerbungenPage() {
   const tab = (search as any).tab ?? "alle";
   const [q, setQ] = useState("");
   const [cleanupDays, setCleanupDays] = useState(30);
+  const [tenantFilter, setTenantFilter] = useState("");
+  const [tenants, setTenants] = useState<Array<{ id: string; name: string }>>([]);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archiveDays, setArchiveDays] = useState(30);
+  const [archiveBusy, setArchiveBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const runCleanup = useServerFn(deleteOrphanApplications);
   const runBulkDelete = useServerFn(bulkDeleteApplications);
+  const runArchive = useServerFn(archiveOldApplications);
+
+  useEffect(() => {
+    supabase.from("tenants").select("id, name").order("name").then(({ data }) => {
+      setTenants((data ?? []) as Array<{ id: string; name: string }>);
+    });
+  }, []);
 
   const profileByKey = useMemo(() => {
     const byUid = new Map<string, any>();
@@ -336,6 +350,8 @@ function AdminBewerbungenPage() {
         email: a.email || "—",
         phone: a.phone || "—",
         phase,
+        tenantId: a.tenant_id ?? null,
+        archived: a.is_archived === true,
         lastActivity: a.created_at,
         source: resolveSource(a),
         createdAt: a.created_at,
@@ -368,30 +384,41 @@ function AdminBewerbungenPage() {
     }).sort((a, b) => (b.lastActivity || "").localeCompare(a.lastActivity || ""));
   }, [applications, bookingByApp, landingById, profileByKey, emailConfirmedUserIds, mailSendEventsByApp, mailEventsByEmail, mailEventsByApp]);
 
-  // Gruppierte Tabs — statt 12 Chips nur 6 sinnvolle Buckets
+  // Chips folgen dem echten Weg des Bewerbers — so ist sofort sichtbar,
+  // an welcher Stelle Leute verloren gehen.
   const GROUPS: { key: string; label: string; emoji: string; phases: Phase[] }[] = [
-    { key: "alle",        label: "Alle",         emoji: "👥", phases: [] },
-    { key: "offen",       label: "Offen",        emoji: "📅", phases: ["termin_offen", "termin_gebucht"] },
-    { key: "interview",   label: "Interview",    emoji: "🎙", phases: ["interview_laeuft", "no_show", "abgesagt"] },
-    { key: "angenommen",  label: "Angenommen",   emoji: "✅", phases: ["angenommen"] },
-    { key: "abgelehnt",   label: "Abgelehnt",    emoji: "❌", phases: ["abgelehnt"] },
-    { key: "mitarbeiter", label: "Im Portal",    emoji: "🚀", phases: ["registriert", "email_bestaetigt", "onboarding_komplett", "mitarbeiter_aktiv"] },
+    { key: "alle",        label: "Alle",              emoji: "👥", phases: [] },
+    { key: "eingegangen", label: "Eingegangen",       emoji: "📥", phases: ["termin_offen"] },
+    { key: "termin",      label: "Termin gebucht",    emoji: "⏰", phases: ["termin_gebucht"] },
+    { key: "interview",   label: "Interview",         emoji: "🎙", phases: ["interview_laeuft", "auswertung_fehler"] },
+    { key: "no_show",     label: "Nicht erschienen",  emoji: "⚠️", phases: ["no_show"] },
+    { key: "abgesagt",    label: "Abgesagt",          emoji: "🚫", phases: ["abgesagt"] },
+    { key: "zusage",      label: "Zusage erteilt",    emoji: "✅", phases: ["angenommen"] },
+    { key: "abgelehnt",   label: "Abgelehnt",         emoji: "❌", phases: ["abgelehnt"] },
+    { key: "onboarded",   label: "Onboarded",         emoji: "🚀", phases: ["registriert", "email_bestaetigt", "onboarding_komplett", "mitarbeiter_aktiv"] },
   ];
   const groupOf = (p: Phase): string => GROUPS.find(g => g.phases.includes(p))?.key ?? "alle";
 
+  // Grundmenge: Mandanten-Auswahl und Archiv-Schalter gelten für Chips UND Liste,
+  // damit Zähler und Tabelle nie auseinanderlaufen.
+  const scoped = useMemo(
+    () => rows.filter(r => (showArchived ? r.archived : !r.archived) && (!tenantFilter || r.tenantId === tenantFilter)),
+    [rows, showArchived, tenantFilter],
+  );
+
   const counts = useMemo(() => {
-    const c: Record<string, number> = { alle: rows.length };
+    const c: Record<string, number> = { alle: scoped.length };
     for (const g of GROUPS) if (g.key !== "alle") c[g.key] = 0;
-    for (const r of rows) {
+    for (const r of scoped) {
       const g = groupOf(r.phase);
       c[g] = (c[g] || 0) + 1;
     }
     return c;
-  }, [rows]);
+  }, [scoped]);
 
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
-    return rows.filter(r => {
+    return scoped.filter(r => {
       if (tab !== "alle" && groupOf(r.phase) !== tab) return false;
       if (!ql) return true;
       return (
@@ -402,7 +429,7 @@ function AdminBewerbungenPage() {
         (r.source?.to ?? "").toLowerCase().includes(ql)
       );
     });
-  }, [rows, tab, q]);
+  }, [scoped, tab, q]);
   const pagination = usePagination(filtered, 50);
 
   const orphanCandidates = useMemo(() => {
@@ -420,6 +447,19 @@ function AdminBewerbungenPage() {
       toast.error(e?.message ?? "Cleanup fehlgeschlagen");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function doArchive() {
+    setArchiveBusy(true);
+    try {
+      const res: any = await runArchive({ data: { older_than_days: archiveDays, dry_run: false } });
+      toast.success(`${res.archived} Bewerbungen archiviert.`);
+      await loadData();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Archivieren fehlgeschlagen");
+    } finally {
+      setArchiveBusy(false);
     }
   }
 
@@ -475,6 +515,57 @@ function AdminBewerbungenPage() {
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input placeholder="Name, Rufnummer, E-Mail, Vermittlung…" value={q} onChange={e => setQ(e.target.value)} className="pl-9" />
           </div>
+          <select
+            className="h-9 rounded-md border bg-background px-2 text-sm"
+            value={tenantFilter}
+            onChange={e => setTenantFilter(e.target.value)}
+            aria-label="Mandant filtern"
+          >
+            <option value="">Alle Mandanten</option>
+            {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+          <Button
+            variant={showArchived ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowArchived(v => !v)}
+          >
+            {showArchived ? "Archiv" : "Aktiv"}
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Archive className="h-4 w-4" /> Archivieren
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Alt-Bewerbungen archivieren</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Blendet alle Bewerbungen aus, die älter als N Tage sind. Nichts wird gelöscht —
+                  die Einträge bleiben über den Archiv-Schalter sichtbar. Mitarbeiter sind nicht betroffen.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="flex items-center gap-2 py-2">
+                <label className="text-sm">Älter als</label>
+                <Input
+                  type="number" min={0} max={3650}
+                  value={archiveDays}
+                  onChange={e => setArchiveDays(Math.max(0, parseInt(e.target.value || "0", 10)))}
+                  className="w-24"
+                />
+                <span className="text-sm">Tage</span>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={archiveBusy}>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={archiveBusy}
+                  onClick={(e) => { e.preventDefault(); doArchive(); }}
+                >
+                  {archiveBusy ? "Archiviere…" : "Archivieren"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">

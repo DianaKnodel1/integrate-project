@@ -169,12 +169,11 @@ function NoShowPage() {
 
       {report && (
         <div className="grid gap-4 lg:grid-cols-2">
+          {/* Bewusst nur die vier Auswertungen mit Handlungsrelevanz —
+              Wochentag, Quelle und Reaktionszeit sind bei diesen Fallzahlen Rauschen. */}
           <BucketTable title="Erinnerungsmails" description="Hat der Bewerber Bestätigung und Erinnerungen wirklich bekommen?" rows={report.by_mail} />
           <BucketTable title="Vorlaufzeit" description="Zeit zwischen Buchung und Termin" rows={report.by_lead_time} />
-          <BucketTable title="Reaktionszeit" description="Zeit zwischen Bewerbung und Buchung" rows={report.by_reaction_time} />
           <BucketTable title="Uhrzeit des Termins" description="Terminstart in Europe/Berlin" rows={report.by_hour} />
-          <BucketTable title="Wochentag" description="Terminstart in Europe/Berlin" rows={report.by_weekday} />
-          <BucketTable title="Quelle / Landingpage" description="Woher kam der Bewerber?" rows={report.by_source} />
           <BucketTable title="Mandant" description="No-Show-Quote je Vermittlung" rows={report.by_tenant} />
         </div>
       )}

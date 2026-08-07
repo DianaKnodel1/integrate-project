@@ -47,7 +47,6 @@ const navGroups: NavGroup[] = [
   {
     label: "Vermittlung",
     items: [
-      { title: "Vermittlung", url: "/admin/vermittlung", icon: Handshake },
       { title: "Bewerbungstermine", url: "/admin/bewerbungstermine", icon: CalendarDays },
     ],
   },
@@ -57,7 +56,6 @@ const navGroups: NavGroup[] = [
       { title: "Aufträge", url: "/admin/tasks", icon: ClipboardList },
       { title: "Mitarbeiter-Termine", url: "/admin/appointments", icon: CalendarDays },
       { title: "Prüfungen", url: "/admin/reviews", icon: CheckSquare },
-      { title: "Nachbesserungen", url: "/admin/revisions", icon: RotateCcw },
       { title: "Uploads", url: "/admin/uploads", icon: Upload },
     ],
   },
