@@ -290,6 +290,21 @@ serve(async (req) => {
           application_id: app.id, tenant_id: app.tenant_id ?? appt.tenant_id ?? null, reminder_kind: REMINDER_KIND,
           recipient_email: app.email, status: "skipped", error: `routing_${resolved.reason || "failed"}`,
         }, { onConflict: "application_id,reminder_kind" });
+        // Konfigurationsfehler MUSS im E-Mail-Center sichtbar sein — sonst
+        // scheitert die Bestätigung dauerhaft still und der Bewerber hat
+        // weder Termin-Mail noch Interview-Link.
+        await logMailAbort(admin, {
+          source: "send-booking-confirmation",
+          templateName: REMINDER_KIND,
+          recipient: app.email,
+          tenantId: app.tenant_id ?? appt.tenant_id ?? null,
+          status: "failed",
+          reason: `routing_${resolved.reason || "failed"}`,
+          metadata: {
+            appointment_id: appt.id, application_id: app.id,
+            config_blocked: true, blocked_reason: "routing_failed",
+          },
+        });
         continue;
       }
       if (!hasValidSmtp(tenant)) { skipped++; results.push({ id: appt.id, reason: "no_smtp" }); continue; }
@@ -319,7 +334,9 @@ serve(async (req) => {
           application_id: app.id, tenant_id: tenant.id, reminder_kind: REMINDER_KIND,
           recipient_email: app.email, status: "skipped", error: "missing_fasttrack_portal_domain",
         }, { onConflict: "application_id,reminder_kind" });
-        await logEmailSend(admin, tenant, appt, app, "(nicht gesendet)", null, "failed", "missing_fasttrack_portal_domain");
+        await logEmailSend(admin, tenant, appt, app, "(nicht gesendet)", null, "failed", "missing_fasttrack_portal_domain", {
+          config_blocked: true, blocked_reason: "missing_fasttrack_portal_domain",
+        });
         continue;
       }
 
