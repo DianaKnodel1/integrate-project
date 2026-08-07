@@ -31,7 +31,9 @@ const corsHeaders = {
 
 const NO_BOOKING_1_MIN = 24 * 60;         // 24h
 const NO_BOOKING_2_MIN = 72 * 60;         // 72h
+const NO_SHOW_FAST_MIN = 30;              // 30 Min nach verpasstem Termin (Sofort-Recovery)
 const NO_SHOW_MIN      = 24 * 60;         // 24h nach Termin
+const REG_PENDING_0_MIN = 2 * 60;         // 2h nach Zusage/Invite (Sofort-Nachfass)
 const REG_PENDING_1_MIN = 24 * 60;        // 24h nach Zusage/Invite
 const REG_PENDING_2_MIN = 72 * 60;        // 72h nach Zusage/Invite (2. Nachfass)
 const REBOOK_1_MIN      = 24 * 60;        // 24h nach Cancel
@@ -68,6 +70,26 @@ Bitte wähle einen neuen Wunschtermin, der besser passt:
 Falls du Fragen hast oder Unterstützung brauchst, antworte einfach auf diese E-Mail.
 
 Viele Grüße
+{{recruiter_name}}
+{{tenant_name}}`,
+  },
+  no_show_fast: {
+    subject: "Wir haben Sie eben vermisst – neuen Termin in 30 Sekunden wählen",
+    body:
+`Hallo {{first_name}},
+
+wir haben soeben vergeblich auf Sie gewartet: Ihr Interview am {{appointment_date}} um {{appointment_time}} Uhr hat ohne Sie stattgefunden.
+
+Das ist überhaupt kein Problem – Ihre Bewerbung bleibt aktiv. Wählen Sie einfach einen neuen Termin, der besser in Ihren Tag passt:
+
+{{cta:Neuen Termin wählen|{{calendly_link}}}}
+
+Falls der Button nicht funktioniert, kopieren Sie diesen Link:
+{{calendly_link}}
+
+Die Auswahl dauert weniger als eine Minute. Bei Fragen antworten Sie einfach auf diese E-Mail.
+
+Herzliche Grüße
 {{recruiter_name}}
 {{tenant_name}}`,
   },
