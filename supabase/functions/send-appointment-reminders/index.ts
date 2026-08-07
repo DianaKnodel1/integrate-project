@@ -25,6 +25,21 @@ import { formatAppointmentDate, formatAppointmentTime } from "../_shared/format-
 
 const FUNCTION_VERSION = "2026-08-03-fasttrack-interview-link-v2";
 const REMINDER_KIND = "interview_invite_30min";
+/** Zweite Erinnerung: 24 Stunden vor dem Termin (reduziert No-Shows). */
+const REMINDER_KIND_24H = "interview_reminder_24h";
+const WINDOW_24H_LOW_MIN = 23 * 60 + 30;
+const WINDOW_24H_HIGH_MIN = 24 * 60 + 30;
+const DEFAULT_SUBJECT_24H = "Erinnerung: Ihr Termin morgen um {{appointment_time}} Uhr";
+const DEFAULT_BODY_24H = `Hallo {{first_name}},
+
+kurze Erinnerung an Ihren Termin am {{appointment_date}} um {{appointment_time}} Uhr.
+
+Etwa 30 Minuten vorher erhalten Sie von uns eine weitere E-Mail mit dem Link zum Gespräch.
+
+{{cancel_block}}
+
+Bis morgen!
+{{tenant_name}}`;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
