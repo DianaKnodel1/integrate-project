@@ -107,14 +107,14 @@ serve(async (req) => {
     // melden, bevor die Edge-Runtime den Aufruf hart abbricht (HTTP 502 ohne
     // JSON – dann ginge die Ursache verloren).
     const transporter = createSmtpTransport(tenant as any, {
-      connectionTimeout: 7000,
-      greetingTimeout: 7000,
-      socketTimeout: 9000,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 7000,
     });
 
     await Promise.race([
       transporter.verify(),
-      new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 10s")), 10000)),
+      new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 8s")), 8000)),
     ]);
 
     debug.last_successful_stage = "VERIFY";
@@ -177,13 +177,17 @@ serve(async (req) => {
     }, 200);
   } catch (err: any) {
     const message = String(err?.message ?? err);
+    // Bewusst HTTP 200 mit success:false: Bei 5xx ersetzen Proxy/Gateway
+    // (Kong bzw. Edge-Runtime) die Antwort teilweise durch einen leeren Body –
+    // dann geht die eigentliche Fehlerursache verloren und im Portal steht nur
+    // "keine rechtzeitige Antwort".
     return json({
       success: false,
       error: classifySmtpError(message),
       errorCode: smtpErrorCode(message),
       details: message,
       debug: { ...debug, rawError: message },
-    }, 502);
+    }, 200);
   }
 });
 
