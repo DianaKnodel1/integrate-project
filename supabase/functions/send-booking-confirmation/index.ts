@@ -19,7 +19,7 @@ import { claimEmailEvent, finishEmailClaim } from "../_shared/send-claim.ts";
 import { APP_TZ, formatAppointmentDate, formatAppointmentTime, icsLocalBerlin } from "../_shared/format-datetime.ts";
 
 
-const FUNCTION_VERSION = "2026-07-18-booking-confirmation-v3-lookback72h";
+const FUNCTION_VERSION = "2026-08-10-booking-confirmation-v4-manual-resend";
 const REMINDER_KIND = "booking_confirmation";
 const LOOKBACK_MIN = 4320; // 72h – überbrückt längere Cron-Ausfälle; Idempotenz via reminder_log
 

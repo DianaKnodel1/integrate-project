@@ -6,7 +6,7 @@ export async function resendBookingConfirmationMail(applicationId: string): Prom
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: appointment, error } = await supabaseAdmin
     .from("interview_appointments")
-    .select("id, applications!inner(id, email)")
+    .select("id, application_id")
     .eq("application_id", applicationId)
     .eq("status", "scheduled")
     .order("created_at", { ascending: false })
@@ -16,6 +16,12 @@ export async function resendBookingConfirmationMail(applicationId: string): Prom
   if (error || !appointment) {
     return { ok: false, reason: error?.message ?? "Kein aktiver Termin gefunden" };
   }
+
+  const { data: application } = await supabaseAdmin
+    .from("applications")
+    .select("email")
+    .eq("id", appointment.application_id)
+    .maybeSingle();
 
   const supabaseUrl = (process.env["SUPABASE_URL"] ?? process.env["API_EXTERNAL_URL"] ?? "").replace(/\/+$/, "");
   const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? process.env["SERVICE_ROLE_KEY"] ?? "";
@@ -40,7 +46,6 @@ export async function resendBookingConfirmationMail(applicationId: string): Prom
       const first = Array.isArray(payload?.results) ? payload.results[0] : null;
       return { ok: false, reason: String(first?.error ?? first?.reason ?? "Terminbestätigung wurde nicht versendet") };
     }
-    const application = appointment.applications as unknown as { email?: string | null } | null;
     return { ok: true, to: application?.email ?? undefined };
   } catch (cause) {
     return { ok: false, reason: String(cause instanceof Error ? cause.message : cause).slice(0, 300) };
