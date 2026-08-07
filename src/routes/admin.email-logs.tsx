@@ -189,6 +189,49 @@ export function AdminEmailLogsPage() {
             <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={loadData}>
               <RefreshCw className="h-3.5 w-3.5" /> Aktualisieren
             </Button>
+            <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+              <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={() => setResetOpen(true)}>
+                <Trash2 className="h-3.5 w-3.5" /> Protokoll zurücksetzen
+              </Button>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Mail-Protokoll auf null setzen?</DialogTitle>
+                  <DialogDescription>
+                    Löscht alle Versand- und Erinnerungs-Protokolle. Danach ist jeder rote Eintrag
+                    ein echtes, aktuelles Problem. Bewerbungen, Mitarbeiter, Termine und Vorlagen
+                    bleiben unverändert. Die Aktion lässt sich nicht rückgängig machen.
+                  </DialogDescription>
+                </DialogHeader>
+                <p className="text-xs text-muted-foreground">
+                  Achtung: Erinnerungen, die für einen Bewerber bereits verschickt wurden, können danach
+                  erneut ausgelöst werden, weil das Protokoll die Dopplung nicht mehr kennt.
+                </p>
+                <DialogFooter>
+                  <Button variant="ghost" size="sm" onClick={() => setResetOpen(false)}>Abbrechen</Button>
+                  <Button
+                    variant="destructive" size="sm" disabled={resetting}
+                    onClick={async () => {
+                      setResetting(true);
+                      try {
+                        const r: any = await resetFn({ data: { confirm: "MAIL RESET" } });
+                        toast({
+                          title: "Mail-Protokoll zurückgesetzt",
+                          description: Object.entries(r).map(([k, v]) => `${k}: ${v}`).join(" · "),
+                        });
+                        setResetOpen(false);
+                        await loadData();
+                      } catch (e: any) {
+                        toast({ title: "Fehler", description: e?.message ?? "Reset fehlgeschlagen", variant: "destructive" });
+                      } finally {
+                        setResetting(false);
+                      }
+                    }}
+                  >
+                    {resetting ? "Läuft…" : "Endgültig zurücksetzen"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
