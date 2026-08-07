@@ -33,6 +33,10 @@ const NO_BOOKING_1_MIN = 24 * 60;         // 24h
 const NO_BOOKING_2_MIN = 72 * 60;         // 72h
 const NO_SHOW_FAST_MIN = 30;              // 30 Min nach verpasstem Termin (Sofort-Recovery)
 const NO_SHOW_MIN      = 24 * 60;         // 24h nach Termin
+// Interview geöffnet, aber nie beendet: 60 Min nach Start nachfassen,
+// danach 5 Tage lang nachholbar (falls Cron/SMTP zwischenzeitlich stand).
+const ABANDONED_MIN     = 60;
+const ABANDONED_MAX_MIN = 5 * 24 * 60;
 const REG_PENDING_0_MIN = 2 * 60;         // 2h nach Zusage/Invite (Sofort-Nachfass)
 const REG_PENDING_1_MIN = 24 * 60;        // 24h nach Zusage/Invite
 const REG_PENDING_2_MIN = 72 * 60;        // 72h nach Zusage/Invite (2. Nachfass)
@@ -88,6 +92,24 @@ Falls der Button nicht funktioniert, kopieren Sie diesen Link:
 {{calendly_link}}
 
 Die Auswahl dauert weniger als eine Minute. Bei Fragen antworten Sie einfach auf diese E-Mail.
+
+Herzliche Grüße
+{{recruiter_name}}
+{{tenant_name}}`,
+  },
+  interview_abandoned: {
+    subject: "Ihr Bewerbungsgespräch ist noch offen – hier weitermachen",
+    body:
+`Hallo {{first_name}},
+
+Sie haben Ihr Bewerbungsgespräch bereits gestartet, es aber noch nicht abgeschlossen. Ihre bisherigen Antworten sind gespeichert – Sie können genau dort weitermachen, wo Sie aufgehört haben.
+
+{{cta:Gespräch jetzt fortsetzen|{{resume_link}}}}
+
+Falls der Button nicht funktioniert, kopieren Sie diesen Link:
+{{resume_link}}
+
+Es dauert nur wenige Minuten. Erst nach dem Abschluss können wir Ihre Bewerbung bewerten und Ihnen eine Rückmeldung geben.
 
 Herzliche Grüße
 {{recruiter_name}}
