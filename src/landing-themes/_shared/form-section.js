@@ -321,6 +321,31 @@
     cb.onclick=function(){ov.remove();};box.appendChild(cb);ov.appendChild(box);
     ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});document.body.appendChild(ov);
   }
+  // ── Ablauf-Erklärung über dem Formular ────────────────────────────────
+  // Bewerber sollen VOR dem Absenden wissen, dass direkt danach ein Termin
+  // gewählt wird und das Gespräch online stattfindet.
+  function injectProcessSteps(form){
+    if(!form || document.getElementById('lv-process-steps')) return;
+    var box=document.createElement('div');
+    box.id='lv-process-steps';
+    box.style.cssText='margin:0 0 18px;padding:16px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;text-align:left;color:#0f172a;font-size:13.5px;line-height:1.55;';
+    var steps=[
+      ['1','Formular ausfüllen','dauert ca. 2 Minuten'],
+      ['2','Termin direkt auswählen','freie Zeiten erscheinen sofort auf dieser Seite'],
+      ['3','Videogespräch führen','online über Ihren persönlichen Zugangslink aus der Bestätigungs-E-Mail, ca. 15 Minuten'],
+      ['4','Bei Zusage registrieren','Sie schließen Ihre Anmeldung direkt im Anschluss ab'],
+    ];
+    var html='<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#2563eb;margin-bottom:10px;">SO LÄUFT ES AB</div>';
+    steps.forEach(function(s){
+      html+='<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;">'
+        + '<span style="flex:0 0 22px;height:22px;border-radius:50%;background:#0f172a;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">'+s[0]+'</span>'
+        + '<span><strong>'+s[1]+'</strong> – '+s[2]+'</span>'
+        + '</div>';
+    });
+    box.innerHTML=html;
+    form.parentNode.insertBefore(box, form);
+  }
+
   // ── DSGVO-Consent + Datenschutz-Kurzfassung ins Formular injizieren ────
   function injectPrivacyBlock(form){
     if(!form || form.querySelector('.lv-privacy-block')) return;
@@ -355,6 +380,7 @@
 
   document.addEventListener('DOMContentLoaded',function(){
     var form=document.getElementById('application-form');var status=document.getElementById('form-status');if(!form)return;
+    injectProcessSteps(form);
     injectPrivacyBlock(form);
     // Theme-eigene Status-Klasse behalten (z. B. ttsb-form-status) und nur den
     // Zustand ergänzen — sonst sind Meldungen im Theme unsichtbar.
