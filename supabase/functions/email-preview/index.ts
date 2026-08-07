@@ -152,27 +152,6 @@ Sie können nicht? Hier absagen oder verschieben:
 Bis morgen!
 {{tenant_name}}`,
   },
-  interview_invite_30min_legacy: {
-    subject: "In 30 Minuten startet Ihr Bewerbungsgespräch",
-    preheader: "Ihr Bewerbungsgespräch startet in ca. 30 Minuten – hier ist Ihr Direktlink.",
-    buttonLabel: "Bewerbungsgespräch starten",
-    roleLabel: "Personalabteilung",
-    body: `Hallo {{first_name}},
-
-in ca. 30 Minuten beginnt Ihr Bewerbungsgespräch bei {{tenant_name}}.
-
-Termin: {{appointment_date}} um {{appointment_time}} Uhr
-Dauer: ca. {{duration_minutes}} Minuten
-
-Öffnen Sie den folgenden Link direkt vor Beginn – Ihr Gesprächsraum ist dann bereits vorbereitet:
-
-{{cta:{{button_label}}|{{magic_link}}}}
-
-Tipp: Testen Sie kurz Kamera + Mikrofon. Ein ruhiger Ort mit stabiler Internetverbindung genügt.
-
-Bis gleich!
-{{recruiter_name}}`,
-  },
   no_booking_24h: {
     subject: "Ihr Termin wartet – jetzt buchen",
     preheader: "Sie haben sich beworben, aber noch keinen Termin gebucht.",
