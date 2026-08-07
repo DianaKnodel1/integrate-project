@@ -504,7 +504,7 @@ serve(async (req) => {
       }
     }
 
-    type ReminderKind = "no_booking_24h" | "no_booking_72h" | "no_show_30min" | "no_show_24h" | "registration_pending_2h" | "registration_pending_24h" | "registration_pending_72h" | "rebook_after_cancel_24h" | "rebook_after_cancel_72h";
+    type ReminderKind = "no_booking_24h" | "no_booking_72h" | "no_show_30min" | "no_show_24h" | "interview_abandoned" | "registration_pending_2h" | "registration_pending_24h" | "registration_pending_72h" | "rebook_after_cancel_24h" | "rebook_after_cancel_72h";
     type Todo = { app: any; kind: ReminderKind; inviteToken?: string };
     const todo: Todo[] = [];
 
@@ -558,6 +558,16 @@ serve(async (req) => {
       if (!a.email || !a.tenant_id) continue;
       const createdMs = new Date(a.created_at).getTime();
       const ageMin = (now - createdMs) / 60_000;
+
+      // 0) Interview gestartet, aber nie abgeschlossen — fällt sonst durch jedes
+      //    Netz: die No-Show-Erkennung greift hier bewusst NICHT.
+      if (a.interview_started_at && !a.interview_completed_at && a.status !== "akzeptiert") {
+        const startedMin = (now - new Date(a.interview_started_at).getTime()) / 60_000;
+        if (startedMin >= ABANDONED_MIN && startedMin < ABANDONED_MAX_MIN) {
+          if (!already.has(`${a.id}|interview_abandoned`)) todo.push({ app: a, kind: "interview_abandoned" });
+          continue;
+        }
+      }
 
       // 1) No-Show 24h nach Termin — nur wenn Termin nachweislich NICHT wahrgenommen wurde.
       const noShowEligible =
@@ -713,10 +723,11 @@ serve(async (req) => {
       const isRegistration = kind.startsWith("registration_pending");
       const isNoShow = kind === "no_show_24h" || kind === "no_show_30min";
       const isNoShowFast = kind === "no_show_30min";
+      const isAbandoned = kind === "interview_abandoned";
       const isRebook = kind === "rebook_after_cancel_24h" || kind === "rebook_after_cancel_72h";
       const emailKind: EmailKind = isRegistration
         ? "fasttrack_registration_complete"
-        : isNoShow
+        : (isNoShow || isAbandoned)
           ? "broker_no_show"
           : "broker_no_booking";
       const resolved = await resolveSender(admin, app.id, emailKind);
@@ -790,6 +801,7 @@ serve(async (req) => {
       let calendlyLink = "";
       let portalLink = "";
       let rebookLink = "";
+      let resumeLink = "";
       if (isRegistration) {
         if (!inviteToken) {
           skipped++; results.push({ app: app.id, kind, status: "skipped", reason: "no_invite_token" });
@@ -802,6 +814,14 @@ serve(async (req) => {
           continue;
         }
         portalLink = `https://${registrationHost}/register?token=${encodeURIComponent(inviteToken)}&ref=${encodeURIComponent(app.id)}`;
+      } else if (isAbandoned) {
+        // Wiederaufnahme genau dort, wo das Gespräch abgebrochen wurde.
+        if (!app.magic_token || !fastTrackHost) {
+          skipped++; results.push({ app: app.id, kind, status: "skipped", reason: "no_resume_link" });
+          await logSkipCentral("no_resume_link");
+          continue;
+        }
+        resumeLink = `https://${fastTrackHost}/bewerbung?token=${encodeURIComponent(app.magic_token)}`;
       } else if (useInternalBooking) {
         // Neuer/verpasster Termin → Bewerber landet im Fast-Track-Portal-Kalender.
         rebookLink = `https://${fastTrackHost}/termin/buchen/${encodeURIComponent(app.magic_token)}?rebook=1`;
@@ -827,7 +847,9 @@ serve(async (req) => {
 
       const tmplSubject = isRegistration
         ? (tenant.reminder_app_registration_subject || DEFAULTS.registration.subject)
-        : isRebook
+        : isAbandoned
+          ? DEFAULTS.interview_abandoned.subject
+          : isRebook
           ? (tenant.reminder_app_rebook_subject || DEFAULTS.rebook.subject)
           : isNoShow
             ? (isNoShowFast
@@ -836,7 +858,9 @@ serve(async (req) => {
             : (tenant.reminder_app_no_booking_subject || DEFAULTS.no_booking.subject);
       const tmplBody = isRegistration
         ? (tenant.reminder_app_registration_body || DEFAULTS.registration.body)
-        : isRebook
+        : isAbandoned
+          ? DEFAULTS.interview_abandoned.body
+          : isRebook
           ? (tenant.reminder_app_rebook_body || DEFAULTS.rebook.body)
           : isNoShow
             ? (isNoShowFast
@@ -856,6 +880,7 @@ serve(async (req) => {
         recruiter_name: recruiter,
         calendly_link: calendlyLink,
         rebook_link: rebookLink || calendlyLink,
+        resume_link: resumeLink,
         portal_link: portalLink,
         portal_url: portalUrl,
         appointment_date: scheduledDate ? formatAppointmentDate(scheduledDate, false) : "",
