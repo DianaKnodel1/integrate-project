@@ -449,6 +449,49 @@ function AdminEmailCenterPage() {
       <EmailRetryQueuePanel />
 
       {/* Doppelversand-Warnung */}
+      {blockedConfirmations.length > 0 && (
+        <Card className="border-rose-500/60 bg-rose-500/10">
+          <CardContent className="p-4">
+            <div className="text-sm font-semibold text-rose-700 dark:text-rose-400">
+              Terminbestätigungen hängen fest ({blockedConfirmations.length})
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              Diese Bewerber haben einen Termin gebucht, aber keine Bestätigung und keinen Interview-Link
+              erhalten. Ohne Korrektur der Konfiguration geht die Mail nie raus.
+            </div>
+            <div className="mt-3 space-y-2">
+              {blockedConfirmations.slice(0, 10).map(b => {
+                const info = BLOCK_REASONS[b.reason] ?? { label: b.reason, action: "Details im Roh-Log ansehen" };
+                return (
+                  <div key={b.appointmentId} className="text-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="flex-1 truncate font-medium">{b.recipient}</span>
+                      <span className="truncate text-muted-foreground max-w-[14rem]">
+                        {tenantNames[b.tenantId ?? ""] ?? "Ohne Mandant"}
+                      </span>
+                      <span className="truncate max-w-[16rem] text-rose-700 dark:text-rose-400">{info.label}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!b.applicationId || resendingConfirmation === b.applicationId}
+                        onClick={() => resendBlockedConfirmation(b.applicationId)}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                        Erneut senden
+                      </Button>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">➜ {info.action}</div>
+                  </div>
+                );
+              })}
+              {blockedConfirmations.length > 10 && (
+                <div className="text-[11px] text-muted-foreground">… und {blockedConfirmations.length - 10} weitere</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {duplicates.length > 0 && (
         <Card className={realDuplicates.length > 0 ? "border-rose-500/50 bg-rose-500/5" : "border-amber-500/50 bg-amber-500/5"}>
           <CardContent className="p-4">
