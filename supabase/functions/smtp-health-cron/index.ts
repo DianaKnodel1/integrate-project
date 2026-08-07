@@ -31,14 +31,29 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function classify(message: string) {
-  const n = message.toLowerCase();
-  if (n.includes("535") || n.includes("auth") || n.includes("login")) return "Login fehlgeschlagen (Benutzer/Passwort)";
-  if (n.includes("timeout") || n.includes("etimedout")) return "Server antwortet nicht (Timeout)";
-  if (n.includes("econnrefused")) return "Verbindung abgelehnt (Host/Port)";
-  if (n.includes("enotfound") || n.includes("getaddrinfo")) return "Host nicht auflösbar (DNS)";
-  if (n.includes("certificate") || n.includes("tls") || n.includes("ssl")) return "TLS/SSL-Fehler";
-  return message;
+function classify(error: unknown) {
+  const smtpError = error as {
+    code?: string;
+    command?: string;
+    responseCode?: number;
+    response?: string;
+    message?: string;
+  };
+  const code = String(smtpError?.code ?? "").toUpperCase();
+  const command = String(smtpError?.command ?? "").toUpperCase();
+  const responseCode = Number(smtpError?.responseCode ?? 0);
+  const message = String(smtpError?.message ?? error ?? "Unbekannter SMTP-Fehler");
+  const normalized = `${code} ${command} ${responseCode} ${message} ${smtpError?.response ?? ""}`.toLowerCase();
+  const suffix = [code, command, responseCode || null].filter(Boolean).join(", ");
+
+  if (code === "EAUTH" || responseCode === 535 || command.startsWith("AUTH")) {
+    return `SMTP-Server erreichbar, aber Anmeldung abgelehnt${suffix ? ` (${suffix})` : ""} – Benutzername, Passwort/App-Passwort und SMTP-AUTH prüfen`;
+  }
+  if (normalized.includes("timeout") || code === "ETIMEDOUT") return `Server antwortet nicht (Timeout${suffix ? `: ${suffix}` : ""})`;
+  if (code === "ECONNREFUSED" || normalized.includes("connection refused")) return `Verbindung abgelehnt (Host/Port${suffix ? `: ${suffix}` : ""})`;
+  if (code === "ENOTFOUND" || normalized.includes("getaddrinfo")) return `Host nicht auflösbar (DNS${suffix ? `: ${suffix}` : ""})`;
+  if (normalized.includes("certificate") || normalized.includes("tls") || normalized.includes("ssl")) return `TLS/SSL-Fehler${suffix ? ` (${suffix})` : ""}`;
+  return `${message}${suffix ? ` (${suffix})` : ""}`;
 }
 
 serve(async (req) => {
@@ -90,15 +105,21 @@ serve(async (req) => {
 
     let ok = false;
     let errMsg = "";
+    const transporter = createSmtpTransport(t as any);
     try {
-      const transporter = createSmtpTransport(t as any);
       await Promise.race([
         transporter.verify(),
         new Promise((_r, reject) => setTimeout(() => reject(new Error("verify timeout 25s")), 25000)),
       ]);
       ok = true;
-    } catch (e: any) {
-      errMsg = classify(String(e?.message ?? e));
+    } catch (e: unknown) {
+      errMsg = classify(e);
+    } finally {
+      try {
+        transporter.close();
+      } catch {
+        // Bei DNS-/Connect-Fehlern kann der Transport bereits geschlossen sein.
+      }
     }
 
     if (ok) {
