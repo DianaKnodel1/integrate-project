@@ -127,9 +127,22 @@ function BookingPage() {
     const errCode = info.data && "error" in info.data ? info.data.error : "not_found";
     return (
       <CenterCard title={errCode === "no_schedule" ? "Buchung derzeit nicht möglich" : "Link ungültig"}>
-        {errCode === "no_schedule"
-          ? "Für diese Stelle ist der Terminkalender aktuell nicht konfiguriert. Bitte kontaktieren Sie uns direkt."
-          : "Dieser Buchungslink ist ungültig oder abgelaufen. Bitte prüfen Sie die E-Mail oder fordern Sie einen neuen Link an."}
+        {errCode === "no_schedule" ? (
+          "Für diese Stelle ist der Terminkalender aktuell nicht konfiguriert. Bitte kontaktieren Sie uns direkt."
+        ) : (
+          <>
+            <span className="block">
+              Dieser Buchungslink ist nicht mehr gültig — zum Beispiel, weil bereits ein neuer Termin
+              gebucht wurde.
+            </span>
+            <a
+              href="/bewerbung"
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90"
+            >
+              Mit E-Mail-Adresse fortfahren
+            </a>
+          </>
+        )}
       </CenterCard>
     );
   }
