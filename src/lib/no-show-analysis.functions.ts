@@ -16,7 +16,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const Input = z.object({
-  days: z.number().int().min(7).max(365).default(90),
+  days: z.number().int().min(1).max(365).default(7),
   tenant_id: z.string().uuid().optional(),
 });
 
@@ -27,6 +27,7 @@ export type Bucket = {
   erschienen: number;
   abgesagt: number;
   no_show: number;
+  unklar: number;
   no_show_quote: number; // no_show / (gebucht - abgesagt)
 };
 
@@ -36,6 +37,7 @@ export type NoShowTotals = {
   erschienen: number;
   abgesagt: number;
   no_show: number;
+  unklar: number;
   nie_gebucht: number;
   buchungsquote: number;
   erscheinensquote: number;
