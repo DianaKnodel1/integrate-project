@@ -102,7 +102,7 @@ function AdminMitarbeiterPage() {
 
   const counts = useMemo(() => ({
     alle: rows.length,
-    wartet: rows.filter(r => r.status === "registriert" && r.onboarding === "abgeschlossen").length,
+    wartet: rows.filter(r => r.status === "registriert" && (r.onboarding === "abgeschlossen" || (r.contractSigned && r.idUploaded))).length,
     aktiv: rows.filter(r => r.status === "angenommen").length,
     abgelehnt: rows.filter(r => r.status === "abgelehnt").length,
   }), [rows]);
@@ -110,7 +110,7 @@ function AdminMitarbeiterPage() {
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
     return rows.filter(r => {
-      if (tab === "wartet" && !(r.status === "registriert" && r.onboarding === "abgeschlossen")) return false;
+      if (tab === "wartet" && !(r.status === "registriert" && (r.onboarding === "abgeschlossen" || (r.contractSigned && r.idUploaded)))) return false;
       if (tab === "aktiv" && r.status !== "angenommen") return false;
       if (tab === "abgelehnt" && r.status !== "abgelehnt") return false;
       if (!ql) return true;
