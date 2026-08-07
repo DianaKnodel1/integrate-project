@@ -161,6 +161,24 @@ SELECT cron.schedule(
     timeout_milliseconds := 120000
   );
   \$CRON\$
+);
+
+-- Automatischer Nachversand: holt Mails nach, die wegen einer vorübergehenden
+-- Störung (SMTP-Timeout, Stundenlimit, Mail-Pause, Sendefenster) liegen blieben.
+SELECT cron.schedule(
+  'email-retry-queue',
+  '*/10 * * * *',
+  \$CRON\$
+  SELECT net.http_post(
+    url := 'https://${API_HOST}/functions/v1/email-resend',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'reminders_service_role_key'),
+      'Content-Type', 'application/json'
+    ),
+    body := '{\"retry_queue\": true, \"limit\": 40}'::jsonb,
+    timeout_milliseconds := 120000
+  );
+  \$CRON\$
 );"
 
 # --- 3) Fehlende Spalte ------------------------------------------------------
