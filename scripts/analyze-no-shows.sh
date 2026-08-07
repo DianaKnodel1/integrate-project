@@ -240,10 +240,13 @@ log "15  Trichter nach dem Interview: Zusage -> Registrierung"
 # Registrierung NICHT ueber applications.user_id messen — die Spalte wird bei
 # Selbstregistrierung ueber den Magic-Link oft nie zurueckgeschrieben. Wie im
 # Admin ueber profiles matchen (application_id, user_id oder E-Mail).
-REG="EXISTS (SELECT 1 FROM public.profiles p
-              WHERE p.application_id = a.id
-                 OR (a.user_id IS NOT NULL AND p.user_id = a.user_id)
-                 OR lower(p.email) = lower(a.email))"
+# public.profiles hat keine E-Mail-Spalte — die Adresse haengt an auth.users.
+REG="(EXISTS (SELECT 1 FROM public.profiles p
+               WHERE p.application_id = a.id
+                  OR (a.user_id IS NOT NULL AND p.user_id = a.user_id))
+      OR EXISTS (SELECT 1 FROM auth.users u
+                  JOIN public.profiles p2 ON p2.user_id = u.id
+                 WHERE a.email IS NOT NULL AND lower(u.email) = lower(a.email)))"
 sql "SELECT count(*) FILTER (WHERE a.interview_completed_at IS NOT NULL) AS interview_abgeschlossen,
             count(*) FILTER (WHERE a.interview_recommendation = 'invite' OR a.status = 'akzeptiert') AS zusage,
             count(*) FILTER (WHERE a.interview_recommendation = 'reject' OR a.status = 'abgelehnt')  AS absage,
