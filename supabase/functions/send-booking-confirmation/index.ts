@@ -29,29 +29,37 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const DEFAULT_SUBJECT = "Termin bestätigt: {{appointment_date}}, {{appointment_time}} Uhr";
-const DEFAULT_PREHEADER = "Ihr Bewerbungsgespräch am {{appointment_date}} um {{appointment_time}} Uhr – alle Infos + Kalendereintrag im Anhang.";
+const DEFAULT_SUBJECT = "Termin bestätigt: {{appointment_date}}, {{appointment_time}} Uhr – so geht es weiter";
+const DEFAULT_PREHEADER = "Ihr Bewerbungsgespräch am {{appointment_date}} um {{appointment_time}} Uhr – Sie starten es selbst über den Link in dieser E-Mail.";
 const DEFAULT_BODY = `Hallo {{first_name}},
 
-vielen Dank – Ihr Termin für das Bewerbungsgespräch bei {{tenant_name}} ist fest reserviert:
+Ihr Bewerbungsgespräch bei {{tenant_name}} ist fest reserviert:
 
 Datum: {{appointment_date}}
 Uhrzeit: {{appointment_time}} Uhr
 Dauer: ca. {{duration_minutes}} Minuten
 
-Sie finden den Termin als Kalendereintrag (.ics) im Anhang – einfach öffnen und in Outlook, Google oder Apple-Kalender speichern.
+WICHTIG: Das Gespräch findet online statt. Es ruft Sie niemand an – Sie starten das Gespräch selbst über den Button unten. Bitte öffnen Sie diese E-Mail deshalb zum Termin noch einmal.
 
-30 Minuten vor Beginn schicken wir Ihnen zusätzlich den direkten Link zum Gespräch, damit Sie ihn nicht extra suchen müssen.
+{{cta:{{button_label}}|{{magic_link}}}}
 
-Sollten Sie den Termin verschieben oder absagen müssen, tun Sie das jederzeit hier:
+Der Link bleibt dauerhaft gültig und funktioniert am Handy genauso wie am Computer.
 
-{{cta:{{button_label}}|{{cancel_url}}}}
+So läuft es ab:
+1. Am {{appointment_date}} um {{appointment_time}} Uhr auf den Button klicken.
+2. Das Gespräch dauert ca. {{duration_minutes}} Minuten – Sie beantworten ein paar Fragen zu Ihrer Person und Ihren Wünschen.
+3. Bei einer Zusage direkt im Gespräch erhalten Sie im Anschluss eine E-Mail, mit der Sie sich im Mitarbeiter-Portal registrieren.
+4. Erst nach der Registrierung im Portal können wir Sie einsetzen – bitte schließen Sie diesen Schritt gleich mit ab.
+
+Der Termin liegt zusätzlich als Kalendereintrag (.ics) im Anhang – einfach öffnen und in Outlook, Google oder Apple-Kalender speichern.
+
+Sie können den Termin nicht wahrnehmen? Dann sagen Sie ihn bitte kurz ab oder verschieben Sie ihn – das dauert 10 Sekunden: {{cancel_url}}
 
 Wir freuen uns auf das Gespräch!
 
 Herzliche Grüße
 {{recruiter_name}}`;
-const DEFAULT_BUTTON = "Termin verwalten";
+const DEFAULT_BUTTON = "Bewerbungsgespräch starten";
 
 function cleanHost(domain: unknown): string {
   return String(domain ?? "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
