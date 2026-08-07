@@ -348,31 +348,19 @@ export async function sendRegistrationInviteAfterAiAccept(
 }
 
 /**
- * Portal-Basis-URL für eine Bewerbung auflösen:
- * Fast-Track-Zielseite → Tenant-Domain → Request-Origin.
+ * Portal-Basis-URL für eine Bewerbung auflösen — ausschliesslich über die
+ * Fast-Track-Kette (siehe src/lib/portal-base.server.ts). Kein Fallback auf
+ * den Vermittlungs-Tenant: lieber keinen Link als einen falschen.
+ * `request` bleibt in der Signatur, wird aber nicht mehr als Quelle genutzt.
  */
-export async function resolvePortalBase(app: ApplicationRow, request: Request): Promise<string> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  let portalDomain: string | null = null;
-  const targetLandingId = (app as any).target_landing_id ?? null;
-  if (targetLandingId) {
-    const { data: lp } = await supabaseAdmin
-      .from("landing_pages")
-      .select("domain")
-      .eq("id", targetLandingId)
-      .maybeSingle();
-    portalDomain = (lp as any)?.domain ?? null;
+export async function resolvePortalBase(app: ApplicationRow, _request?: Request): Promise<string | null> {
+  const { resolveFasttrackPortalBase } = await import("@/lib/portal-base.server");
+  const res = await resolveFasttrackPortalBase(app.id);
+  if (!res.base) {
+    console.warn("[interview-engine] portal_base_unresolved", { application_id: app.id, reason: res.reason });
+    return null;
   }
-  if (!portalDomain && app.tenant_id) {
-    const { data: tenant } = await supabaseAdmin
-      .from("tenants")
-      .select("domain, primary_domain")
-      .eq("id", app.tenant_id)
-      .maybeSingle();
-    portalDomain = (tenant as any)?.primary_domain || (tenant as any)?.domain || null;
-  }
-  const fallbackOrigin = new URL(request.url).origin.replace(/\/+$/, "");
-  return portalDomain ? `https://portal.${portalDomain}` : fallbackOrigin;
+  return res.base;
 }
 
 /** Registrierungs-Link aus einem vorhandenen Token bauen (identisch zur Mail). */
@@ -398,6 +386,7 @@ export async function getExistingRegistrationLink(
   const token = (data as any[] | null)?.[0]?.token;
   if (!token) return null;
   const base = await resolvePortalBase(app, request);
+  if (!base) return null;
   return buildRegistrationLink(base, String(token), app.id);
 }
 
@@ -514,10 +503,15 @@ async function sendInviteInternal(
     return { sent: false, error: tokenErr?.message ?? "token_failed" };
   }
 
-  // Portal-Domain (Fast-Track-Zielseite → Tenant → Origin) zentral auflösen,
+  // Portal-Domain ausschliesslich über die Fast-Track-Kette auflösen,
   // damit Mail-Link und Portal-Button garantiert identisch sind.
   // ?ref=<application_id> hängt die Vermittlungs-Bewerbung an den Link.
   const base = await resolvePortalBase(app, request);
+  if (!base) {
+    // Lieber keine Mail als eine mit falschem Portal-Link (z. B. auf die Vermittlung).
+    await record("skipped", "missing_fasttrack_portal: keine Fast-Track-Portal-Domain für diese Bewerbung hinterlegt");
+    return { sent: false, skipped: true, reason: "missing_fasttrack_portal" as const };
+  }
   const registrationLink = buildRegistrationLink(base, tokenRow.token, app.id);
   const name = app.full_name || email;
   const firstName = app.first_name || String(name).trim().split(/\s+/)[0] || "";
