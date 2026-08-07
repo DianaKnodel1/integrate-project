@@ -211,7 +211,7 @@ function BookingPage() {
                 </li>
                 <li>
                   <span className="font-medium text-foreground">2. Zur vereinbarten Uhrzeit teilnehmen.</span>{" "}
-                  Das Gespräch findet online als Videogespräch statt; die Teilnahme erfolgt über Ihren
+                  Das Interview findet online statt; die Teilnahme erfolgt über Ihren
                   persönlichen Zugangslink aus der Bestätigungsmail, ein Telefonanruf erfolgt nicht.
                   Dauer: ca. {s.slot_duration_minutes} Minuten.
                 </li>
