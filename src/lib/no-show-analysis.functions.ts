@@ -197,8 +197,8 @@ export const getNoShowReport = createServerFn({ method: "POST" })
     const landingIds = Array.from(new Set(apps.map((a) => a.source_landing_id).filter(Boolean))) as string[];
     const landingLabel = new Map<string, string>();
     if (landingIds.length) {
-      const { data: lps } = await supabase.from("landing_pages").select("id, slug, firmenname").in("id", landingIds);
-      for (const l of (lps ?? []) as any[]) landingLabel.set(l.id, l.firmenname || l.slug || l.id);
+      const { data: lps } = await supabase.from("landing_pages").select("id, slug, domain").in("id", landingIds);
+      for (const l of (lps ?? []) as any[]) landingLabel.set(l.id, l.domain || l.slug || l.id);
     }
 
     // ---- Aggregation -------------------------------------------------------
