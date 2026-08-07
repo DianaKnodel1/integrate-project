@@ -33,6 +33,9 @@ const ACTIVE_TEMPLATES: { key: string; keys?: string[]; label: string; group: st
   { key: "vermittlung_no_booking_24h", label: "Vermittlung: Kein Termin (24h)",  group: "Vermittlung", trigger: "24h nach Bewerbung ohne Calendly-Buchung" },
   { key: "vermittlung_no_booking_72h", label: "Vermittlung: Kein Termin (72h)",  group: "Vermittlung", trigger: "72h nach Bewerbung ohne Calendly-Buchung" },
   { key: "vermittlung_no_show_24h",    label: "No-Show Interview",               group: "Vermittlung", trigger: "24h nach verpasstem Termin" },
+  { key: "vermittlung_no_show_30min",  label: "No-Show Sofort-Recovery",         group: "Vermittlung", trigger: "30 Minuten nach verpasstem Termin" },
+  { key: "vermittlung_interview_abandoned", label: "Interview fortsetzen",       group: "Vermittlung", trigger: "60 Minuten nach Start ohne Abschluss" },
+  { key: "interview_reminder_24h",     label: "Termin-Erinnerung (24h)",         group: "Vermittlung", trigger: "24 Stunden vor dem Termin" },
   { key: "interview_invite_30min",     keys: ["interview_invite_30min", "bewerbung_magic_link"], label: "Vermittlung: Interview-Einladung", group: "Vermittlung", trigger: "30 Minuten vor dem Termin" },
   { key: "booking_confirmation",       label: "Vermittlung: Terminbestätigung",   group: "Vermittlung", trigger: "Direkt nach Terminbuchung" },
   { key: "application_received",       label: "Vermittlung: Bewerbung eingegangen", group: "Vermittlung", trigger: "Sofort nach Bewerbungseingang (Broker-Flow)" },
@@ -143,6 +146,73 @@ function AdminEmailCenterPage() {
 
   /** Echte Doppelungen — nur die sind ein Fehler im System. */
   const realDuplicates = useMemo(() => duplicates.filter(d => d.kind === "real"), [duplicates]);
+
+  /**
+   * Terminbestätigungen, die an einem KONFIGURATIONSFEHLER hängen
+   * (fehlende Fast-Track-Portal-Domain, Absender nicht auflösbar).
+   * Diese Mails gehen ohne Eingriff NIE raus: der Bewerber hat einen Termin,
+   * aber weder Bestätigung noch Interview-Link — praktisch garantierter No-Show.
+   */
+  const blockedConfirmations = useMemo(() => {
+    const sentAppointments = new Set(
+      rows
+        .filter(r => r.status === "sent" && r.template_name === "booking_confirmation")
+        .map(r => String(((r.metadata ?? {}) as any).appointment_id ?? "")),
+    );
+    const byAppointment = new Map<string, {
+      appointmentId: string; applicationId: string; recipient: string;
+      tenantId: string | null; reason: string; last: string; count: number;
+    }>();
+    for (const r of rows) {
+      const meta = (r.metadata ?? {}) as any;
+      if (meta.config_blocked !== true) continue;
+      const appointmentId = String(meta.appointment_id ?? "");
+      if (!appointmentId || sentAppointments.has(appointmentId)) continue;
+      const cur = byAppointment.get(appointmentId);
+      if (cur) {
+        cur.count++;
+        if (r.created_at > cur.last) cur.last = r.created_at;
+        continue;
+      }
+      byAppointment.set(appointmentId, {
+        appointmentId,
+        applicationId: String(meta.application_id ?? ""),
+        recipient: r.recipient_email ?? "",
+        tenantId: r.tenant_id ?? null,
+        reason: String(meta.blocked_reason ?? r.error_message ?? "unbekannt"),
+        last: r.created_at,
+        count: 1,
+      });
+    }
+    return [...byAppointment.values()].sort((a, b) => (a.last < b.last ? 1 : -1));
+  }, [rows]);
+
+  const BLOCK_REASONS: Record<string, { label: string; action: string }> = {
+    missing_fasttrack_portal_domain: {
+      label: "Keine Fast-Track-Portal-Domain hinterlegt",
+      action: "Landing-Page mit der Fast-Track-Seite verknüpfen (Admin → Domains), danach erneut senden",
+    },
+    routing_failed: {
+      label: "Absender-Mandant nicht auflösbar",
+      action: "Zuordnung der Bewerbung zum Mandanten prüfen (Admin → Bewerbungen), danach erneut senden",
+    },
+  };
+
+  const [resendingConfirmation, setResendingConfirmation] = useState<string | null>(null);
+  const resendBlockedConfirmation = async (applicationId: string) => {
+    if (!applicationId) return;
+    setResendingConfirmation(applicationId);
+    try {
+      const { resendBookingConfirmation } = await import("@/lib/booking-confirmation-resend.functions");
+      await resendBookingConfirmation({ data: { applicationId } });
+      toast({ title: "Nachversand ausgelöst", description: "Die Terminbestätigung wird erneut versendet." });
+      await load();
+    } catch (e: any) {
+      toast({ title: "Nachversand fehlgeschlagen", description: e?.message ?? "Unbekannter Fehler", variant: "destructive" });
+    } finally {
+      setResendingConfirmation(null);
+    }
+  };
 
   /**
    * "Warum kam keine Mail an?" — Fehlversuche nach Ursache in Klartext,
@@ -382,6 +452,49 @@ function AdminEmailCenterPage() {
       <EmailRetryQueuePanel />
 
       {/* Doppelversand-Warnung */}
+      {blockedConfirmations.length > 0 && (
+        <Card className="border-rose-500/60 bg-rose-500/10">
+          <CardContent className="p-4">
+            <div className="text-sm font-semibold text-rose-700 dark:text-rose-400">
+              Terminbestätigungen hängen fest ({blockedConfirmations.length})
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              Diese Bewerber haben einen Termin gebucht, aber keine Bestätigung und keinen Interview-Link
+              erhalten. Ohne Korrektur der Konfiguration geht die Mail nie raus.
+            </div>
+            <div className="mt-3 space-y-2">
+              {blockedConfirmations.slice(0, 10).map(b => {
+                const info = BLOCK_REASONS[b.reason] ?? { label: b.reason, action: "Details im Roh-Log ansehen" };
+                return (
+                  <div key={b.appointmentId} className="text-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="flex-1 truncate font-medium">{b.recipient}</span>
+                      <span className="truncate text-muted-foreground max-w-[14rem]">
+                        {tenantNames[b.tenantId ?? ""] ?? "Ohne Mandant"}
+                      </span>
+                      <span className="truncate max-w-[16rem] text-rose-700 dark:text-rose-400">{info.label}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!b.applicationId || resendingConfirmation === b.applicationId}
+                        onClick={() => resendBlockedConfirmation(b.applicationId)}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                        Erneut senden
+                      </Button>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">➜ {info.action}</div>
+                  </div>
+                );
+              })}
+              {blockedConfirmations.length > 10 && (
+                <div className="text-[11px] text-muted-foreground">… und {blockedConfirmations.length - 10} weitere</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {duplicates.length > 0 && (
         <Card className={realDuplicates.length > 0 ? "border-rose-500/50 bg-rose-500/5" : "border-amber-500/50 bg-amber-500/5"}>
           <CardContent className="p-4">

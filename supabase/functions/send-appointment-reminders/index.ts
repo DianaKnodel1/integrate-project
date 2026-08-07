@@ -8,7 +8,7 @@
 // Trigger: pg_cron alle 10 Min, POST { dry_run?: bool }
 //   - Auth: x-cron-secret Header ODER ?key=<CRON_SECRET> ODER Service-Role Bearer/apikey ODER Admin JWT
 //
-// Toleranzfenster: now+25min .. now+40min
+// Toleranzfenster (mit Nachholung): now-10min .. now+40min
 // Idempotenz: application_reminder_log (application_id, reminder_kind='interview_invite_30min')
 // Tenant-Isolation: SMTP strikt aus applications.tenant_id → tenants.
 // Pausierte Tenants (emails_paused = true) werden übersprungen.
@@ -47,7 +47,15 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const WINDOW_LOW_MIN = 25;
+// Sendefenster für die Interview-Einladung.
+//
+// WICHTIG: früher war das Fenster 25–40 Min vor dem Termin. Fiel ein Cron-Lauf
+// aus, war der Tenant kurz pausiert oder griff ein SMTP-Limit, war das Fenster
+// vorbei und die Einladung ging NIE raus — der Bewerber hatte keinen Link und
+// erschien zwangsläufig nicht. Deshalb jetzt Nachhol-Fenster: alles von
+// "Termin startet in 40 Min" bis "Termin läuft seit 10 Min" ist versandfähig.
+// Doppelversand verhindert weiterhin application_reminder_log (status 'sent').
+const WINDOW_LOW_MIN = -10;
 const WINDOW_HIGH_MIN = 40;
 
 const DEFAULT_SUBJECT = "In 30 Minuten startet Ihr Bewerbungsgespräch";
@@ -226,6 +234,21 @@ async function logSkip(admin: any, app: any, tenant: TenantRow | null, reason: s
     });
   } catch (e) {
     console.warn("email_send_log skip insert failed:", e);
+  }
+  // Zusätzlich im Vorgangs-Protokoll vermerken (Admin sieht pro Bewerbung,
+  // warum die Einladung nicht rausging). 'skipped' blockiert keinen erneuten
+  // Versuch — nur 'sent' tut das.
+  try {
+    await admin.from("application_reminder_log").upsert({
+      application_id: app.id,
+      tenant_id: tenant?.id ?? app.tenant_id ?? null,
+      reminder_kind: REMINDER_KIND,
+      recipient_email: app.email ?? "(unbekannt)",
+      status: "skipped",
+      error: reason,
+    }, { onConflict: "application_id,reminder_kind" });
+  } catch (e) {
+    console.warn("application_reminder_log skip upsert failed:", e);
   }
 }
 
