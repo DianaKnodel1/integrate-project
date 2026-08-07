@@ -81,11 +81,18 @@ export const resetEmailSystem = createServerFn({ method: "POST" })
     const sb = supabaseAdmin as any;
     const result: Record<string, number | string> = {};
 
-    for (const table of ["email_send_log", "application_reminder_log", "reminder_log"] as const) {
+    const TABLES: Array<[string, string]> = [
+      ["email_send_log", "id"],
+      ["application_reminder_log", "id"],
+      ["reminder_log", "id"],
+      // appointment_reminder_log hat keine id-Spalte.
+      ["appointment_reminder_log", "booking_id"],
+    ];
+    for (const [table, key] of TABLES) {
       try {
-        const { count: before } = await sb.from(table).select("id", { count: "exact", head: true });
-        // Alles löschen: Filter, der auf jede Zeile passt (id ist nie null).
-        const { error } = await sb.from(table).delete().not("id", "is", null);
+        const { count: before } = await sb.from(table).select(key, { count: "exact", head: true });
+        // Alles löschen: Filter, der auf jede Zeile passt (Schlüssel ist nie null).
+        const { error } = await sb.from(table).delete().not(key, "is", null);
         if (error) throw new Error(error.message);
         result[table] = before ?? 0;
       } catch (e: any) {
