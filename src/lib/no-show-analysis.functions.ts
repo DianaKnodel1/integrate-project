@@ -74,13 +74,14 @@ function berlinParts(iso: string) {
 }
 
 function emptyBucket(key: string, label: string): Bucket {
-  return { key, label, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, no_show_quote: 0 };
+  return { key, label, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, unklar: 0, no_show_quote: 0 };
 }
 
 function finalize(map: Map<string, Bucket>, order?: string[]): Bucket[] {
   const list = Array.from(map.values());
   for (const b of list) {
-    const relevant = b.gebucht - b.abgesagt;
+    // Nur eindeutig bewertete Termine zaehlen — 'unklar' verzerrt sonst die Quote.
+    const relevant = b.erschienen + b.no_show;
     b.no_show_quote = relevant > 0 ? Math.round((b.no_show / relevant) * 1000) / 10 : 0;
   }
   if (order) {
