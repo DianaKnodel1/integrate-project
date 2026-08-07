@@ -12,6 +12,7 @@ import { EMAIL_TYPE_LABELS, HIDDEN_EMAIL_STATUS, type EmailLog } from "@/lib/ema
 import { resendEmailLog, isTokenTemplate } from "@/lib/email-resend";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { EmailRetryQueuePanel } from "@/components/admin/EmailRetryQueuePanel";
 
 
 
@@ -376,6 +377,9 @@ function AdminEmailCenterPage() {
 
 
       {/* Versand-Blocker: nur schmaler Hinweis — Details stehen auf dem Dashboard */}
+
+      {/* Automatischer Nachversand */}
+      <EmailRetryQueuePanel />
 
       {/* Doppelversand-Warnung */}
       {duplicates.length > 0 && (
