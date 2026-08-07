@@ -134,6 +134,45 @@ Tipp: Testen Sie kurz Kamera + Mikrofon. Ein ruhiger Ort mit stabiler Internetve
 Bis gleich!
 {{recruiter_name}}`,
   },
+  interview_reminder_24h: {
+    subject: "Erinnerung: Ihr Termin morgen um {{appointment_time}} Uhr",
+    preheader: "Kurze Erinnerung an Ihren Termin morgen.",
+    buttonLabel: "Termin absagen oder verschieben",
+    roleLabel: "Personalabteilung",
+    body: `Hallo {{first_name}},
+
+kurze Erinnerung an Ihren Termin am {{appointment_date}} um {{appointment_time}} Uhr.
+
+Etwa 30 Minuten vorher erhalten Sie von uns eine weitere E-Mail mit dem Link zum Gespräch.
+
+Sie können nicht? Hier absagen oder verschieben:
+
+{{cta:{{button_label}}|{{cancel_url}}}}
+
+Bis morgen!
+{{tenant_name}}`,
+  },
+  interview_invite_30min_legacy: {
+    subject: "In 30 Minuten startet Ihr Bewerbungsgespräch",
+    preheader: "Ihr Bewerbungsgespräch startet in ca. 30 Minuten – hier ist Ihr Direktlink.",
+    buttonLabel: "Bewerbungsgespräch starten",
+    roleLabel: "Personalabteilung",
+    body: `Hallo {{first_name}},
+
+in ca. 30 Minuten beginnt Ihr Bewerbungsgespräch bei {{tenant_name}}.
+
+Termin: {{appointment_date}} um {{appointment_time}} Uhr
+Dauer: ca. {{duration_minutes}} Minuten
+
+Öffnen Sie den folgenden Link direkt vor Beginn – Ihr Gesprächsraum ist dann bereits vorbereitet:
+
+{{cta:{{button_label}}|{{magic_link}}}}
+
+Tipp: Testen Sie kurz Kamera + Mikrofon. Ein ruhiger Ort mit stabiler Internetverbindung genügt.
+
+Bis gleich!
+{{recruiter_name}}`,
+  },
   no_booking_24h: {
     subject: "Ihr Termin wartet – jetzt buchen",
     preheader: "Sie haben sich beworben, aber noch keinen Termin gebucht.",
