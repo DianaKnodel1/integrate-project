@@ -237,13 +237,16 @@ export const getNoShowReport = createServerFn({ method: "POST" })
       bookedAppIds.add(ap.application_id);
       apptCountByApp.set(ap.application_id, (apptCountByApp.get(ap.application_id) ?? 0) + 1);
 
-      const cancelled = ap.status === "cancelled";
-      const attended =
-        ap.status === "completed" ||
-        !!app.interview_completed_at ||
-        !!app.interview_started_at;
-      const kind: "erschienen" | "abgesagt" | "no_show" =
-        cancelled ? "abgesagt" : attended ? "erschienen" : "no_show";
+      // Streng nach dem tatsaechlichen Terminstatus bewerten.
+      // 'interview_started_at' bedeutet NUR, dass der Bewerber den Interview-
+      // Prozess irgendwann angestossen hat — nicht, dass er zum Termin erschien.
+      // Termine, die vorbei sind und trotzdem noch auf 'scheduled' stehen,
+      // sind unbewertet ('unklar') und werden nicht als Erfolg gezaehlt.
+      const kind: "erschienen" | "abgesagt" | "no_show" | "unklar" =
+        ap.status === "cancelled" ? "abgesagt"
+        : ap.status === "completed" ? "erschienen"
+        : ap.status === "no_show" ? "no_show"
+        : "unklar";
 
       totals.gebucht += 1;
       totals[kind] += 1;
