@@ -102,7 +102,7 @@ function AdminMitarbeiterPage() {
 
   const counts = useMemo(() => ({
     alle: rows.length,
-    wartet: rows.filter(r => r.status === "registriert" && r.onboarding === "abgeschlossen").length,
+    wartet: rows.filter(r => r.status === "registriert" && (r.onboarding === "abgeschlossen" || (r.contractSigned && r.idUploaded))).length,
     aktiv: rows.filter(r => r.status === "angenommen").length,
     abgelehnt: rows.filter(r => r.status === "abgelehnt").length,
   }), [rows]);
@@ -110,7 +110,7 @@ function AdminMitarbeiterPage() {
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
     return rows.filter(r => {
-      if (tab === "wartet" && !(r.status === "registriert" && r.onboarding === "abgeschlossen")) return false;
+      if (tab === "wartet" && !(r.status === "registriert" && (r.onboarding === "abgeschlossen" || (r.contractSigned && r.idUploaded)))) return false;
       if (tab === "aktiv" && r.status !== "angenommen") return false;
       if (tab === "abgelehnt" && r.status !== "abgelehnt") return false;
       if (!ql) return true;
@@ -273,7 +273,9 @@ function AdminMitarbeiterPage() {
                 </thead>
                 <tbody className="divide-y">
                   {pagination.paged.map(r => {
-                    const wartet = r.status === "registriert" && r.onboarding === "abgeschlossen";
+                    // Freigabe darf nie am internen Onboarding-Flag hängen: sobald jemand
+                    // registriert ist, muss der Admin annehmen/ablehnen können.
+                    const wartet = r.status === "registriert";
                     const st = STATUS_CONFIG[r.status];
                     return (
                       <tr key={r.id} className={`hover:bg-muted/20 ${selected.has(r.id) ? "bg-primary/5" : ""}`}>
