@@ -17,8 +17,18 @@ export interface SmtpTenantLike {
   smtp_password?: string | null;
 }
 
-/** Transport mit robusten Timeouts + TLS-Einstellungen je nach Port. */
-export function createSmtpTransport(tenant: SmtpTenantLike) {
+/**
+ * Transport mit robusten Timeouts + TLS-Einstellungen je nach Port.
+ *
+ * `timeouts` kürzt die Wartezeiten für den reinen Verbindungstest: die
+ * Edge-Runtime bricht lange Aufrufe hart ab (HTTP 502 ohne JSON), dann geht
+ * die eigentliche Fehlerursache verloren. Für den Versand bleiben die
+ * großzügigen Standardwerte.
+ */
+export function createSmtpTransport(
+  tenant: SmtpTenantLike,
+  timeouts?: { connectionTimeout?: number; greetingTimeout?: number; socketTimeout?: number },
+) {
   const port = Number(tenant.smtp_port);
   return nodemailer.createTransport({
     host: String(tenant.smtp_host),
@@ -26,9 +36,9 @@ export function createSmtpTransport(tenant: SmtpTenantLike) {
     secure: port === 465,
     requireTLS: port === 587,
     auth: { user: String(tenant.smtp_username), pass: String(tenant.smtp_password) },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 30000,
+    connectionTimeout: timeouts?.connectionTimeout ?? 20000,
+    greetingTimeout: timeouts?.greetingTimeout ?? 20000,
+    socketTimeout: timeouts?.socketTimeout ?? 30000,
     tls: { servername: String(tenant.smtp_host) },
   });
 }
