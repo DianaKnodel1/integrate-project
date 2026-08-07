@@ -3,6 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { applyAntiScrapeHeaders, botShieldResponse } from "./lib/bot-shield";
+import { applyServerEnvFallback } from "./lib/server-env-fallback";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -70,6 +71,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      applyServerEnvFallback();
       const blocked = botShieldResponse(request);
       if (blocked) return blocked;
       const handler = await getServerEntry();
