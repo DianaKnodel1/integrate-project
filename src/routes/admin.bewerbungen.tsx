@@ -13,6 +13,7 @@ import { Users, Search, ExternalLink, Trash2, MailWarning } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
 import { deleteOrphanApplications, deleteApplication, bulkDeleteApplications } from "@/lib/admin-delete.functions";
+import { archiveOldApplications } from "@/lib/admin-maintenance.functions";
 import { resendRegistrationInvite } from "@/lib/application-stage.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -151,7 +152,8 @@ function phaseToStages(phase: Phase): Stage[] {
 
 const searchSchema = z.object({
   tab: z.enum([
-    "alle", "offen", "interview", "angenommen", "abgelehnt", "mitarbeiter",
+    "alle", "eingegangen", "termin", "interview", "no_show", "abgesagt",
+    "zusage", "abgelehnt", "onboarded",
   ]).optional().catch("alle"),
 });
 
