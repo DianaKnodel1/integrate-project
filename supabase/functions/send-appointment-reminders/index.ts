@@ -8,7 +8,7 @@
 // Trigger: pg_cron alle 10 Min, POST { dry_run?: bool }
 //   - Auth: x-cron-secret Header ODER ?key=<CRON_SECRET> ODER Service-Role Bearer/apikey ODER Admin JWT
 //
-// Toleranzfenster: now+25min .. now+40min
+// Toleranzfenster (mit Nachholung): now-10min .. now+40min
 // Idempotenz: application_reminder_log (application_id, reminder_kind='interview_invite_30min')
 // Tenant-Isolation: SMTP strikt aus applications.tenant_id → tenants.
 // Pausierte Tenants (emails_paused = true) werden übersprungen.
@@ -234,6 +234,21 @@ async function logSkip(admin: any, app: any, tenant: TenantRow | null, reason: s
     });
   } catch (e) {
     console.warn("email_send_log skip insert failed:", e);
+  }
+  // Zusätzlich im Vorgangs-Protokoll vermerken (Admin sieht pro Bewerbung,
+  // warum die Einladung nicht rausging). 'skipped' blockiert keinen erneuten
+  // Versuch — nur 'sent' tut das.
+  try {
+    await admin.from("application_reminder_log").upsert({
+      application_id: app.id,
+      tenant_id: tenant?.id ?? app.tenant_id ?? null,
+      reminder_kind: REMINDER_KIND,
+      recipient_email: app.email ?? "(unbekannt)",
+      status: "skipped",
+      error: reason,
+    }, { onConflict: "application_id,reminder_kind" });
+  } catch (e) {
+    console.warn("application_reminder_log skip upsert failed:", e);
   }
 }
 
