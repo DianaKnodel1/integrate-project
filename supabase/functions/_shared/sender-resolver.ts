@@ -43,6 +43,18 @@ const SIDE: Record<EmailKind, "broker" | "fasttrack"> = {
   fasttrack_chat_reminder: "fasttrack",
 };
 
+// Kritische Mails: ohne sie kann der Bewerber nicht weitermachen.
+// Eine Mandanten-Pause darf diese Mails NICHT verhindern — sonst steht der
+// Bewerber ohne Terminbestätigung bzw. ohne Interview-Link da.
+const CRITICAL_KINDS = new Set<EmailKind>([
+  "broker_booking_confirmation",
+  "broker_interview_invite",
+]);
+
+export function isCriticalKind(kind: EmailKind): boolean {
+  return CRITICAL_KINDS.has(kind);
+}
+
 const TENANT_SELECT =
   "id,name,domain,primary_domain,logo_url,primary_color,sender_email,sender_name,reply_to_email," +
   "smtp_host,smtp_port,smtp_username,smtp_password,email_signature,emails_paused,emails_paused_by," +
@@ -57,9 +69,11 @@ function smtpOk(t: any): boolean {
   return !!(t?.smtp_host && t?.smtp_port && t?.smtp_username && t?.smtp_password);
 }
 
-function pauseBlocks(t: any): string | null {
+function pauseBlocks(t: any, kind?: EmailKind): string | null {
   if (!t) return null;
   if (t.is_active === false) return "tenant_inactive";
+  // Kritische Mails ignorieren jede Pause (siehe CRITICAL_KINDS).
+  if (kind && CRITICAL_KINDS.has(kind)) return null;
   // Nur MANUELLE Pausen blockieren (siehe applications.ts::tenantMailBlockReason).
   if (t.emails_paused && t.emails_paused_by && t.emails_paused_by !== "auto:smtp_verify") {
     return `tenant_emails_paused${t.emails_paused_reason ? `: ${t.emails_paused_reason}` : ""}`;
@@ -130,7 +144,7 @@ export async function resolveSender(
     return { tenant: null, kind, side, reason: `tenant_not_found${tErr ? `: ${tErr.message}` : ""}` };
   }
 
-  const paused = pauseBlocks(tenant);
+  const paused = pauseBlocks(tenant, kind);
   if (paused) return { tenant: null, kind, side, reason: paused };
   if (!smtpOk(tenant)) return { tenant: null, kind, side, reason: "smtp_incomplete" };
 
@@ -142,7 +156,7 @@ export async function loadTenantForSend(admin: any, tenantId: string, kind: Emai
   const side = SIDE[kind];
   const { data: tenant } = await admin.from("tenants").select(TENANT_SELECT).eq("id", tenantId).maybeSingle();
   if (!tenant) return { tenant: null, kind, side, reason: "tenant_not_found" };
-  const paused = pauseBlocks(tenant);
+  const paused = pauseBlocks(tenant, kind);
   if (paused) return { tenant: null, kind, side, reason: paused };
   if (!smtpOk(tenant)) return { tenant: null, kind, side, reason: "smtp_incomplete" };
   return { tenant, kind, side, reason: null };

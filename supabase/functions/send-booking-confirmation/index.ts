@@ -410,10 +410,11 @@ serve(async (req) => {
         if (dup.duplicate) { skipped++; results.push({ id: appt.id, status: "skipped", reason: dup.reason }); continue; }
       }
 
-      // Kontingent-Schutz (150/h, 2.400/Tag). Blockade wird als "skipped" geloggt.
+      // Terminbestätigung ist kritisch: sie wird nie durch Pause/Kontingent
+      // blockiert (nur protokolliert), sonst hat der Bewerber keinen Termin.
       const allowance = await guardSend({
         admin, tenantId: tenant.id, templateName: REMINDER_KIND, recipient: app.email,
-        kind: "transactional", senderEmail: tenant.sender_email ?? tenant.smtp_username,
+        kind: "critical", senderEmail: tenant.sender_email ?? tenant.smtp_username,
         metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation" },
       });
       if (!allowance.allowed) { skipped++; results.push({ id: appt.id, reason: allowance.reason }); continue; }

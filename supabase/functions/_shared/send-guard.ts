@@ -22,7 +22,11 @@ const COUNTING_STATUSES = ["sent", "pending", "bounced", "complained"];
 // Sie gehört zum gebuchten Termin, den der Empfänger genau zu dieser Uhrzeit
 // erwartet — deshalb KEIN 06–22-Uhr-Sendefenster, aber weiterhin die
 // Stunden-/Tageskontingente.
-export type SendKind = "transactional" | "reminder" | "appointment";
+// "critical" = Mail, ohne die der Bewerber den Prozess nicht fortsetzen kann
+// (Terminbestätigung, Interview-Link). Diese Mails werden NIE durch Sendefenster
+// oder Kontingente blockiert — ein blockierter Interview-Link bedeutet garantiert
+// einen No-Show. Sie werden lediglich mit einem Hinweis protokolliert.
+export type SendKind = "transactional" | "reminder" | "appointment" | "critical";
 
 export interface AllowanceResult {
   allowed: boolean;
@@ -30,6 +34,8 @@ export interface AllowanceResult {
   reason?: "outside_send_window" | "tenant_1h_cap" | "tenant_24h_cap";
   count1h: number;
   count24h: number;
+  /** true = Limit war erreicht, wurde für eine kritische Mail bewusst ignoriert. */
+  overLimit?: boolean;
 }
 
 /** Aktuelle Stunde in Europe/Berlin (unabhängig von der Server-Zeitzone). */
@@ -75,6 +81,14 @@ export async function checkSendAllowance(
 ): Promise<AllowanceResult> {
   const count1h = await countSince(admin, tenantId, new Date(now.getTime() - 3600_000).toISOString());
   const count24h = await countSince(admin, tenantId, new Date(now.getTime() - 24 * 3600_000).toISOString());
+
+  if (kind === "critical") {
+    const overLimit = count1h >= MAX_PER_1H_PER_TENANT || count24h >= MAX_PER_24H_PER_TENANT;
+    if (overLimit) {
+      console.warn("[send-guard] critical mail sent despite cap", { tenantId, count1h, count24h });
+    }
+    return { allowed: true, count1h, count24h, overLimit };
+  }
 
   if (kind === "reminder" && !isInsideSendWindow(now)) {
     return { allowed: false, reason: "outside_send_window", count1h, count24h };

@@ -10,8 +10,13 @@
 // Diese Prüfung gehört unmittelbar VOR den Versand — unabhängig davon, ob
 // vorgelagerte Prüfungen etwas übersehen haben.
 
-/** Standard-Sperrfrist: dieselbe Vorlage an dieselbe Adresse. */
-export const DEFAULT_WINDOW_HOURS = 20;
+// Vereinfacht (2026-08): Die pauschale 20-Stunden-Sperre "gleiche Vorlage +
+// gleiche Adresse" hat gewollte Mails blockiert (Storno + Neubuchung, zweiter
+// Termin am selben Tag, erneut angeforderter Link). Doppelversand wird jetzt
+// durch den eindeutigen event_key in email_send_log (send-claim.ts) und den
+// vorgangsbezogenen application_reminder_log verhindert.
+// Ein Zeitfenster gilt nur noch, wenn die aufrufende Funktion es explizit setzt.
+export const DEFAULT_WINDOW_HOURS = 0;
 
 export type DedupeInput = {
   /** Bewerbung (falls vorhanden) — paart mit application_reminder_log. */

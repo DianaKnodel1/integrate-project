@@ -22,8 +22,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
   type EmailLog,
-  EMAIL_STATUS_COLORS,
   EMAIL_STATUS_LABELS,
+  SIMPLE_STATUS_COLORS,
+  SIMPLE_STATUS_LABELS,
+  simpleEmailStatus,
   EMAIL_TYPE_LABELS,
   HIDDEN_EMAIL_STATUS,
   computeEmailStats,
@@ -299,9 +301,12 @@ export function AdminEmailLogsPage() {
                         ) : (
                           <XCircle className="h-4 w-4 text-destructive" />
                         )}
-                        <Badge variant="secondary" className={`text-[10px] ${EMAIL_STATUS_COLORS[log.status] ?? "bg-muted text-muted-foreground"}`}>
-                          {EMAIL_STATUS_LABELS[log.status] ?? log.status}
+                        <Badge variant="secondary" className={`text-[10px] ${SIMPLE_STATUS_COLORS[simpleEmailStatus(log.status)]}`}>
+                          {SIMPLE_STATUS_LABELS[simpleEmailStatus(log.status)]}
                         </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          {EMAIL_STATUS_LABELS[log.status] ?? log.status}
+                        </span>
                         {log.acknowledged_at && ["failed", "dlq", "bounced"].includes(log.status) && (
                           <Badge variant="outline" className="text-[10px] gap-1"><Check className="h-2.5 w-2.5" />bearbeitet</Badge>
                         )}
@@ -359,7 +364,10 @@ export function AdminEmailLogsPage() {
           {previewLog && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-xs border rounded-lg p-3 bg-muted/30">
-                <DetailRow label="Status" value={EMAIL_STATUS_LABELS[previewLog.status] ?? previewLog.status} />
+                <DetailRow
+                  label="Status"
+                  value={`${SIMPLE_STATUS_LABELS[simpleEmailStatus(previewLog.status)]} (${EMAIL_STATUS_LABELS[previewLog.status] ?? previewLog.status})`}
+                />
                 <DetailRow label="Typ" value={EMAIL_TYPE_LABELS[previewLog.template_name] ?? previewLog.template_name} />
                 <DetailRow label="Empfänger" value={previewLog.recipient_email} />
                 <DetailRow label="Absender" value={previewLog.sender_email || previewLog.metadata?.from_email || "–"} />

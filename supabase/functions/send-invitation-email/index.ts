@@ -208,7 +208,9 @@ serve(async (req) => {
       await logAbort("failed", "smtp_not_configured", tenant.id, { tenant_name: tenant.name });
       return json({ error: "Tenant hat keine vollständige SMTP-Konfiguration" }, 400);
     }
-    if (tenant.emails_paused) {
+    // Kritische Mails (Terminbestätigung, Interview-Link) ignorieren jede Pause.
+    const isCriticalMail = routingKind === "broker_booking_confirmation" || routingKind === "broker_interview_invite";
+    if (tenant.emails_paused && !isCriticalMail) {
       // Nur noch manuell gesetzte Tenant-Pausen respektieren (kein Auto-Pause mehr).
       if (tenant.emails_paused_by && tenant.emails_paused_by !== "auto:smtp_verify") {
         await logAbort("skipped", `tenant_emails_paused${tenant.emails_paused_reason ? `: ${tenant.emails_paused_reason}` : ""}`, tenant.id, { tenant_name: tenant.name, paused_by: tenant.emails_paused_by });
@@ -431,7 +433,7 @@ serve(async (req) => {
       tenantId: tenant.id,
       templateName: templateNameOverride || "invitation",
       recipient: to,
-      kind: "transactional",
+      kind: isCriticalMail ? "critical" : "transactional",
       senderEmail,
       metadata: smtpMeta,
     });
