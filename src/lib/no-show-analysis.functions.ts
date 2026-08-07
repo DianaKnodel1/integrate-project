@@ -289,7 +289,8 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     totals.nie_gebucht = apps.filter((a) => !bookedAppIds.has(a.id) && !a.scheduled_at).length;
     totals.mehrfachbuchungen = Array.from(apptCountByApp.values()).filter((n) => n > 1).length;
-    const relevant = totals.gebucht - totals.abgesagt;
+    // Nur eindeutig bewertete Termine bilden die Basis der Quoten.
+    const relevant = totals.erschienen + totals.no_show;
     totals.buchungsquote = totals.beworben ? Math.round((bookedAppIds.size / totals.beworben) * 1000) / 10 : 0;
     totals.erscheinensquote = relevant ? Math.round((totals.erschienen / relevant) * 1000) / 10 : 0;
     totals.no_show_quote = relevant ? Math.round((totals.no_show / relevant) * 1000) / 10 : 0;
