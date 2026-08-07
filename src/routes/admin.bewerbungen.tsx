@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
-import { Users, Search, ExternalLink, Trash2, MailWarning } from "lucide-react";
+import { Users, Search, ExternalLink, Trash2, MailWarning, Archive } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
 import { deleteOrphanApplications, deleteApplication, bulkDeleteApplications } from "@/lib/admin-delete.functions";
@@ -438,6 +438,7 @@ function AdminBewerbungenPage() {
   }, [rows, cleanupDays]);
 
   async function doCleanup() {
+    setBusy(true);
     setBusy(true);
     try {
       const res: any = await runCleanup({ data: { older_than_days: cleanupDays, dry_run: false } });
