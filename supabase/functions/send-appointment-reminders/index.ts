@@ -47,7 +47,15 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const WINDOW_LOW_MIN = 25;
+// Sendefenster für die Interview-Einladung.
+//
+// WICHTIG: früher war das Fenster 25–40 Min vor dem Termin. Fiel ein Cron-Lauf
+// aus, war der Tenant kurz pausiert oder griff ein SMTP-Limit, war das Fenster
+// vorbei und die Einladung ging NIE raus — der Bewerber hatte keinen Link und
+// erschien zwangsläufig nicht. Deshalb jetzt Nachhol-Fenster: alles von
+// "Termin startet in 40 Min" bis "Termin läuft seit 10 Min" ist versandfähig.
+// Doppelversand verhindert weiterhin application_reminder_log (status 'sent').
+const WINDOW_LOW_MIN = -10;
 const WINDOW_HIGH_MIN = 40;
 
 const DEFAULT_SUBJECT = "In 30 Minuten startet Ihr Bewerbungsgespräch";
