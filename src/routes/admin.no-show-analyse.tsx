@@ -20,7 +20,7 @@ export const Route = createFileRoute("/admin/no-show-analyse")({
   }),
 });
 
-const PRESETS = [30, 90, 180, 365];
+const PRESETS = [7, 14, 30, 90];
 
 function Quote({ value }: { value: number }) {
   return (
