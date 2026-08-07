@@ -211,7 +211,7 @@ function BookingPage() {
                 </li>
                 <li>
                   <span className="font-medium text-foreground">2. Zur vereinbarten Uhrzeit teilnehmen.</span>{" "}
-                  Das Gespräch findet online als Videogespräch statt; die Teilnahme erfolgt über Ihren
+                  Das Interview findet online statt; die Teilnahme erfolgt über Ihren
                   persönlichen Zugangslink aus der Bestätigungsmail, ein Telefonanruf erfolgt nicht.
                   Dauer: ca. {s.slot_duration_minutes} Minuten.
                 </li>
@@ -362,8 +362,7 @@ function BookingConfirmed(props: {
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed">
               <div className="mb-2 font-semibold text-foreground">Wichtiger Hinweis zur Teilnahme</div>
               <p className="text-muted-foreground">
-                Ihr Gespräch findet online als{" "}
-                <strong className="text-foreground">Videogespräch</strong> statt. Die Teilnahme
+                Ihr <strong className="text-foreground">Interview</strong> findet online statt. Die Teilnahme
                 erfolgt über Ihren persönlichen Zugangslink, den Sie soeben per E-Mail erhalten
                 haben; ein Telefonanruf erfolgt nicht. Bitte öffnen Sie den Link zur vereinbarten
                 Uhrzeit – er bleibt dauerhaft gültig, eine Installation ist nicht erforderlich.

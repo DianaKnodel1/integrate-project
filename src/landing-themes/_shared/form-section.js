@@ -63,7 +63,7 @@
     var sub=document.createElement('p');sub.style.cssText='margin:0 0 4px;color:#475569;font-size:14px;line-height:1.5;';
     sub.textContent='Wir laden Ihren Kalender …';
     var hint=document.createElement('p');hint.style.cssText='margin:0 0 6px;color:#64748b;font-size:12.5px;';
-    hint.textContent='Das Gespräch findet online als Videogespräch statt – die Teilnahme erfolgt über Ihren persönlichen Zugangslink, den Sie sofort per E-Mail erhalten (inkl. Kalendereintrag). Alle Zeiten in deutscher Zeit (Europe/Berlin).';
+    hint.textContent='Das Interview findet online statt – die Teilnahme erfolgt über Ihren persönlichen Zugangslink, den Sie sofort per E-Mail erhalten (inkl. Kalendereintrag). Alle Zeiten in deutscher Zeit (Europe/Berlin).';
     var priv=document.createElement('p');priv.style.cssText='margin:0 0 14px;color:#94a3b8;font-size:11.5px;line-height:1.5;';
     var dsUrl=window.LANDING_DATENSCHUTZ_URL||'datenschutz.html';
     priv.innerHTML='Ihre Daten werden ausschließlich zur Terminvereinbarung verwendet. Details in unserer <a href="'+dsUrl+'" target="_blank" rel="noopener" style="color:#64748b;text-decoration:underline;">Datenschutzerklärung</a>.';
@@ -228,9 +228,9 @@
           return;
         }
         state.schedule=res.body;
-        var greet='Wählen Sie jetzt einen freien Termin für Ihr Videogespräch (ca. 15 Minuten).';
+        var greet='Wählen Sie jetzt einen freien Termin für Ihr Online-Interview (ca. 15 Minuten).';
         if(res.body.applicant_first_name){
-          greet='Hallo '+res.body.applicant_first_name+', wählen Sie jetzt einen freien Termin für Ihr Videogespräch (ca. 15 Minuten).';
+          greet='Hallo '+res.body.applicant_first_name+', wählen Sie jetzt einen freien Termin für Ihr Online-Interview (ca. 15 Minuten).';
         }
         sub.textContent=greet;
         loadRange();
@@ -332,7 +332,7 @@
     var steps=[
       ['1','Formular ausfüllen','dauert ca. 2 Minuten'],
       ['2','Termin direkt auswählen','freie Zeiten erscheinen sofort auf dieser Seite'],
-      ['3','Videogespräch führen','online über Ihren persönlichen Zugangslink aus der Bestätigungs-E-Mail, ca. 15 Minuten'],
+      ['3','Interview führen','online über Ihren persönlichen Zugangslink aus der Bestätigungs-E-Mail, ca. 15 Minuten'],
       ['4','Bei Zusage registrieren','Sie schließen Ihre Anmeldung direkt im Anschluss ab'],
     ];
     var html='<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#2563eb;margin-bottom:10px;">SO LÄUFT ES AB</div>';
