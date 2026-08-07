@@ -23,6 +23,7 @@ ALTER TABLE public.application_reminder_log
     'registration_pending_2h',
     'registration_pending_24h',
     'registration_pending_72h',
+    'registration_abandoned_24h',
     'rebook_after_cancel_24h',
     'rebook_after_cancel_72h'
   ));
