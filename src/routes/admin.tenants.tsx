@@ -1231,9 +1231,9 @@ function AdminTenantsPage() {
         if (res.error) throw res.error;
         data = res.data;
       } catch (invokeErr: any) {
-        // Die Funktion antwortet bei SMTP-Fehlern mit HTTP 502 – supabase-js
-        // wirft dann eine FunctionsHttpError, obwohl eine verwertbare
-        // JSON-Antwort vorliegt. Diese zuerst auslesen.
+        // Ältere Deployments oder ein vorgeschalteter Proxy können bei einem
+        // abgebrochenen SMTP-Socket noch mit einem HTTP-Fehler antworten.
+        // Eine eventuell vorhandene JSON-Diagnose zuerst auslesen.
         try {
           const body = await invokeErr?.context?.json?.();
           if (body && typeof body === "object") data = body;

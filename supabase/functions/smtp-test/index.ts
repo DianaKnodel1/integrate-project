@@ -72,7 +72,7 @@ serve(async (req) => {
 
     const { data: tenant, error: tenantErr } = await admin
       .from("tenants")
-      .select("id,name,sender_email,smtp_host,smtp_port,smtp_username,smtp_password,is_active,emails_paused,emails_paused_reason")
+      .select("id,name,sender_email,smtp_host,smtp_port,smtp_username,smtp_password,is_active,emails_paused,emails_paused_by,emails_paused_reason")
       .eq("id", tenant_id)
       .maybeSingle();
 
@@ -112,12 +112,23 @@ serve(async (req) => {
       socketTimeout: 4500,
     });
 
-    await Promise.race([
-      transporter.verify(),
-      // Muss deutlich unter dem Proxy-Timeout liegen, sonst liefert der
-      // Reverse-Proxy eine HTML-502-Seite und die Diagnose geht verloren.
-      new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 5s")), 5000)),
-    ]);
+    try {
+      await Promise.race([
+        transporter.verify(),
+        // Muss deutlich unter dem Proxy-Timeout liegen, sonst liefert der
+        // Reverse-Proxy eine HTML-502-Seite und die Diagnose geht verloren.
+        new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 5s")), 5000)),
+      ]);
+    } finally {
+      // Promise.race beendet nur unser Warten, nicht den offenen SMTP-Socket.
+      // Ohne close() hält nodemailer die Edge Function weiter am Leben, bis
+      // der Reverse-Proxy sie trotz bereits erkanntem Timeout mit 502 beendet.
+      try {
+        transporter.close();
+      } catch {
+        // Der Transport kann bei DNS-/Connect-Fehlern bereits geschlossen sein.
+      }
+    }
 
     debug.last_successful_stage = "VERIFY";
     debug.current_stage = "DONE" satisfies Stage;
