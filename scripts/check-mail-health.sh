@@ -155,6 +155,17 @@ sql "SELECT status, count(*), min(created_at) AS aeltester
        FROM invite_resend_queue GROUP BY status ORDER BY status;"
 
 # --- 8) Datenlage ------------------------------------------------------------
+log "7e/8  Schutz-Indizes gegen Doppelversand (muessen ALLE vorhanden sein)"
+sql "SELECT i.want AS index_name,
+            CASE WHEN c.relname IS NULL THEN 'FEHLT — scripts/migrate.sh ausfuehren!' ELSE 'ok' END AS status
+       FROM (VALUES
+              ('email_send_log_unique_active_event'),
+              ('email_send_log_no_duplicate_sent'),
+              ('applications_tenant_email_unique')
+            ) AS i(want)
+       LEFT JOIN pg_class c ON c.relname = i.want AND c.relkind = 'i'
+      ORDER BY 2 DESC, 1;"
+
 log "8/8  Datenbasis (gibt es ueberhaupt Kandidaten fuer Reminder?)"
 sql "SELECT (SELECT count(*) FROM tenants)                              AS mandanten,
             (SELECT count(*) FROM applications)                         AS bewerbungen,

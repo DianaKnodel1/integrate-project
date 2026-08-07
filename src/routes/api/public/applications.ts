@@ -290,11 +290,36 @@ export const Route = createFileRoute("/api/public/applications")({
             booking_status: (isBroker || useCalendly) ? "pending" : "none",
           } as any);
           if (error) {
-            console.error("[applications] insert error:", error);
-            return json({ error: "Could not save application" }, 500);
+            let recovered = false;
+            // Gleichzeitige Absendung derselben Bewerbung: der eindeutige
+            // Datenbank-Index lehnt die zweite Anlage ab → vorhandene
+            // Bewerbung übernehmen statt Doppel-Eintrag + Doppel-Mail.
+            if (String((error as any).code) === "23505" && resolvedTenantId) {
+              const { data: existing } = await supabaseAdmin
+                .from("applications")
+                .select("id")
+                .eq("tenant_id", resolvedTenantId)
+                .ilike("email", d.email)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+              if ((existing as any)?.id) {
+                appId = (existing as any).id as string;
+                recovered = true;
+                console.log("[applications] duplicate_race_reused", { requestId, application_id: appId });
+              }
+            }
+            if (!recovered) {
+              console.error("[applications] insert error:", error);
+              return json({ error: "Could not save application" }, 500);
+            }
+          } else {
+            console.log("[applications] inserted", { requestId, application_id: appId, tenant_id: resolvedTenantId, flow_type: d.flow_type });
           }
-          console.log("[applications] inserted", { requestId, application_id: appId, tenant_id: resolvedTenantId, flow_type: d.flow_type });
         }
+
+        // Stabiler Schlüssel für alle Mails dieser Bewerbung (Doppelversand-Schutz).
+        const mailRequestId = appId ? `app:${appId}` : requestId;
 
         // Eigenes Buchungssystem: falls für Source- oder Ziel-Landing ein aktiver
         // Kalender existiert, wird Calendly ignoriert und der Bewerber landet auf
@@ -448,9 +473,10 @@ export const Route = createFileRoute("/api/public/applications")({
           if (!supabaseUrl || !serviceKey) {
             return { data: null as any, error: "mail_function_env_missing", response: null as Response | null };
           }
-          // requestId wandert mit → die Function schreibt sie in metadata.request_id,
-          // damit wir hier keine zweite Zeile für dieselbe Mail anlegen.
-          body = { ...body, requestId };
+          // Der Schlüssel hängt an der Bewerbung, nicht an der zufälligen
+          // Request-ID: zwei gleichzeitige Absendungen derselben Bewerbung
+          // dürfen nur EINE Bestätigungsmail auslösen.
+          body = { ...body, requestId: mailRequestId };
           const headers: Record<string, string> = {
             "Content-Type": "application/json",
             apikey: serviceKey,
@@ -558,7 +584,7 @@ export const Route = createFileRoute("/api/public/applications")({
           } as any);
           if (logErr) console.warn("[applications] mail_log_failed", { requestId, template, status, reason: logErr.message });
         };
-        // Hat die Versand-Function für diesen Request bereits geloggt?
+        // Hat die Versand-Function für diese Bewerbung bereits geloggt?
         const functionAlreadyLogged = async (template: string) => {
           try {
             const { data } = await supabaseAdmin
@@ -566,7 +592,7 @@ export const Route = createFileRoute("/api/public/applications")({
               .select("id")
               .eq("template_name", template)
               .eq("recipient_email", d.email)
-              .contains("metadata", { request_id: requestId } as any)
+              .contains("metadata", { request_id: mailRequestId } as any)
               .limit(1);
             return !!data?.length;
           } catch { return false; }
