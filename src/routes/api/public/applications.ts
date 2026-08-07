@@ -290,6 +290,7 @@ export const Route = createFileRoute("/api/public/applications")({
             booking_status: (isBroker || useCalendly) ? "pending" : "none",
           } as any);
           if (error) {
+            let recovered = false;
             // Gleichzeitige Absendung derselben Bewerbung: der eindeutige
             // Datenbank-Index lehnt die zweite Anlage ab → vorhandene
             // Bewerbung übernehmen statt Doppel-Eintrag + Doppel-Mail.
@@ -304,15 +305,17 @@ export const Route = createFileRoute("/api/public/applications")({
                 .maybeSingle();
               if ((existing as any)?.id) {
                 appId = (existing as any).id as string;
+                recovered = true;
                 console.log("[applications] duplicate_race_reused", { requestId, application_id: appId });
               }
             }
+            if (!recovered) {
+              console.error("[applications] insert error:", error);
+              return json({ error: "Could not save application" }, 500);
+            }
+          } else {
+            console.log("[applications] inserted", { requestId, application_id: appId, tenant_id: resolvedTenantId, flow_type: d.flow_type });
           }
-          if (!appId) {
-            console.error("[applications] insert error:", error);
-            return json({ error: "Could not save application" }, 500);
-          }
-          console.log("[applications] inserted", { requestId, application_id: appId, tenant_id: resolvedTenantId, flow_type: d.flow_type });
         }
 
         // Stabiler Schlüssel für alle Mails dieser Bewerbung (Doppelversand-Schutz).
