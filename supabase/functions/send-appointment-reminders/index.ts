@@ -258,8 +258,9 @@ async function run24hPass(admin: any, tenants: Map<string, TenantRow>, dryRun: b
 
   // Absage-/Verschiebe-Link aus dem Termin (falls eigenes Buchungssystem).
   const cancelTokens = new Map<string, string>();
-  const { data: appts } = await admin.from("appointments")
+  const { data: appts } = await admin.from("interview_appointments")
     .select("application_id,cancel_token")
+    .eq("status", "scheduled")
     .in("application_id", appIds);
   for (const t of appts ?? []) {
     if (t.cancel_token) cancelTokens.set(t.application_id, t.cancel_token);
