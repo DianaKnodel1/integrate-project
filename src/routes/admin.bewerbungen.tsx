@@ -502,6 +502,57 @@ function AdminBewerbungenPage() {
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input placeholder="Name, Rufnummer, E-Mail, Vermittlung…" value={q} onChange={e => setQ(e.target.value)} className="pl-9" />
           </div>
+          <select
+            className="h-9 rounded-md border bg-background px-2 text-sm"
+            value={tenantFilter}
+            onChange={e => setTenantFilter(e.target.value)}
+            aria-label="Mandant filtern"
+          >
+            <option value="">Alle Mandanten</option>
+            {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+          <Button
+            variant={showArchived ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowArchived(v => !v)}
+          >
+            {showArchived ? "Archiv" : "Aktiv"}
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Archive className="h-4 w-4" /> Archivieren
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Alt-Bewerbungen archivieren</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Blendet alle Bewerbungen aus, die älter als N Tage sind. Nichts wird gelöscht —
+                  die Einträge bleiben über den Archiv-Schalter sichtbar. Mitarbeiter sind nicht betroffen.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="flex items-center gap-2 py-2">
+                <label className="text-sm">Älter als</label>
+                <Input
+                  type="number" min={0} max={3650}
+                  value={archiveDays}
+                  onChange={e => setArchiveDays(Math.max(0, parseInt(e.target.value || "0", 10)))}
+                  className="w-24"
+                />
+                <span className="text-sm">Tage</span>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={archiveBusy}>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={archiveBusy}
+                  onClick={(e) => { e.preventDefault(); doArchive(); }}
+                >
+                  {archiveBusy ? "Archiviere…" : "Archivieren"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
