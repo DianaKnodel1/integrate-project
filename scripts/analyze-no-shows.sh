@@ -237,24 +237,53 @@ sql "SELECT left(coalesce(a.invite_mail_error,'(kein Text)'),110) AS fehler, cou
       GROUP BY 1 ORDER BY 2 DESC LIMIT 15;"
 
 log "15  Trichter nach dem Interview: Zusage -> Registrierung"
+# Registrierung NICHT ueber applications.user_id messen — die Spalte wird bei
+# Selbstregistrierung ueber den Magic-Link oft nie zurueckgeschrieben. Wie im
+# Admin ueber profiles matchen (application_id, user_id oder E-Mail).
+REG="EXISTS (SELECT 1 FROM public.profiles p
+              WHERE p.application_id = a.id
+                 OR (a.user_id IS NOT NULL AND p.user_id = a.user_id)
+                 OR lower(p.email) = lower(a.email))"
 sql "SELECT count(*) FILTER (WHERE a.interview_completed_at IS NOT NULL) AS interview_abgeschlossen,
             count(*) FILTER (WHERE a.interview_recommendation = 'invite' OR a.status = 'akzeptiert') AS zusage,
             count(*) FILTER (WHERE a.interview_recommendation = 'reject' OR a.status = 'abgelehnt')  AS absage,
             count(*) FILTER (WHERE a.interview_completed_at IS NOT NULL
                                AND a.interview_recommendation IS NULL
                                AND a.status NOT IN ('akzeptiert','abgelehnt'))                      AS interview_ohne_auswertung,
-            count(*) FILTER (WHERE a.user_id IS NOT NULL) AS registriert
+            count(*) FILTER (WHERE $REG) AS registriert
        FROM public.applications a
       WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days';"
 
 log "16  Zusagen ohne Registrierung (wo genau haengen sie fest?)"
 sql "SELECT coalesce(a.invite_mail_status,'nie_versucht') AS registrierungsmail,
             count(*) AS zusagen,
-            count(*) FILTER (WHERE a.user_id IS NOT NULL) AS registriert
+            count(*) FILTER (WHERE $REG) AS registriert
        FROM public.applications a
       WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
         AND (a.interview_recommendation = 'invite' OR a.status = 'akzeptiert')
       GROUP BY 1 ORDER BY zusagen DESC;"
+
+log "17  Warum wurden Erinnerungsmails uebersprungen? (Grund aus dem Log)"
+sql "SELECT l.template_name,
+            coalesce(l.error_message, l.metadata->>'skip_reason', '(kein Grund)') AS grund,
+            count(*) AS anzahl
+       FROM public.email_send_log l
+      WHERE l.status = 'skipped'
+        AND l.created_at > now() - interval '$DAYS days'
+      GROUP BY 1,2 ORDER BY anzahl DESC LIMIT 20;"
+
+log "18  No-Show-Quote: mit vs. ohne 24h-Erinnerung"
+sql "$BASE
+  SELECT CASE WHEN EXISTS (
+           SELECT 1 FROM public.email_send_log l
+            WHERE l.template_name = 'interview_reminder_24h' AND l.status = 'sent'
+              AND (l.metadata->>'application_id')::uuid = t.application_id
+         ) THEN '24h-Erinnerung zugestellt' ELSE 'keine 24h-Erinnerung' END AS erinnerung,
+         count(*) AS termine,
+         count(*) FILTER (WHERE ergebnis = 'no_show') AS no_shows,
+         round(100.0 * count(*) FILTER (WHERE ergebnis = 'no_show')
+               / nullif(count(*) FILTER (WHERE ergebnis <> 'abgesagt'),0), 1) AS no_show_prozent
+    FROM t GROUP BY 1 ORDER BY termine DESC;"
 
 echo
 echo "Fertig. Wichtig: Abschnitte 10-14 zeigen den Verlust VOR dem Termin"
