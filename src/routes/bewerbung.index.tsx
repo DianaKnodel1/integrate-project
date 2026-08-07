@@ -165,11 +165,17 @@ function BewerbungLandingPage() {
         {state.kind === "invalid" && (
           <>
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-            <h1 className="text-2xl font-bold mb-2">Link ungültig oder abgelaufen</h1>
-            <p className="text-sm text-muted-foreground">
-              Dieser Bewerbungslink ist nicht mehr gültig. Bitte buchen Sie einen neuen Termin
-              oder kontaktieren Sie uns per E-Mail.
+            <h1 className="text-2xl font-bold mb-2">Dieser Link ist nicht mehr gültig</h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              Kein Problem: Geben Sie einfach die E-Mail-Adresse ein, mit der Sie sich beworben
+              haben. Wir öffnen dann automatisch den nächsten Schritt.
             </p>
+            <Button
+              onClick={() => { setLookupMessage(null); setState({ kind: "email-form" }); }}
+              className="w-full h-12 text-base rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            >
+              Mit E-Mail-Adresse fortfahren <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </>
         )}
 
