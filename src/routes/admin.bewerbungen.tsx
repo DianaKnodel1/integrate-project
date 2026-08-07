@@ -249,14 +249,18 @@ function AdminBewerbungenPage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("email_send_log")
-        .select("id, recipient_email, template_name, status, created_at, error_message, metadata")
-        // Technische Zeilen (abgelöste Retries, bereinigte Doppelversände)
-        // würden sonst echte Mails aus dem 5.000er-Fenster verdrängen.
-        .not("status", "in", "(superseded,duplicate)")
-        .order("created_at", { ascending: false })
-        .limit(5000);
+      // Vollständiges Zeitfenster statt "neueste 5.000 Zeilen": bei hohem
+      // Volumen fielen ältere echte Versände sonst unsichtbar heraus.
+      const since = new Date(Date.now() - 90 * 86400_000).toISOString();
+      const data = await fetchAll<any>(() =>
+        supabase
+          .from("email_send_log")
+          .select("id, recipient_email, template_name, status, created_at, error_message, metadata")
+          // Technische Zeilen (abgelöste Retries, bereinigte Doppelversände) ausblenden.
+          .not("status", "in", "(superseded,duplicate)")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false }),
+      ).catch(() => [] as any[]);
       if (cancelled || !data) return;
       const byEmail = new Map<string, MailEvent[]>();
       const byApplication = new Map<string, MailEvent[]>();
@@ -349,7 +353,9 @@ function AdminBewerbungenPage() {
           inviteSentAt:
             mailEvents.find((e) =>
               ["welcome_invitation", "registration_invitation", "invitation", "reminder_invite", "bewerbung_magic_link"].includes(e.key)
-              && e.status === "sent",
+              // "stuck" = im Reminder-Protokoll als versendet vermerkt, im
+              // Versand-Log ohne Endstatus. Die Mail ist trotzdem rausgegangen.
+              && ["sent", "stuck"].includes(e.status),
             )?.at ?? null,
           registered: !!prof,
           cancelledAt: a.stage_changed_at ?? null,
