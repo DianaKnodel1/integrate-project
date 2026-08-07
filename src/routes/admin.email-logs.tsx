@@ -22,7 +22,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
   type EmailLog,
-  EMAIL_STATUS_COLORS,
   EMAIL_STATUS_LABELS,
   SIMPLE_STATUS_COLORS,
   SIMPLE_STATUS_LABELS,
