@@ -230,6 +230,108 @@ async function logSkip(admin: any, app: any, tenant: TenantRow | null, reason: s
 }
 
 
+/**
+ * Erinnerung am Vortag (24 h vorher). Eigener Reminder-Typ, dadurch über
+ * application_reminder_log je Bewerbung eindeutig — kann nicht doppelt
+ * rausgehen und stört die 30-Minuten-Erinnerung nicht.
+ */
+async function run24hPass(admin: any, tenants: Map<string, TenantRow>, dryRun: boolean) {
+  const now = Date.now();
+  const low = new Date(now + WINDOW_24H_LOW_MIN * 60_000).toISOString();
+  const high = new Date(now + WINDOW_24H_HIGH_MIN * 60_000).toISOString();
+
+  const { data: apps, error } = await admin.from("applications")
+    .select("id,email,first_name,last_name,full_name,tenant_id,scheduled_at,booking_status")
+    .eq("booking_status", "scheduled")
+    .gte("scheduled_at", low)
+    .lt("scheduled_at", high);
+  if (error || !apps?.length) return { candidates: 0, sent: 0, skipped: 0, failed: 0 };
+
+  const appIds = apps.map((a: any) => a.id);
+  const done = new Set<string>();
+  const { data: logRows } = await admin.from("application_reminder_log")
+    .select("application_id")
+    .eq("reminder_kind", REMINDER_KIND_24H)
+    .eq("status", "sent")
+    .in("application_id", appIds);
+  for (const r of logRows ?? []) done.add(r.application_id);
+
+  // Absage-/Verschiebe-Link aus dem Termin (falls eigenes Buchungssystem).
+  const cancelTokens = new Map<string, string>();
+  const { data: appts } = await admin.from("appointments")
+    .select("application_id,cancel_token")
+    .in("application_id", appIds);
+  for (const t of appts ?? []) {
+    if (t.cancel_token) cancelTokens.set(t.application_id, t.cancel_token);
+  }
+
+  let sent = 0, skipped = 0, failed = 0;
+  for (const a of apps as any[]) {
+    if (done.has(a.id)) { skipped++; continue; }
+    const tenant = a.tenant_id ? tenants.get(a.tenant_id) : null;
+    if (!a.email || !tenant || tenant.emails_paused || !hasValidSmtp(tenant)) { skipped++; continue; }
+
+    const startsAt = new Date(a.scheduled_at);
+    const firstName = a.first_name || (a.full_name?.split(" ")[0] ?? "");
+    const token = cancelTokens.get(a.id);
+    const host = portalHost(tenant.primary_domain || tenant.domain);
+    const cancelUrl = token && host ? `https://${host}/termin/${token}` : "";
+    const vars: Record<string, string> = {
+      first_name: firstName,
+      full_name: a.full_name || firstName,
+      email: a.email,
+      tenant_name: tenant.name,
+      appointment_date: formatAppointmentDate(startsAt, false),
+      appointment_time: formatAppointmentTime(startsAt),
+      cancel_url: cancelUrl,
+      cancel_block: cancelUrl
+        ? `Sie können nicht? Hier absagen oder verschieben:\n{{cta:Termin absagen oder verschieben|${cancelUrl}}}`
+        : "Sollten Sie den Termin nicht wahrnehmen können, antworten Sie einfach kurz auf diese E-Mail.",
+    };
+
+    if (dryRun) { sent++; continue; }
+
+    const renderedSubject = renderTemplate(DEFAULT_SUBJECT_24H, vars);
+    const html = buildHtml(DEFAULT_SUBJECT_24H, DEFAULT_BODY_24H, tenant.email_signature ?? "", tenant, vars);
+
+    const allowance = await guardSend({
+      admin, tenantId: tenant.id, templateName: REMINDER_KIND_24H, recipient: a.email,
+      kind: "appointment", senderEmail: tenant.sender_email ?? tenant.smtp_username,
+      metadata: { application_id: a.id, source: "send-appointment-reminders" },
+    });
+    if (!allowance.allowed) { skipped++; continue; }
+
+    const claim = await claimEmailEvent(admin, {
+      eventKey: `${REMINDER_KIND_24H}:${a.id}:${a.scheduled_at}`,
+      templateName: REMINDER_KIND_24H, recipient: a.email,
+      tenantId: tenant.id, senderEmail: tenant.sender_email ?? tenant.smtp_username,
+      subject: renderedSubject, html,
+      metadata: { application_id: a.id, scheduled_at: a.scheduled_at, kind: REMINDER_KIND_24H, source: "send-appointment-reminders" },
+    });
+    if (!claim) { skipped++; continue; }
+
+    try {
+      await sendMail(tenant, a.email, renderedSubject, html);
+      await admin.from("application_reminder_log").upsert({
+        application_id: a.id, tenant_id: tenant.id, reminder_kind: REMINDER_KIND_24H,
+        recipient_email: a.email, status: "sent",
+      }, { onConflict: "application_id,reminder_kind" });
+      await finishEmailClaim(admin, claim, { status: "sent", metadata: { application_id: a.id, kind: REMINDER_KIND_24H } });
+      sent++;
+      await new Promise((r) => setTimeout(r, 2000));
+    } catch (e: any) {
+      const errMsg = String(e?.message ?? e).slice(0, 500);
+      await finishEmailClaim(admin, claim, { status: "failed", error: errMsg, metadata: { application_id: a.id, kind: REMINDER_KIND_24H } });
+      await admin.from("application_reminder_log").upsert({
+        application_id: a.id, tenant_id: tenant.id, reminder_kind: REMINDER_KIND_24H,
+        recipient_email: a.email, status: "failed", error: errMsg,
+      }, { onConflict: "application_id,reminder_kind" });
+      failed++;
+    }
+  }
+  return { candidates: apps.length, sent, skipped, failed };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
