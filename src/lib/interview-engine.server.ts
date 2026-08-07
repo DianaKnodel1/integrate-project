@@ -503,10 +503,15 @@ async function sendInviteInternal(
     return { sent: false, error: tokenErr?.message ?? "token_failed" };
   }
 
-  // Portal-Domain (Fast-Track-Zielseite → Tenant → Origin) zentral auflösen,
+  // Portal-Domain ausschliesslich über die Fast-Track-Kette auflösen,
   // damit Mail-Link und Portal-Button garantiert identisch sind.
   // ?ref=<application_id> hängt die Vermittlungs-Bewerbung an den Link.
   const base = await resolvePortalBase(app, request);
+  if (!base) {
+    // Lieber keine Mail als eine mit falschem Portal-Link (z. B. auf die Vermittlung).
+    await record("skipped", "missing_fasttrack_portal: keine Fast-Track-Portal-Domain für diese Bewerbung hinterlegt");
+    return { sent: false, skipped: true, reason: "missing_fasttrack_portal" as const };
+  }
   const registrationLink = buildRegistrationLink(base, tokenRow.token, app.id);
   const name = app.full_name || email;
   const firstName = app.first_name || String(name).trim().split(/\s+/)[0] || "";
