@@ -214,7 +214,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
       source: new Map<string, Bucket>(),
       mail: new Map<string, Bucket>(),
     };
-    const push = (m: Map<string, Bucket>, key: string, label: string, kind: "erschienen" | "abgesagt" | "no_show") => {
+    const push = (m: Map<string, Bucket>, key: string, label: string, kind: "erschienen" | "abgesagt" | "no_show" | "unklar") => {
       let b = m.get(key);
       if (!b) { b = emptyBucket(key, label); m.set(key, b); }
       b.gebucht += 1;
