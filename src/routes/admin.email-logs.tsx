@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { EmptyState } from "@/components/EmptyState";
-import { Mail, RefreshCw, RotateCcw, CheckCircle2, XCircle, AlertTriangle, Eye, Check } from "lucide-react";
+import { Mail, RefreshCw, RotateCcw, CheckCircle2, XCircle, AlertTriangle, Eye, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +32,7 @@ import {
   dedupeEmailLogs,
 } from "@/lib/email-stats";
 import { acknowledgeFailedEmails } from "@/lib/email-log-ack.functions";
+import { resetEmailSystem } from "@/lib/admin-maintenance.functions";
 import { BounceSuppressionPanel } from "@/components/BounceSuppressionPanel";
 import { resendEmailLog, isTokenTemplate } from "@/lib/email-resend";
 
@@ -49,10 +50,13 @@ export function AdminEmailLogsPage() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [resending, setResending] = useState<string | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [previewLog, setPreviewLog] = useState<EmailLogFull | null>(null);
   const [acking, setAcking] = useState(false);
   const [confirmResend, setConfirmResend] = useState<EmailLogFull | null>(null);
   const ackFn = useServerFn(acknowledgeFailedEmails);
+  const resetFn = useServerFn(resetEmailSystem);
   const { toast } = useToast();
 
   const loadData = async () => {
