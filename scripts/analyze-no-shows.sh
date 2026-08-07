@@ -143,7 +143,7 @@ sql "$BASE SELECT coalesce(te.name,'unbekannt') AS mandant,
       GROUP BY 1 HAVING count(*) >= 5 ORDER BY no_show_prozent DESC NULLS LAST;"
 
 log "8/9  No-Show-Quote je Quelle / Landingpage"
-sql "$BASE SELECT coalesce(lp.firmenname, lp.slug, t.source_slug, 'unbekannt') AS quelle,
+sql "$BASE SELECT coalesce(lp.domain, lp.slug, t.source_slug, 'unbekannt') AS quelle,
             count(*) AS termine,
             count(*) FILTER (WHERE ergebnis='no_show') AS no_shows,
             round(100.0*count(*) FILTER (WHERE ergebnis='no_show')
@@ -179,6 +179,57 @@ sql "SELECT template_name, status, count(*)
         AND template_name IN ('booking_confirmation','interview_reminder_24h','interview_invite_30min','no_show_24h')
       GROUP BY 1,2 ORDER BY 1,3 DESC;"
 
+# --- Der eigentliche Trichterverlust: Bewerbung -> Termin --------------------
+log "10  Wo bricht der Trichter ab? (alle Bewerbungen im Zeitraum)"
+sql "SELECT count(*) AS bewerbungen,
+            count(*) FILTER (WHERE a.invite_mail_status = 'sent')   AS einladung_versendet,
+            count(*) FILTER (WHERE a.invite_mail_status = 'failed') AS einladung_fehlgeschlagen,
+            count(*) FILTER (WHERE a.invite_mail_status IS NULL)    AS einladung_nie_versucht,
+            count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id)) AS hat_gebucht,
+            round(100.0*count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id))
+                  /nullif(count(*),0),1) AS buchungsquote_prozent
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days';"
+
+log "11  Buchungsquote abhaengig davon, ob die Einladungsmail ankam"
+sql "SELECT coalesce(a.invite_mail_status,'nie_versucht') AS einladungsmail,
+            count(*) AS bewerbungen,
+            count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id)) AS hat_gebucht,
+            round(100.0*count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id))
+                  /nullif(count(*),0),1) AS buchungsquote_prozent
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
+      GROUP BY 1 ORDER BY bewerbungen DESC;"
+
+log "12  Buchungsquote je Quelle / Landingpage"
+sql "SELECT coalesce(lp.domain, lp.slug, a.source_slug, 'unbekannt') AS quelle,
+            count(*) AS bewerbungen,
+            count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id)) AS hat_gebucht,
+            round(100.0*count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id))
+                  /nullif(count(*),0),1) AS buchungsquote_prozent
+       FROM public.applications a
+      LEFT JOIN public.landing_pages lp ON lp.id = a.source_landing_id
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
+      GROUP BY 1 HAVING count(*) >= 10 ORDER BY buchungsquote_prozent ASC;"
+
+log "13  Buchungsquote je Monat (zeigt Einbrueche durch SMTP-Ausfaelle)"
+sql "SELECT to_char(date_trunc('month', a.created_at),'YYYY-MM') AS monat,
+            count(*) AS bewerbungen,
+            count(*) FILTER (WHERE a.invite_mail_status='failed') AS mail_fehler,
+            count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id)) AS hat_gebucht,
+            round(100.0*count(*) FILTER (WHERE EXISTS (SELECT 1 FROM public.interview_appointments x WHERE x.application_id = a.id))
+                  /nullif(count(*),0),1) AS buchungsquote_prozent
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
+      GROUP BY 1 ORDER BY 1;"
+
+log "14  Fehlerursachen der fehlgeschlagenen Einladungsmails (Top 15)"
+sql "SELECT left(coalesce(a.invite_mail_error,'(kein Text)'),110) AS fehler, count(*)
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
+        AND a.invite_mail_status = 'failed'
+      GROUP BY 1 ORDER BY 2 DESC LIMIT 15;"
+
 echo
-echo "Fertig. Hohe No-Show-Quoten bei einzelnen Quellen/Uhrzeiten/Vorlaufzeiten"
-echo "zeigen, wo Traffic bzw. Terminlogik angepasst werden sollte."
+echo "Fertig. Wichtig: Abschnitte 10-14 zeigen den Verlust VOR dem Termin"
+echo "(Bewerbung -> Buchung), Abschnitte 2-9 den Verlust am Termin selbst."
