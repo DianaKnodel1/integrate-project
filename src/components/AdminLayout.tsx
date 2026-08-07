@@ -74,6 +74,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Transaktionen", url: "/admin/transactions", icon: Wallet },
       { title: "Statistiken", url: "/admin/statistiken", icon: BarChart3 },
+      { title: "No-Show-Analyse", url: "/admin/no-show-analyse", icon: BarChart3 },
     ],
   },
 ];
