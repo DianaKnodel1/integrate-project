@@ -29,29 +29,37 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const DEFAULT_SUBJECT = "Termin bestätigt: {{appointment_date}}, {{appointment_time}} Uhr";
-const DEFAULT_PREHEADER = "Ihr Bewerbungsgespräch am {{appointment_date}} um {{appointment_time}} Uhr – alle Infos + Kalendereintrag im Anhang.";
+const DEFAULT_SUBJECT = "Termin bestätigt: {{appointment_date}}, {{appointment_time}} Uhr – so geht es weiter";
+const DEFAULT_PREHEADER = "Ihr Bewerbungsgespräch am {{appointment_date}} um {{appointment_time}} Uhr – Sie starten es selbst über den Link in dieser E-Mail.";
 const DEFAULT_BODY = `Hallo {{first_name}},
 
-vielen Dank – Ihr Termin für das Bewerbungsgespräch bei {{tenant_name}} ist fest reserviert:
+Ihr Bewerbungsgespräch bei {{tenant_name}} ist fest reserviert:
 
 Datum: {{appointment_date}}
 Uhrzeit: {{appointment_time}} Uhr
 Dauer: ca. {{duration_minutes}} Minuten
 
-Sie finden den Termin als Kalendereintrag (.ics) im Anhang – einfach öffnen und in Outlook, Google oder Apple-Kalender speichern.
+WICHTIG: Das Gespräch findet online statt. Es ruft Sie niemand an – Sie starten das Gespräch selbst über den Button unten. Bitte öffnen Sie diese E-Mail deshalb zum Termin noch einmal.
 
-30 Minuten vor Beginn schicken wir Ihnen zusätzlich den direkten Link zum Gespräch, damit Sie ihn nicht extra suchen müssen.
+{{cta:{{button_label}}|{{magic_link}}}}
 
-Sollten Sie den Termin verschieben oder absagen müssen, tun Sie das jederzeit hier:
+Der Link bleibt dauerhaft gültig und funktioniert am Handy genauso wie am Computer.
 
-{{cta:{{button_label}}|{{cancel_url}}}}
+So läuft es ab:
+1. Am {{appointment_date}} um {{appointment_time}} Uhr auf den Button klicken.
+2. Das Gespräch dauert ca. {{duration_minutes}} Minuten – Sie beantworten ein paar Fragen zu Ihrer Person und Ihren Wünschen.
+3. Bei einer Zusage direkt im Gespräch erhalten Sie im Anschluss eine E-Mail, mit der Sie sich im Mitarbeiter-Portal registrieren.
+4. Erst nach der Registrierung im Portal können wir Sie einsetzen – bitte schließen Sie diesen Schritt gleich mit ab.
+
+Der Termin liegt zusätzlich als Kalendereintrag (.ics) im Anhang – einfach öffnen und in Outlook, Google oder Apple-Kalender speichern.
+
+Sie können den Termin nicht wahrnehmen? Dann sagen Sie ihn bitte kurz ab oder verschieben Sie ihn – das dauert 10 Sekunden: {{cancel_url}}
 
 Wir freuen uns auf das Gespräch!
 
 Herzliche Grüße
 {{recruiter_name}}`;
-const DEFAULT_BUTTON = "Termin verwalten";
+const DEFAULT_BUTTON = "Bewerbungsgespräch starten";
 
 function cleanHost(domain: unknown): string {
   return String(domain ?? "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
@@ -245,7 +253,7 @@ serve(async (req) => {
     if (todo.length === 0) return json({ success: true, version: FUNCTION_VERSION, candidates: appts.length, sent: 0, skipped_already_sent: doneAppts.size, skipped_retry_cap: capped.size });
 
     const { data: apps } = await admin.from("applications")
-      .select("id, email, first_name, last_name, full_name, tenant_id, target_landing_id, source_landing_id")
+      .select("id, email, first_name, last_name, full_name, tenant_id, target_landing_id, source_landing_id, magic_token")
       .in("id", todo.map((t: any) => t.application_id));
     const appMap = new Map<string, any>((apps ?? []).map((a: any) => [a.id, a]));
 
@@ -319,6 +327,11 @@ serve(async (req) => {
       const recruiterAvatar = landing?.recruiter_avatar_url || null;
       // Cancel-/Rebook-Link: immer auf portal.<fast-track-domain>, dort läuft das Buchungssystem.
       const cancelUrl = `https://${fastTrackHost}/termin/${appt.cancel_token}`;
+      // Direkter Interview-Link (dauerhaft gueltig). Ohne ihn haengt die Teilnahme
+      // allein an der 30-Minuten-Mail — faellt die aus, kann der Bewerber nicht starten.
+      const magicLink = app.magic_token
+        ? `https://${fastTrackHost}/bewerbung?token=${encodeURIComponent(app.magic_token)}`
+        : cancelUrl;
 
       const starts = new Date(appt.starts_at);
       const ends = new Date(appt.ends_at);
@@ -335,6 +348,7 @@ serve(async (req) => {
         appointment_time: formatAppointmentTime(starts),
         duration_minutes: String(duration),
         cancel_url: cancelUrl,
+        magic_link: magicLink,
         // Portal-URL: Fast-Track-Portal (portal.<fast-track-domain>), dort läuft das KI-Interview.
         portal_url: fastTrackHost ? `https://${fastTrackHost}` : "",
         button_label: DEFAULT_BUTTON,
@@ -356,8 +370,8 @@ serve(async (req) => {
       const ics = buildIcs({
         uid: `${appt.id}@${fastTrackDomain || "mb-portal"}`,
         title: `Bewerbungsgespräch – ${tenant.name}`,
-        description: `Bewerbungsgespräch mit ${recruiterName}. Termin verwalten: ${cancelUrl}`,
-        start: starts, end: ends, url: cancelUrl,
+        description: `Online-Bewerbungsgespräch mit ${recruiterName}. Sie starten das Gespräch selbst über diesen Link: ${magicLink}\n\nTermin absagen oder verschieben: ${cancelUrl}`,
+        start: starts, end: ends, url: magicLink,
         organizerName: recruiterName, organizerEmail: tenant.sender_email || tenant.smtp_username!,
         attendeeEmail: app.email,
       });
