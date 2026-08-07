@@ -65,7 +65,7 @@ export const runSmtpTestServerSide = createServerFn({ method: "POST" })
           return {
             success: false as const,
             error:
-              "SMTP-Server hat nicht rechtzeitig geantwortet – Host, Port und Firewall prüfen (Zeitüberschreitung beim Verbindungsaufbau).",
+              "SMTP-Server hat nicht rechtzeitig geantwortet – Host, Port und Firewall prüfen (Zeitüberschreitung beim Verbindungsaufbau). Die Mail-Pause ist nicht die Ursache: sie blockiert den Test nicht.",
             errorCode: "TIMEOUT",
             reachable: true,
           };
