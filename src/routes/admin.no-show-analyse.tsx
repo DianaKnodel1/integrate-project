@@ -49,7 +49,7 @@ function BucketTable({ title, description, rows }: { title: string; description:
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate">{r.label}</span>
                 <span className="shrink-0 text-muted-foreground tabular-nums">
-                  {r.no_show}/{r.gebucht - r.abgesagt} · <Quote value={r.no_show_quote} />
+                  {r.no_show}/{r.erschienen + r.no_show} · <Quote value={r.no_show_quote} />
                 </span>
               </div>
               <div className="mt-1 h-1.5 w-full rounded-full bg-muted">
@@ -68,7 +68,7 @@ function BucketTable({ title, description, rows }: { title: string; description:
 
 function NoShowPage() {
   const fn = useServerFn(getNoShowReport);
-  const [days, setDays] = useState(90);
+  const [days, setDays] = useState(7);
   const [tenantId, setTenantId] = useState("");
   const [tenants, setTenants] = useState<Array<{ id: string; name: string }>>([]);
   const [report, setReport] = useState<NoShowReport | null>(null);
@@ -134,9 +134,9 @@ function NoShowPage() {
             { label: "Bewerbungen", value: t.beworben },
             { label: "davon gebucht", value: `${t.buchungsquote}%` },
             { label: "Termine (vergangen)", value: t.gebucht },
-            { label: "erschienen", value: `${t.erscheinensquote}%` },
+            { label: "erschienen", value: `${t.erschienen} · ${t.erscheinensquote}%` },
             { label: "No-Shows", value: `${t.no_show_quote}%` },
-            { label: "aktiv abgesagt", value: t.abgesagt },
+            { label: "abgesagt / Abbruch", value: `${t.abgesagt} / ${t.unklar}` },
           ].map((c) => (
             <Card key={c.label}>
               <CardContent className="p-4">
