@@ -30,16 +30,16 @@ const corsHeaders = {
 };
 
 const DEFAULT_SUBJECT = "Termin bestätigt: {{appointment_date}}, {{appointment_time}} Uhr – so geht es weiter";
-const DEFAULT_PREHEADER = "Ihr Videogespräch am {{appointment_date}} um {{appointment_time}} Uhr – Teilnahme über Ihren persönlichen Zugangslink in dieser E-Mail.";
+const DEFAULT_PREHEADER = "Ihr Online-Interview am {{appointment_date}} um {{appointment_time}} Uhr – Teilnahme über Ihren persönlichen Zugangslink in dieser E-Mail.";
 const DEFAULT_BODY = `Hallo {{first_name}},
 
-Ihr Bewerbungsgespräch bei {{tenant_name}} ist fest reserviert:
+Ihr Interview bei {{tenant_name}} ist fest reserviert:
 
 Datum: {{appointment_date}}
 Uhrzeit: {{appointment_time}} Uhr
 Dauer: ca. {{duration_minutes}} Minuten
 
-Ihr Gespräch findet online als Videogespräch statt. Die Teilnahme erfolgt über Ihren persönlichen Zugangslink in dieser E-Mail; ein Telefonanruf erfolgt nicht. Bitte halten Sie diese E-Mail zum Termin bereit.
+Ihr Interview findet online statt. Die Teilnahme erfolgt über Ihren persönlichen Zugangslink in dieser E-Mail; ein Telefonanruf erfolgt nicht. Bitte halten Sie diese E-Mail zum Termin bereit.
 
 {{cta:{{button_label}}|{{magic_link}}}}
 
@@ -47,19 +47,19 @@ Der Link bleibt dauerhaft gültig und funktioniert am Handy genauso wie am Compu
 
 So läuft es ab:
 1. Am {{appointment_date}} um {{appointment_time}} Uhr Ihren Zugangslink öffnen.
-2. Das Gespräch dauert ca. {{duration_minutes}} Minuten – Sie beantworten ein paar Fragen zu Ihrer Person und Ihren Wünschen.
-3. Bei einer Zusage direkt im Gespräch erhalten Sie im Anschluss eine E-Mail, mit der Sie sich im Mitarbeiter-Portal registrieren.
+2. Das Interview dauert ca. {{duration_minutes}} Minuten – Sie beantworten ein paar Fragen zu Ihrer Person und Ihren Wünschen.
+3. Bei einer Zusage direkt im Interview erhalten Sie im Anschluss eine E-Mail, mit der Sie sich im Mitarbeiter-Portal registrieren.
 4. Erst nach der Registrierung im Portal können wir Sie einsetzen – bitte schließen Sie diesen Schritt gleich mit ab.
 
 Der Termin liegt zusätzlich als Kalendereintrag (.ics) im Anhang – einfach öffnen und in Outlook, Google oder Apple-Kalender speichern.
 
 Sie können den Termin nicht wahrnehmen? Dann sagen Sie ihn bitte kurz ab oder verschieben Sie ihn – das dauert 10 Sekunden: {{cancel_url}}
 
-Wir freuen uns auf das Gespräch!
+Wir freuen uns auf Ihr Interview!
 
 Herzliche Grüße
 {{recruiter_name}}`;
-const DEFAULT_BUTTON = "Zum Videogespräch";
+const DEFAULT_BUTTON = "Zum Interview";
 
 function cleanHost(domain: unknown): string {
   return String(domain ?? "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
