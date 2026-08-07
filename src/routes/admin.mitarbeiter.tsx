@@ -273,7 +273,9 @@ function AdminMitarbeiterPage() {
                 </thead>
                 <tbody className="divide-y">
                   {pagination.paged.map(r => {
-                    const wartet = r.status === "registriert" && r.onboarding === "abgeschlossen";
+                    // Freigabe darf nie am internen Onboarding-Flag hängen: sobald jemand
+                    // registriert ist, muss der Admin annehmen/ablehnen können.
+                    const wartet = r.status === "registriert";
                     const st = STATUS_CONFIG[r.status];
                     return (
                       <tr key={r.id} className={`hover:bg-muted/20 ${selected.has(r.id) ? "bg-primary/5" : ""}`}>
