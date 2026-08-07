@@ -387,6 +387,13 @@ function AdminBewerbungenPage() {
   ];
   const groupOf = (p: Phase): string => GROUPS.find(g => g.phases.includes(p))?.key ?? "alle";
 
+  // Grundmenge: Mandanten-Auswahl und Archiv-Schalter gelten für Chips UND Liste,
+  // damit Zähler und Tabelle nie auseinanderlaufen.
+  const scoped = useMemo(
+    () => rows.filter(r => (showArchived ? r.archived : !r.archived) && (!tenantFilter || r.tenantId === tenantFilter)),
+    [rows, showArchived, tenantFilter],
+  );
+
   const counts = useMemo(() => {
     const c: Record<string, number> = { alle: scoped.length };
     for (const g of GROUPS) if (g.key !== "alle") c[g.key] = 0;
