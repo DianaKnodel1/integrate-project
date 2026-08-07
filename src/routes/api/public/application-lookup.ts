@@ -136,15 +136,20 @@ export const Route = createFileRoute("/api/public/application-lookup")({
           }
         }
         const base = (parsed.data.portal_url || new URL(request.url).origin).replace(/\/+$/, "");
+        // Ohne gebuchten Termin führt die E-Mail-Eingabe direkt zur
+        // Terminauswahl, sonst ins Bewerbungsgespräch.
+        const redirectUrl = booked
+          ? `${base}/bewerbung?token=${encodeURIComponent(magicToken)}`
+          : `${base}/termin/buchen/${encodeURIComponent(magicToken)}`;
         return json({
           found: true,
           booked,
           interview_ready: true,
           landing_slug: landingSlug,
-          redirect_url: `${base}/bewerbung?token=${encodeURIComponent(magicToken)}`,
+          redirect_url: redirectUrl,
           message: booked
             ? "Dein Termin ist bestätigt. Du wirst jetzt zum Bewerbungsgespräch weitergeleitet."
-            : "Deine Bewerbung wurde gefunden. Du wirst jetzt zum Bewerbungsgespräch weitergeleitet.",
+            : "Deine Bewerbung wurde gefunden. Du wirst jetzt zur Terminauswahl weitergeleitet.",
         });
       },
     },

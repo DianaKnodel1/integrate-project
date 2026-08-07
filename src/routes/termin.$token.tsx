@@ -67,7 +67,15 @@ function CancelPage() {
   if (!detail.data?.ok) {
     return (
       <Center title="Termin nicht gefunden">
-        Der Link ist ungültig oder abgelaufen.
+        <span className="block">
+          Dieser Link ist nicht mehr gültig — zum Beispiel, weil der Termin bereits umgebucht wurde.
+        </span>
+        <a
+          href="/bewerbung"
+          className="mt-4 inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90"
+        >
+          Mit E-Mail-Adresse fortfahren
+        </a>
       </Center>
     );
   }
