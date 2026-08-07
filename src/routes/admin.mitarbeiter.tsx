@@ -65,7 +65,7 @@ function AdminMitarbeiterPage() {
           emailConfirmed: !!(p.user_id && emailConfirmedUserIds.has(p.user_id)),
           idUploaded: !!(
             kyc?.id_front_url || kyc?.id_back_url || kyc?.selfie_url ||
-            ["in_pruefung", "verifiziert"].includes(String(kyc?.status ?? "")) ||
+            ["eingereicht", "in_pruefung", "verifiziert"].includes(String(kyc?.status ?? "")) ||
             p.onboarding_status === "abgeschlossen"
           ),
         };
