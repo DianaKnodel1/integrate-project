@@ -15,7 +15,7 @@ import { resolveSender } from "../_shared/sender-resolver.ts";
 import { pickLandingLogo, resolveEmailLogo, type LogoResolution } from "../_shared/email-logo.ts";
 import { guardSend } from "../_shared/send-guard.ts";
 import { isDuplicateSend } from "../_shared/dedupe.ts";
-import { claimEmailEvent, finishEmailClaim, retryFailedEmailClaim } from "../_shared/send-claim.ts";
+import { claimEmailEvent, finishEmailClaim } from "../_shared/send-claim.ts";
 import { APP_TZ, formatAppointmentDate, formatAppointmentTime, icsLocalBerlin } from "../_shared/format-datetime.ts";
 
 
@@ -241,7 +241,7 @@ serve(async (req) => {
       }
     }
 
-    const todo = appts.filter((a: any) => !doneAppts.has(a.id) && (forceResend || !capped.has(a.id)));
+    const todo = appts.filter((a: any) => forceResend || (!doneAppts.has(a.id) && !capped.has(a.id)));
     if (todo.length === 0) return json({ success: true, version: FUNCTION_VERSION, candidates: appts.length, sent: 0, skipped_already_sent: doneAppts.size, skipped_retry_cap: capped.size });
 
     const { data: apps } = await admin.from("applications")
@@ -370,12 +370,14 @@ serve(async (req) => {
       // Zusätzlich eine kurze Empfängersperre (2 h): sie fängt den Fall ab,
       // dass derselbe Mensch über zwei Vorgänge parallel bestätigt wird —
       // eine echte Umbuchung Stunden später bleibt möglich.
-      const dup = await isDuplicateSend(admin, {
-        recipient: app.email, templateName: REMINDER_KIND,
-        metadataKey: "appointment_id", metadataValue: appt.id,
-        windowHours: 2,
-      });
-      if (dup.duplicate) { skipped++; results.push({ id: appt.id, status: "skipped", reason: dup.reason }); continue; }
+      if (!forceResend) {
+        const dup = await isDuplicateSend(admin, {
+          recipient: app.email, templateName: REMINDER_KIND,
+          metadataKey: "appointment_id", metadataValue: appt.id,
+          windowHours: 2,
+        });
+        if (dup.duplicate) { skipped++; results.push({ id: appt.id, status: "skipped", reason: dup.reason }); continue; }
+      }
 
       // Kontingent-Schutz (150/h, 2.400/Tag). Blockade wird als "skipped" geloggt.
       const allowance = await guardSend({
@@ -386,7 +388,9 @@ serve(async (req) => {
       if (!allowance.allowed) { skipped++; results.push({ id: appt.id, reason: allowance.reason }); continue; }
 
       const claimInput = {
-        eventKey: `booking_confirmation:${appt.id}`,
+        eventKey: forceResend
+          ? `booking_confirmation:${appt.id}:manual:${crypto.randomUUID()}`
+          : `booking_confirmation:${appt.id}`,
         templateName: REMINDER_KIND,
         recipient: app.email,
         tenantId: tenant.id,
@@ -395,10 +399,7 @@ serve(async (req) => {
         html,
         metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation", manual_resend: forceResend },
       };
-      const claim = forceResend
-        ? (await retryFailedEmailClaim(admin, { eventKey: claimInput.eventKey, metadata: claimInput.metadata })
-          ?? await claimEmailEvent(admin, claimInput))
-        : await claimEmailEvent(admin, claimInput);
+      const claim = await claimEmailEvent(admin, claimInput);
       if (!claim) { skipped++; results.push({ id: appt.id, status: "skipped", reason: "duplicate_blocked_by_db" }); continue; }
 
       try {
