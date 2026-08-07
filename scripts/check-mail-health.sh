@@ -159,7 +159,7 @@ log "7e/8  Schutz-Indizes gegen Doppelversand (muessen ALLE vorhanden sein)"
 sql "SELECT i.want AS index_name,
             CASE WHEN c.relname IS NULL THEN 'FEHLT — scripts/migrate.sh ausfuehren!' ELSE 'ok' END AS status
        FROM (VALUES
-              ('email_send_log_event_key_unique'),
+              ('email_send_log_unique_active_event'),
               ('email_send_log_no_duplicate_sent'),
               ('applications_tenant_email_unique')
             ) AS i(want)
