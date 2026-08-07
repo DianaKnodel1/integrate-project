@@ -205,6 +205,10 @@ export function mergeMailEvents(events: MailEvent[]): MailEvent[] {
   const sends = events.filter((e) => e.source === "email_send_log");
   const reminders = events.filter((e) => e.source !== "email_send_log");
   const used = new Set<number>();
+  // Reservierungen, die nachweislich versendet wurden ("pending" im Versand-Log,
+  // aber "sent" im Reminder-Protokoll). Das passiert, wenn der Versand-Aufruf
+  // nach dem SMTP-Versand abbricht, bevor der Endstatus geschrieben wird.
+  const proven = new Set<number>();
 
   const orphanReminders = reminders.filter((r) => {
     const rk = normalizeMailKey(r.key);
@@ -217,6 +221,8 @@ export function mergeMailEvents(events: MailEvent[]): MailEvent[] {
     );
     if (idx >= 0) {
       used.add(idx);
+      const send = sends[idx]!;
+      if (r.status === "sent" && normalize(send.status) === "pending") proven.add(idx);
       return false;
     }
     return true;
@@ -227,5 +233,17 @@ export function mergeMailEvents(events: MailEvent[]): MailEvent[] {
     r.status === "sent" ? { ...r, status: "stuck" } : r,
   );
 
-  return [...sends, ...stuck].sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  const STALE_CLAIM_MS = 30 * 60 * 1000;
+  const now = Date.now();
+  const resolvedSends = sends.map((s, i) => {
+    if (proven.has(i)) return { ...s, status: "sent" };
+    // Reservierung ohne jedes Ergebnis: nach 30 Minuten ist sie nicht mehr
+    // "läuft gerade", sondern hängen geblieben.
+    if (normalize(s.status) === "pending" && now - new Date(s.at || 0).getTime() > STALE_CLAIM_MS) {
+      return { ...s, status: "stuck" };
+    }
+    return s;
+  });
+
+  return [...resolvedSends, ...stuck].sort((a, b) => (b.at || "").localeCompare(a.at || ""));
 }

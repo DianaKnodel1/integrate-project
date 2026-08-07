@@ -5,6 +5,8 @@ import { checkRiskFlag, type EmployeeStatus, type KycStatus, type OnboardingStat
 export type { EmployeeStatus, KycStatus, OnboardingStatus };
 import { useToast } from "@/hooks/use-toast";
 import { fetchAll } from "@/lib/fetch-all";
+import { useServerFn } from "@tanstack/react-start";
+import { listUserEmails } from "@/lib/user-emails.functions";
 
 export interface Application {
   id: string; full_name: string; first_name: string | null; last_name: string | null;
@@ -58,6 +60,8 @@ interface AdminDataContextType {
   chatConversations: ChatConversationRow[];
   adminUserIds: Set<string>;
   emailConfirmedUserIds: Set<string>;
+  /** E-Mail-Adresse je Login-Konto (aus auth.users, nicht aus profiles). */
+  userEmails: Map<string, string>;
   loading: boolean;
   loadingApplications: boolean;
   loadingProfiles: boolean;
@@ -86,6 +90,7 @@ export function useAdminData() {
 export function AdminDataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const fetchUserEmails = useServerFn(listUserEmails);
   const [applications, setApplications] = useState<Application[]>([]);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [kycList, setKycList] = useState<KycRow[]>([]);
@@ -97,6 +102,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [chatConversations, setChatConversations] = useState<ChatConversationRow[]>([]);
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
   const [emailConfirmedUserIds, setEmailConfirmedUserIds] = useState<Set<string>>(new Set());
+  const [userEmails, setUserEmails] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [loadingApplications, setLoadingApplications] = useState(true);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
@@ -168,6 +174,9 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         track<{ user_id: string; email_confirmed: boolean }[]>("E-Mail-Bestätigungen",
           () => (supabase as any).rpc("admin_get_email_confirmations").then((r: any) => (r.data ?? []) as { user_id: string; email_confirmed: boolean }[]),
           (confs) => setEmailConfirmedUserIds(new Set(confs.filter((c) => c.email_confirmed).map((c) => c.user_id)))),
+        track("E-Mail-Adressen",
+          () => fetchUserEmails(),
+          (res: any) => setUserEmails(new Map(((res?.users ?? []) as Array<{ user_id: string; email: string }>).map((u) => [u.user_id, u.email])))),
         track("KYC",
           () => fetchAll<KycRow>(() => supabase.from("kyc_verifications").select(KYC_OVERVIEW_COLUMNS).order("created_at", { ascending: false })),
           setKycList),
@@ -207,7 +216,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     })();
     inFlightRef.current = run;
     try { await run; } finally { inFlightRef.current = null; }
-  }, [toast]);
+  }, [toast, fetchUserEmails]);
 
 
   useEffect(() => {
@@ -219,7 +228,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   return (
     <AdminDataContext.Provider value={{
       applications, profiles, kycList, templates, assignments, timeSlots, allBookings, allTransactions, chatConversations,
-      adminUserIds, emailConfirmedUserIds, loading, loadingApplications, loadingProfiles, loadData, setProfiles, setKycList, setAllTransactions, getProfileForUser,
+      adminUserIds, emailConfirmedUserIds, userEmails, loading, loadingApplications, loadingProfiles, loadData, setProfiles, setKycList, setAllTransactions, getProfileForUser,
     }}>
       {children}
     </AdminDataContext.Provider>
