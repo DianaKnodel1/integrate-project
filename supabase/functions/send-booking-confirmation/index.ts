@@ -253,7 +253,7 @@ serve(async (req) => {
     if (todo.length === 0) return json({ success: true, version: FUNCTION_VERSION, candidates: appts.length, sent: 0, skipped_already_sent: doneAppts.size, skipped_retry_cap: capped.size });
 
     const { data: apps } = await admin.from("applications")
-      .select("id, email, first_name, last_name, full_name, tenant_id, target_landing_id, source_landing_id")
+      .select("id, email, first_name, last_name, full_name, tenant_id, target_landing_id, source_landing_id, magic_token")
       .in("id", todo.map((t: any) => t.application_id));
     const appMap = new Map<string, any>((apps ?? []).map((a: any) => [a.id, a]));
 
@@ -327,6 +327,11 @@ serve(async (req) => {
       const recruiterAvatar = landing?.recruiter_avatar_url || null;
       // Cancel-/Rebook-Link: immer auf portal.<fast-track-domain>, dort läuft das Buchungssystem.
       const cancelUrl = `https://${fastTrackHost}/termin/${appt.cancel_token}`;
+      // Direkter Interview-Link (dauerhaft gueltig). Ohne ihn haengt die Teilnahme
+      // allein an der 30-Minuten-Mail — faellt die aus, kann der Bewerber nicht starten.
+      const magicLink = app.magic_token
+        ? `https://${fastTrackHost}/bewerbung?token=${encodeURIComponent(app.magic_token)}`
+        : cancelUrl;
 
       const starts = new Date(appt.starts_at);
       const ends = new Date(appt.ends_at);
@@ -343,6 +348,7 @@ serve(async (req) => {
         appointment_time: formatAppointmentTime(starts),
         duration_minutes: String(duration),
         cancel_url: cancelUrl,
+        magic_link: magicLink,
         // Portal-URL: Fast-Track-Portal (portal.<fast-track-domain>), dort läuft das KI-Interview.
         portal_url: fastTrackHost ? `https://${fastTrackHost}` : "",
         button_label: DEFAULT_BUTTON,
@@ -364,8 +370,8 @@ serve(async (req) => {
       const ics = buildIcs({
         uid: `${appt.id}@${fastTrackDomain || "mb-portal"}`,
         title: `Bewerbungsgespräch – ${tenant.name}`,
-        description: `Bewerbungsgespräch mit ${recruiterName}. Termin verwalten: ${cancelUrl}`,
-        start: starts, end: ends, url: cancelUrl,
+        description: `Online-Bewerbungsgespräch mit ${recruiterName}. Sie starten das Gespräch selbst über diesen Link: ${magicLink}\n\nTermin absagen oder verschieben: ${cancelUrl}`,
+        start: starts, end: ends, url: magicLink,
         organizerName: recruiterName, organizerEmail: tenant.sender_email || tenant.smtp_username!,
         attendeeEmail: app.email,
       });
