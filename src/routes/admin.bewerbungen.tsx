@@ -169,12 +169,24 @@ function AdminBewerbungenPage() {
   const tab = (search as any).tab ?? "alle";
   const [q, setQ] = useState("");
   const [cleanupDays, setCleanupDays] = useState(30);
+  const [tenantFilter, setTenantFilter] = useState("");
+  const [tenants, setTenants] = useState<Array<{ id: string; name: string }>>([]);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archiveDays, setArchiveDays] = useState(30);
+  const [archiveBusy, setArchiveBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const runCleanup = useServerFn(deleteOrphanApplications);
   const runBulkDelete = useServerFn(bulkDeleteApplications);
+  const runArchive = useServerFn(archiveOldApplications);
+
+  useEffect(() => {
+    supabase.from("tenants").select("id, name").order("name").then(({ data }) => {
+      setTenants((data ?? []) as Array<{ id: string; name: string }>);
+    });
+  }, []);
 
   const profileByKey = useMemo(() => {
     const byUid = new Map<string, any>();
