@@ -142,7 +142,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     const empty: NoShowReport = {
       totals: {
-        beworben: 0, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, nie_gebucht: 0,
+        beworben: 0, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, unklar: 0, nie_gebucht: 0,
         buchungsquote: 0, erscheinensquote: 0, no_show_quote: 0, mehrfachbuchungen: 0,
       },
       by_lead_time: [], by_reaction_time: [], by_weekday: [], by_hour: [],
