@@ -59,7 +59,7 @@ Wir freuen uns auf das Gespräch!
 
 Herzliche Grüße
 {{recruiter_name}}`;
-const DEFAULT_BUTTON = "Bewerbungsgespräch starten";
+const DEFAULT_BUTTON = "Zum Videogespräch";
 
 function cleanHost(domain: unknown): string {
   return String(domain ?? "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
@@ -370,7 +370,7 @@ serve(async (req) => {
       const ics = buildIcs({
         uid: `${appt.id}@${fastTrackDomain || "mb-portal"}`,
         title: `Bewerbungsgespräch – ${tenant.name}`,
-        description: `Online-Bewerbungsgespräch mit ${recruiterName}. Sie starten das Gespräch selbst über diesen Link: ${magicLink}\n\nTermin absagen oder verschieben: ${cancelUrl}`,
+        description: `Online-Bewerbungsgespräch mit ${recruiterName}. Die Teilnahme erfolgt über Ihren persönlichen Zugangslink: ${magicLink}\n\nTermin absagen oder verschieben: ${cancelUrl}`,
         start: starts, end: ends, url: magicLink,
         organizerName: recruiterName, organizerEmail: tenant.sender_email || tenant.smtp_username!,
         attendeeEmail: app.email,
