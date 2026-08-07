@@ -140,8 +140,23 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     const run = (async () => {
       // Kritische Listen zuerst und mit expliziten Spalten laden. Schwere
       // Nebentabellen laufen danach im Hintergrund, damit Navigation nicht wartet.
+      // Archiv-Spalte optional: solange die Migration auf dem Zielsystem noch
+      // nicht eingespielt ist, wird ohne sie geladen statt die Liste zu killen.
+      const loadApplications = async () => {
+        try {
+          return await fetchAll<Application>(() =>
+            supabase.from("applications")
+              .select(`${APPLICATION_OVERVIEW_COLUMNS}, is_archived`)
+              .order("created_at", { ascending: false }));
+        } catch {
+          return await fetchAll<Application>(() =>
+            supabase.from("applications")
+              .select(APPLICATION_OVERVIEW_COLUMNS)
+              .order("created_at", { ascending: false }));
+        }
+      };
       const applicationsTask = track("Bewerbungen",
-          () => fetchAll<Application>(() => supabase.from("applications").select(APPLICATION_OVERVIEW_COLUMNS).order("created_at", { ascending: false })),
+          loadApplications,
           setApplications,
           () => setLoadingApplications(false));
       const profilesTask = track("Mitarbeiter",
