@@ -58,21 +58,21 @@ export const runSmtpTestServerSide = createServerFn({ method: "POST" })
         body = null;
       }
       if (!body) {
-        // 502 ohne JSON = die Prüfung lief zu lange und wurde von der
-        // Laufzeitumgebung abgebrochen. Das ist fast immer ein SMTP-Timeout,
-        // kein fehlendes Deployment.
+        const snippet = text.replace(/\s+/g, " ").trim().slice(0, 200);
+        // 502/504 ohne JSON = die Prüfung wurde von der Laufzeitumgebung
+        // abgebrochen, bevor eine Diagnose zurückkam.
         if (res.status === 502 || res.status === 504) {
           return {
             success: false as const,
             error:
-              "SMTP-Server hat nicht rechtzeitig geantwortet – Host, Port und Firewall prüfen (Zeitüberschreitung beim Verbindungsaufbau). Die Mail-Pause ist nicht die Ursache: sie blockiert den Test nicht.",
+              `Die Prüfung wurde vom Backend abgebrochen (HTTP ${res.status}), bevor ein Ergebnis kam. Meist hängt der Verbindungsaufbau zum SMTP-Server (Host, Port, Firewall). Falls die Backend-Funktion "smtp-test" nicht in der aktuellen Version deployed ist, bitte neu deployen. Die Mail-Pause ist nicht die Ursache.${snippet ? ` Antwort: ${snippet}` : ""}`,
             errorCode: "TIMEOUT",
             reachable: true,
           };
         }
         return {
           success: false as const,
-          error: `Prüf-Funktion antwortete unerwartet (HTTP ${res.status}). Vermutlich ist die Backend-Funktion nicht deployed.`,
+          error: `Prüf-Funktion antwortete unerwartet (HTTP ${res.status}). Vermutlich ist die Backend-Funktion nicht deployed.${snippet ? ` Antwort: ${snippet}` : ""}`,
           errorCode: "FUNCTION_UNREACHABLE",
           reachable: false,
         };
