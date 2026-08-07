@@ -107,14 +107,16 @@ serve(async (req) => {
     // melden, bevor die Edge-Runtime den Aufruf hart abbricht (HTTP 502 ohne
     // JSON – dann ginge die Ursache verloren).
     const transporter = createSmtpTransport(tenant as any, {
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 7000,
+      connectionTimeout: 3500,
+      greetingTimeout: 3500,
+      socketTimeout: 4500,
     });
 
     await Promise.race([
       transporter.verify(),
-      new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 8s")), 8000)),
+      // Muss deutlich unter dem Proxy-Timeout liegen, sonst liefert der
+      // Reverse-Proxy eine HTML-502-Seite und die Diagnose geht verloren.
+      new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 5s")), 5000)),
     ]);
 
     debug.last_successful_stage = "VERIFY";
