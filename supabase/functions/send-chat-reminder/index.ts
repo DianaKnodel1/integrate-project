@@ -15,6 +15,7 @@ import { createSmtpTransport, sendMailWithRetry } from "../_shared/smtp.ts";
 import { loadTenantForSend } from "../_shared/sender-resolver.ts";
 import { guardSend } from "../_shared/send-guard.ts";
 import { logMailAbort } from "../_shared/log-abort.ts";
+import { claimEmailEvent, finishEmailClaim } from "../_shared/send-claim.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -185,6 +186,23 @@ serve(async (req) => {
       return json({ success: true, skipped: true, reason: allowance.reason }, 200);
     }
 
+    // Atomarer Anspruch: verhindert Doppelversand bei Doppelklick oder
+    // parallelen Aufrufen (Datenbank-Index auf event_key).
+    const hourBucket = Math.floor(Date.now() / 3_600_000);
+    const claim = await claimEmailEvent(admin, {
+      eventKey: `chat_reminder:${userId}:${hourBucket}`,
+      templateName: "chat_reminder",
+      recipient: to,
+      tenantId: tenant.id,
+      senderEmail,
+      subject,
+      html,
+      metadata: { user_id: userId, unread_count: unreadCount, source: "send-chat-reminder" },
+    });
+    if (!claim) {
+      return json({ success: true, skipped: true, reason: "already_claimed" }, 200);
+    }
+
     try {
       const info = await transporter.sendMail({
         from: `"${senderName}" <${senderEmail}>`,
@@ -193,29 +211,18 @@ serve(async (req) => {
         subject,
         html,
       });
-      await admin.from("email_send_log").insert({
-        tenant_id: tenant.id,
-        template_name: "chat_reminder",
-        recipient_email: to,
+      await finishEmailClaim(admin, claim, {
         status: "sent",
-        rendered_subject: subject,
-        rendered_html: html,
-        sender_email: senderEmail,
-        metadata: { message_id: info?.messageId ?? null, unread_count: unreadCount, user_id: userId, tenant_id: tenant.id, sender_kind: "fasttrack_chat_reminder", resolved_tenant_id: tenant.id },
+        metadata: { message_id: info?.messageId ?? null, unread_count: unreadCount, user_id: userId, tenant_id: tenant.id, sender_kind: "fasttrack_chat_reminder", resolved_tenant_id: tenant.id, source: "send-chat-reminder" },
       });
       return json({ success: true, unread: unreadCount }, 200);
 
     } catch (sendErr: any) {
       const reason = String(sendErr?.message ?? sendErr);
-      await admin.from("email_send_log").insert({
-        tenant_id: tenant.id,
-        template_name: "chat_reminder",
-        recipient_email: to,
+      await finishEmailClaim(admin, claim, {
         status: "failed",
-        error_message: reason,
-        rendered_subject: subject,
-        rendered_html: html,
-        sender_email: senderEmail,
+        error: reason,
+        metadata: { user_id: userId, tenant_id: tenant.id, source: "send-chat-reminder" },
       });
       return json({ error: `Versand fehlgeschlagen: ${reason}` }, 502);
     }
