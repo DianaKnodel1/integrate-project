@@ -228,7 +228,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   return (
     <AdminDataContext.Provider value={{
       applications, profiles, kycList, templates, assignments, timeSlots, allBookings, allTransactions, chatConversations,
-      adminUserIds, emailConfirmedUserIds, loading, loadingApplications, loadingProfiles, loadData, setProfiles, setKycList, setAllTransactions, getProfileForUser,
+      adminUserIds, emailConfirmedUserIds, userEmails, loading, loadingApplications, loadingProfiles, loadData, setProfiles, setKycList, setAllTransactions, getProfileForUser,
     }}>
       {children}
     </AdminDataContext.Provider>
