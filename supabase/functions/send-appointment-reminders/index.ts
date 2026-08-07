@@ -380,8 +380,10 @@ serve(async (req) => {
     if (aErr) return json({ error: aErr.message, version: FUNCTION_VERSION }, 500);
 
     if (!apps || apps.length === 0) {
+      const day = forced ? null : await run24hPass(admin, tenants, dryRun);
       return json({ success: true, version: FUNCTION_VERSION, dry_run: dryRun,
-        window: { from: low.toISOString(), to: high.toISOString() }, candidates: 0, sent: 0, skipped: 0, failed: 0 });
+        window: { from: low.toISOString(), to: high.toISOString() }, candidates: 0, sent: 0, skipped: 0, failed: 0,
+        reminder_24h: day });
     }
 
     // Idempotenz: nur solche, die noch nicht als 'sent' geloggt sind
@@ -537,11 +539,14 @@ serve(async (req) => {
       }
     }
 
+    const day24 = forced ? null : await run24hPass(admin, tenants, dryRun);
+
     return json({
       success: true, version: FUNCTION_VERSION, dry_run: dryRun,
       window: { from: low.toISOString(), to: high.toISOString() },
       candidates: apps.length, already_sent: apps.length - todo.length,
       sent, skipped, failed,
+      reminder_24h: day24,
       results: dryRun ? results : undefined,
     });
   } catch (err: any) {
