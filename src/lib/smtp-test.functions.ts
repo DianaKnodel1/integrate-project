@@ -58,14 +58,17 @@ export const runSmtpTestServerSide = createServerFn({ method: "POST" })
         body = null;
       }
       if (!body) {
-        const snippet = text.replace(/\s+/g, " ").trim().slice(0, 200);
+        // Kommt HTML zurück, hat der Reverse-Proxy vor dem Backend geantwortet –
+        // die Prüf-Funktion selbst wurde abgeschnitten. HTML nicht anzeigen.
+        const isHtml = /^\s*<(!doctype|html)/i.test(text);
+        const snippet = isHtml ? "" : text.replace(/\s+/g, " ").trim().slice(0, 200);
         // 502/504 ohne JSON = die Prüfung wurde von der Laufzeitumgebung
         // abgebrochen, bevor eine Diagnose zurückkam.
         if (res.status === 502 || res.status === 504) {
           return {
             success: false as const,
             error:
-              `Die Prüfung wurde vom Backend abgebrochen (HTTP ${res.status}), bevor ein Ergebnis kam. Meist hängt der Verbindungsaufbau zum SMTP-Server (Host, Port, Firewall). Falls die Backend-Funktion "smtp-test" nicht in der aktuellen Version deployed ist, bitte neu deployen. Die Mail-Pause ist nicht die Ursache.${snippet ? ` Antwort: ${snippet}` : ""}`,
+              `Der SMTP-Server dieses Mandanten antwortet nicht – die Verbindung blieb hängen, bis der Proxy die Prüfung abgebrochen hat (HTTP ${res.status}). Zu prüfen: Host, Port und Firewall-Freigabe des Mailservers. Die Mail-Pause ist nicht die Ursache.${snippet ? ` Antwort: ${snippet}` : ""}`,
             errorCode: "TIMEOUT",
             reachable: true,
           };

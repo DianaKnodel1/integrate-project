@@ -1257,9 +1257,15 @@ function AdminTenantsPage() {
         const pausedHint = (t as any).emails_paused
           ? " Hinweis: Die Mail-Pause blockiert den Test nicht – geprüft wird immer der echte SMTP-Server."
           : "";
+        // Bei abgebrochener Prüfung die zuletzt vom Health-Job erfasste
+        // Ursache mitgeben – sie nennt den konkreten SMTP-Fehler.
+        const lastKnown =
+          data?.errorCode === "TIMEOUT" || data?.errorCode === "FUNCTION_UNREACHABLE"
+            ? smtpHealth[t.id]?.last_fail_error
+            : null;
         toast({
           title: data?.errorCode === "AUTH_ERROR" ? "SMTP-Login abgelehnt" : "SMTP-Test fehlgeschlagen",
-          description: `${data?.error ?? "Unbekannter Fehler"}${pausedHint}`,
+          description: `${data?.error ?? "Unbekannter Fehler"}${lastKnown ? ` Zuletzt erfasster Fehler: ${lastKnown}` : ""}${pausedHint}`,
           variant: "destructive",
         });
       } else {
