@@ -145,6 +145,73 @@ function AdminEmailCenterPage() {
   const realDuplicates = useMemo(() => duplicates.filter(d => d.kind === "real"), [duplicates]);
 
   /**
+   * Terminbestätigungen, die an einem KONFIGURATIONSFEHLER hängen
+   * (fehlende Fast-Track-Portal-Domain, Absender nicht auflösbar).
+   * Diese Mails gehen ohne Eingriff NIE raus: der Bewerber hat einen Termin,
+   * aber weder Bestätigung noch Interview-Link — praktisch garantierter No-Show.
+   */
+  const blockedConfirmations = useMemo(() => {
+    const sentAppointments = new Set(
+      rows
+        .filter(r => r.status === "sent" && r.template_name === "booking_confirmation")
+        .map(r => String(((r.metadata ?? {}) as any).appointment_id ?? "")),
+    );
+    const byAppointment = new Map<string, {
+      appointmentId: string; applicationId: string; recipient: string;
+      tenantId: string | null; reason: string; last: string; count: number;
+    }>();
+    for (const r of rows) {
+      const meta = (r.metadata ?? {}) as any;
+      if (meta.config_blocked !== true) continue;
+      const appointmentId = String(meta.appointment_id ?? "");
+      if (!appointmentId || sentAppointments.has(appointmentId)) continue;
+      const cur = byAppointment.get(appointmentId);
+      if (cur) {
+        cur.count++;
+        if (r.created_at > cur.last) cur.last = r.created_at;
+        continue;
+      }
+      byAppointment.set(appointmentId, {
+        appointmentId,
+        applicationId: String(meta.application_id ?? ""),
+        recipient: r.recipient_email ?? "",
+        tenantId: r.tenant_id ?? null,
+        reason: String(meta.blocked_reason ?? r.error_message ?? "unbekannt"),
+        last: r.created_at,
+        count: 1,
+      });
+    }
+    return [...byAppointment.values()].sort((a, b) => (a.last < b.last ? 1 : -1));
+  }, [rows]);
+
+  const BLOCK_REASONS: Record<string, { label: string; action: string }> = {
+    missing_fasttrack_portal_domain: {
+      label: "Keine Fast-Track-Portal-Domain hinterlegt",
+      action: "Landing-Page mit der Fast-Track-Seite verknüpfen (Admin → Domains), danach erneut senden",
+    },
+    routing_failed: {
+      label: "Absender-Mandant nicht auflösbar",
+      action: "Zuordnung der Bewerbung zum Mandanten prüfen (Admin → Bewerbungen), danach erneut senden",
+    },
+  };
+
+  const [resendingConfirmation, setResendingConfirmation] = useState<string | null>(null);
+  const resendBlockedConfirmation = async (applicationId: string) => {
+    if (!applicationId) return;
+    setResendingConfirmation(applicationId);
+    try {
+      const { resendBookingConfirmation } = await import("@/lib/booking-confirmation-resend.functions");
+      await resendBookingConfirmation({ data: { applicationId } });
+      toast({ title: "Nachversand ausgelöst", description: "Die Terminbestätigung wird erneut versendet." });
+      await load();
+    } catch (e: any) {
+      toast({ title: "Nachversand fehlgeschlagen", description: e?.message ?? "Unbekannter Fehler", variant: "destructive" });
+    } finally {
+      setResendingConfirmation(null);
+    }
+  };
+
+  /**
    * "Warum kam keine Mail an?" — Fehlversuche nach Ursache in Klartext,
    * damit erkennbar ist, was zu tun ist (Passwort, Zugangsdaten, Limit …).
    */
