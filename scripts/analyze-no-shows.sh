@@ -236,6 +236,26 @@ sql "SELECT left(coalesce(a.invite_mail_error,'(kein Text)'),110) AS fehler, cou
         AND a.invite_mail_status = 'failed'
       GROUP BY 1 ORDER BY 2 DESC LIMIT 15;"
 
+log "15  Trichter nach dem Interview: Zusage -> Registrierung"
+sql "SELECT count(*) FILTER (WHERE a.interview_completed_at IS NOT NULL) AS interview_abgeschlossen,
+            count(*) FILTER (WHERE a.interview_recommendation = 'invite' OR a.status = 'akzeptiert') AS zusage,
+            count(*) FILTER (WHERE a.interview_recommendation = 'reject' OR a.status = 'abgelehnt')  AS absage,
+            count(*) FILTER (WHERE a.interview_completed_at IS NOT NULL
+                               AND a.interview_recommendation IS NULL
+                               AND a.status NOT IN ('akzeptiert','abgelehnt'))                      AS interview_ohne_auswertung,
+            count(*) FILTER (WHERE a.user_id IS NOT NULL) AS registriert
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days';"
+
+log "16  Zusagen ohne Registrierung (wo genau haengen sie fest?)"
+sql "SELECT coalesce(a.invite_mail_status,'nie_versucht') AS registrierungsmail,
+            count(*) AS zusagen,
+            count(*) FILTER (WHERE a.user_id IS NOT NULL) AS registriert
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
+        AND (a.interview_recommendation = 'invite' OR a.status = 'akzeptiert')
+      GROUP BY 1 ORDER BY zusagen DESC;"
+
 echo
 echo "Fertig. Wichtig: Abschnitte 10-14 zeigen den Verlust VOR dem Termin"
 echo "(Bewerbung -> Buchung), Abschnitte 2-9 den Verlust am Termin selbst."
