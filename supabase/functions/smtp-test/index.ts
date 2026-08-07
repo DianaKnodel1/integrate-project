@@ -190,16 +190,22 @@ serve(async (req) => {
     }, 200);
   } catch (err: any) {
     const message = String(err?.message ?? err);
+    const smtpMeta = {
+      code: typeof err?.code === "string" ? err.code : null,
+      command: typeof err?.command === "string" ? err.command : null,
+      responseCode: typeof err?.responseCode === "number" ? err.responseCode : null,
+      response: typeof err?.response === "string" ? err.response : null,
+    };
     // Bewusst HTTP 200 mit success:false: Bei 5xx ersetzen Proxy/Gateway
     // (Kong bzw. Edge-Runtime) die Antwort teilweise durch einen leeren Body –
     // dann geht die eigentliche Fehlerursache verloren und im Portal steht nur
     // "keine rechtzeitige Antwort".
     return json({
       success: false,
-      error: classifySmtpError(message),
-      errorCode: smtpErrorCode(message),
+      error: classifySmtpError(message, smtpMeta),
+      errorCode: smtpErrorCode(message, smtpMeta),
       details: message,
-      debug: { ...debug, rawError: message },
+      debug: { ...debug, rawError: message, smtp: smtpMeta },
     }, 200);
   }
 });
@@ -211,9 +217,11 @@ function json(body: unknown, status: number) {
   });
 }
 
-function smtpErrorCode(message: string) {
-  const normalized = message.toLowerCase();
-  if (normalized.includes("535") || normalized.includes("auth") || normalized.includes("login")) return "AUTH_ERROR";
+function smtpErrorCode(message: string, meta?: { code?: string | null; command?: string | null; responseCode?: number | null; response?: string | null }) {
+  const code = String(meta?.code ?? "").toUpperCase();
+  const command = String(meta?.command ?? "").toUpperCase();
+  const normalized = `${message} ${meta?.response ?? ""}`.toLowerCase();
+  if (code === "EAUTH" || meta?.responseCode === 535 || command.startsWith("AUTH")) return "AUTH_ERROR";
   if (normalized.includes("timeout") || normalized.includes("etimedout")) return "TIMEOUT";
   if (normalized.includes("econnrefused") || normalized.includes("connection refused")) return "CONNECTION_REFUSED";
   if (normalized.includes("enotfound") || normalized.includes("getaddrinfo")) return "DNS_ERROR";
@@ -221,10 +229,11 @@ function smtpErrorCode(message: string) {
   return "SMTP_ERROR";
 }
 
-function classifySmtpError(message: string) {
-  switch (smtpErrorCode(message)) {
+function classifySmtpError(message: string, meta?: { code?: string | null; command?: string | null; responseCode?: number | null; response?: string | null }) {
+  const diagnostic = [meta?.code, meta?.command, meta?.responseCode].filter(Boolean).join(", ");
+  switch (smtpErrorCode(message, meta)) {
     case "AUTH_ERROR":
-      return "SMTP-Login fehlgeschlagen: Benutzername oder Passwort/App-Passwort stimmt nicht.";
+      return `SMTP-Server erreichbar, aber Anmeldung abgelehnt${diagnostic ? ` (${diagnostic})` : ""}: Benutzername, Passwort/App-Passwort und SMTP-AUTH prüfen.`;
     case "TIMEOUT":
       return "SMTP-Server antwortet nicht rechtzeitig.";
     case "CONNECTION_REFUSED":

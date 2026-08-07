@@ -1,9 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-const Schema = z.object({ tenant_id: z.string().uuid() });
 
 /**
  * Server-seitiger Fallback für den SMTP-Test.
@@ -15,7 +12,12 @@ const Schema = z.object({ tenant_id: z.string().uuid() });
  */
 export const runSmtpTestServerSide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Schema.parse(input))
+  .inputValidator((input: unknown) => {
+    if (!input || typeof input !== "object" || !("tenant_id" in input) || typeof input.tenant_id !== "string") {
+      throw new Error("Ungültige Tenant-ID");
+    }
+    return { tenant_id: input.tenant_id };
+  })
   .handler(async ({ data, context }) => {
     const { data: roleRow, error: roleErr } = await (context.supabase as any)
       .from("user_roles")
