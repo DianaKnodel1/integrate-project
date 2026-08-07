@@ -157,6 +157,28 @@ export function MailChain({ applicationId, applicantName, events, expected, next
     }
   };
 
+  const doBookingResend = async () => {
+    setBusy(true);
+    setActionError("");
+    try {
+      const res: any = await resendBooking({ data: { applicationId } });
+      if (res?.ok) {
+        toast.success(`Terminbestätigung versendet an ${res.to || "Empfänger"}`);
+        onRefresh?.();
+      } else {
+        const message = String(res?.reason || "Terminbestätigung konnte nicht versendet werden");
+        setActionError(message);
+        toast.error(message);
+      }
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Terminbestätigung konnte nicht versendet werden";
+      setActionError(message);
+      toast.error(message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Geplante Erinnerung sofort auslösen, statt auf den Cron zu warten.
   const doSendNow = async () => {
     if (!nextStep.kind) return;
@@ -402,7 +424,12 @@ export function MailChain({ applicationId, applicantName, events, expected, next
           </div>
         )}
 
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-end gap-2 pt-2">
+          {expected.termin && !events.some((event) => event.key === "booking_confirmation" && event.logId) && (
+            <Button size="sm" variant="outline" disabled={busy} onClick={doBookingResend}>
+              {busy ? "Sende…" : "Terminbestätigung senden"}
+            </Button>
+          )}
           <Button size="sm" variant="outline" disabled={busy} onClick={() => doResend(false)}>
             {busy ? "Sende…" : "Einladung erneut senden"}
           </Button>
