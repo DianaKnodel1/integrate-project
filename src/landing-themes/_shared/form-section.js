@@ -59,11 +59,11 @@
     var state={schedule:null, rangeStart:startOfDay(new Date()), selectedDay:null, slotsByDay:{}, loadingSlots:false};
 
     var header=document.createElement('div');
-    var h=document.createElement('h3');h.style.cssText='margin:0 0 6px;font-size:20px;font-weight:700;';h.textContent='Wunschtermin wählen';
+    var h=document.createElement('h3');h.style.cssText='margin:0 0 6px;font-size:20px;font-weight:700;';h.textContent='Schritt 2 von 4: Wunschtermin wählen';
     var sub=document.createElement('p');sub.style.cssText='margin:0 0 4px;color:#475569;font-size:14px;line-height:1.5;';
     sub.textContent='Wir laden Ihren Kalender …';
     var hint=document.createElement('p');hint.style.cssText='margin:0 0 6px;color:#64748b;font-size:12.5px;';
-    hint.textContent='Sie erhalten sofort eine Bestätigung per E-Mail – mit Kalendereintrag und allen Infos zum Gespräch. Alle Zeiten in deutscher Zeit (Europe/Berlin).';
+    hint.textContent='Das Gespräch findet online als Videogespräch statt – die Teilnahme erfolgt über Ihren persönlichen Zugangslink, den Sie sofort per E-Mail erhalten (inkl. Kalendereintrag). Alle Zeiten in deutscher Zeit (Europe/Berlin).';
     var priv=document.createElement('p');priv.style.cssText='margin:0 0 14px;color:#94a3b8;font-size:11.5px;line-height:1.5;';
     var dsUrl=window.LANDING_DATENSCHUTZ_URL||'datenschutz.html';
     priv.innerHTML='Ihre Daten werden ausschließlich zur Terminvereinbarung verwendet. Details in unserer <a href="'+dsUrl+'" target="_blank" rel="noopener" style="color:#64748b;text-decoration:underline;">Datenschutzerklärung</a>.';
@@ -195,8 +195,17 @@
       var when=document.createElement('p');when.style.cssText='margin:0 0 6px;font-size:16px;color:#0f172a;font-weight:600;';
       when.textContent=fmtDayLong.format(start)+' · '+fmtTime.format(start)+'–'+fmtTime.format(end)+' Uhr (deutsche Zeit)';
       var mail=document.createElement('p');mail.style.cssText='margin:6px 0 14px;color:#475569;font-size:13.5px;';
-      mail.textContent='Sie erhalten in Kürze eine Bestätigungs-E-Mail mit allen Details.';
+      mail.textContent='Sie erhalten in Kürze eine Bestätigungs-E-Mail mit Ihrem persönlichen Zugangslink und einem Kalendereintrag.';
       wrap.appendChild(chk);wrap.appendChild(h2);wrap.appendChild(when);wrap.appendChild(mail);
+
+      var next=document.createElement('div');
+      next.style.cssText='margin:4px auto 0;padding:16px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;text-align:left;font-size:13.5px;line-height:1.6;color:#0f172a;max-width:560px;';
+      next.innerHTML='<strong>So geht es weiter:</strong>'
+        + '<div style="margin-top:8px;">1. Bestätigungs-E-Mail öffnen und den Termin im Kalender speichern.</div>'
+        + '<div style="margin-top:4px;">2. Zur vereinbarten Zeit über den Zugangslink in der E-Mail teilnehmen – das Gespräch findet online statt, ein Telefonanruf erfolgt nicht.</div>'
+        + '<div style="margin-top:4px;">3. Bei einer Zusage schließen Sie Ihre Registrierung direkt im Anschluss ab.</div>'
+        + '<div style="margin-top:10px;color:#475569;">Sollten Sie den Termin nicht wahrnehmen können, sagen Sie ihn bitte über den Link in der E-Mail ab – so kann jemand anderes den Platz nutzen.</div>';
+      wrap.appendChild(next);
 
       if(state.schedule && state.schedule.event_description){
         var desc=document.createElement('div');
@@ -219,9 +228,9 @@
           return;
         }
         state.schedule=res.body;
-        var greet='Wählen Sie einen freien Termin für Ihr Gespräch.';
+        var greet='Wählen Sie jetzt einen freien Termin für Ihr Videogespräch (ca. 15 Minuten).';
         if(res.body.applicant_first_name){
-          greet='Hallo '+res.body.applicant_first_name+', wählen Sie einen freien Termin für Ihr Gespräch.';
+          greet='Hallo '+res.body.applicant_first_name+', wählen Sie jetzt einen freien Termin für Ihr Videogespräch (ca. 15 Minuten).';
         }
         sub.textContent=greet;
         loadRange();
