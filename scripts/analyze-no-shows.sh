@@ -14,7 +14,7 @@
 set -uo pipefail
 
 MODE="${1:-}"
-DAYS="${DAYS:-90}"
+DAYS="${DAYS:-7}"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CONF_FILE="$REPO_DIR/scripts/backend-server.env"
 [ -f "$CONF_FILE" ] && . "$CONF_FILE"
@@ -48,6 +48,13 @@ sql() {
 }
 
 # Basis-CTE: jeder vergangene Termin mit Ergebnis + Kontext.
+#
+# WICHTIG — Definition "erschienen":
+#   Nur ein tatsaechlich ABGESCHLOSSENES Interview zaehlt als erschienen
+#   (applications.interview_completed_at). Weder ein gesetzter
+#   interview_appointments.status='completed' noch ein blosses
+#   interview_started_at beweisen, dass jemand da war — genau das hat die
+#   Quote vorher massiv geschoent.
 BASE="WITH t AS (
   SELECT ia.id,
          ia.application_id,
@@ -59,10 +66,9 @@ BASE="WITH t AS (
          a.source_slug,
          a.source_landing_id,
          CASE
-           WHEN ia.status = 'cancelled' THEN 'abgesagt'
-           WHEN ia.status = 'completed'
-             OR a.interview_completed_at IS NOT NULL
-             OR a.interview_started_at   IS NOT NULL THEN 'erschienen'
+           WHEN ia.status = 'cancelled' OR a.booking_status = 'cancelled' THEN 'abgesagt'
+           WHEN a.interview_completed_at IS NOT NULL THEN 'erschienen'
+           WHEN a.interview_started_at IS NOT NULL THEN 'abgebrochen'
            ELSE 'no_show'
          END AS ergebnis,
          extract(epoch FROM (ia.starts_at - ia.created_at))/3600 AS vorlauf_h,
@@ -70,7 +76,7 @@ BASE="WITH t AS (
     FROM public.interview_appointments ia
     JOIN public.applications a ON a.id = ia.application_id
    WHERE a.is_test = false
-     AND ia.starts_at < now()
+     AND ia.starts_at < now() - interval '30 minutes'
      AND a.created_at > now() - interval '$DAYS days'
 )"
 
