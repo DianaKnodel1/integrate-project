@@ -448,9 +448,10 @@ export const Route = createFileRoute("/api/public/applications")({
           if (!supabaseUrl || !serviceKey) {
             return { data: null as any, error: "mail_function_env_missing", response: null as Response | null };
           }
-          // requestId wandert mit → die Function schreibt sie in metadata.request_id,
-          // damit wir hier keine zweite Zeile für dieselbe Mail anlegen.
-          body = { ...body, requestId };
+          // Der Schlüssel hängt an der Bewerbung, nicht an der zufälligen
+          // Request-ID: zwei gleichzeitige Absendungen derselben Bewerbung
+          // dürfen nur EINE Bestätigungsmail auslösen.
+          body = { ...body, requestId: mailRequestId };
           const headers: Record<string, string> = {
             "Content-Type": "application/json",
             apikey: serviceKey,
@@ -558,7 +559,7 @@ export const Route = createFileRoute("/api/public/applications")({
           } as any);
           if (logErr) console.warn("[applications] mail_log_failed", { requestId, template, status, reason: logErr.message });
         };
-        // Hat die Versand-Function für diesen Request bereits geloggt?
+        // Hat die Versand-Function für diese Bewerbung bereits geloggt?
         const functionAlreadyLogged = async (template: string) => {
           try {
             const { data } = await supabaseAdmin
@@ -566,7 +567,7 @@ export const Route = createFileRoute("/api/public/applications")({
               .select("id")
               .eq("template_name", template)
               .eq("recipient_email", d.email)
-              .contains("metadata", { request_id: requestId } as any)
+              .contains("metadata", { request_id: mailRequestId } as any)
               .limit(1);
             return !!data?.length;
           } catch { return false; }
