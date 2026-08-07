@@ -197,9 +197,10 @@ function BookingPage() {
                   Sie bekommen sofort eine Bestätigung per E-Mail – mit dem Link zum Gespräch.
                 </li>
                 <li>
-                  <span className="font-medium text-foreground">2. Zum Termin selbst starten.</span>{" "}
-                  Das Gespräch findet online statt. Es ruft Sie niemand an – Sie öffnen zur gebuchten
-                  Uhrzeit den Link aus der E-Mail. Dauer: ca. {s.slot_duration_minutes} Minuten.
+                  <span className="font-medium text-foreground">2. Zur vereinbarten Uhrzeit teilnehmen.</span>{" "}
+                  Das Gespräch findet online als Videogespräch statt; die Teilnahme erfolgt über Ihren
+                  persönlichen Zugangslink aus der Bestätigungsmail, ein Telefonanruf erfolgt nicht.
+                  Dauer: ca. {s.slot_duration_minutes} Minuten.
                 </li>
                 <li>
                   <span className="font-medium text-foreground">3. Zusage im Gespräch.</span>{" "}
@@ -346,12 +347,13 @@ function BookingConfirmed(props: {
             </div>
 
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed">
-              <div className="mb-2 font-semibold text-foreground">Bitte unbedingt beachten</div>
+              <div className="mb-2 font-semibold text-foreground">Wichtiger Hinweis zur Teilnahme</div>
               <p className="text-muted-foreground">
-                Das Gespräch findet <strong className="text-foreground">online</strong> statt –
-                es ruft Sie niemand an. Sie erhalten jetzt eine E-Mail mit Ihrem persönlichen Link.
-                Öffnen Sie diese E-Mail zum Termin noch einmal und starten Sie das Gespräch selbst
-                über den Button. Der Link bleibt dauerhaft gültig.
+                Ihr Gespräch findet online als{" "}
+                <strong className="text-foreground">Videogespräch</strong> statt. Die Teilnahme
+                erfolgt über Ihren persönlichen Zugangslink, den Sie soeben per E-Mail erhalten
+                haben; ein Telefonanruf erfolgt nicht. Bitte öffnen Sie den Link zur vereinbarten
+                Uhrzeit – er bleibt dauerhaft gültig, eine Installation ist nicht erforderlich.
               </p>
               <p className="mt-3 text-muted-foreground">
                 Kommt die E-Mail nicht an, schauen Sie bitte im Spam-Ordner nach. Der Termin liegt
