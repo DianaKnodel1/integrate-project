@@ -37,6 +37,41 @@ export const EMAIL_STATUS_LABELS: Record<string, string> = {
   duplicate: "Doppelversand bereinigt",
 };
 
+// ── Vereinfachte Statusanzeige ──
+// Intern gibt es viele Feinstatus (pending, superseded, dlq, acked …). Für die
+// Fehlersuche zählt aber nur: Ist die Mail raus, ist sie nicht raus, oder läuft
+// sie noch? Der Feinstatus bleibt in der Detailansicht sichtbar.
+export type SimpleEmailStatus = "delivered" | "not_delivered" | "in_progress";
+
+export const SIMPLE_STATUS_LABELS: Record<SimpleEmailStatus, string> = {
+  delivered: "Angekommen",
+  not_delivered: "Nicht angekommen",
+  in_progress: "Läuft noch",
+};
+
+export const SIMPLE_STATUS_COLORS: Record<SimpleEmailStatus, string> = {
+  delivered: "bg-accent text-accent-foreground border border-accent font-semibold",
+  not_delivered: "bg-destructive text-destructive-foreground border border-destructive font-semibold",
+  in_progress: "bg-muted text-muted-foreground border border-border font-medium",
+};
+
+export function simpleEmailStatus(status: string): SimpleEmailStatus {
+  switch (status) {
+    case "sent":
+    case "acked":
+      return "delivered";
+    case "failed":
+    case "dlq":
+    case "bounced":
+    case "complained":
+    case "suppressed":
+      return "not_delivered";
+    default:
+      // pending, superseded, skipped, duplicate, unbekannt
+      return "in_progress";
+  }
+}
+
 export const EMAIL_TYPE_LABELS: Record<string, string> = {
   invitation: "Einladung",
   test_email: "Test",
