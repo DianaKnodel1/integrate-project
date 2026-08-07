@@ -21,8 +21,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { createSmtpTransport, sendMailWithRetry } from "../_shared/smtp.ts";
 import { loadTenantForSend } from "../_shared/sender-resolver.ts";
 import { guardSend } from "../_shared/send-guard.ts";
+import { runRetryQueue } from "../_shared/retry-queue.ts";
 
-const FUNCTION_VERSION = "2026-07-26-generic-resend-guard-v2";
+const FUNCTION_VERSION = "2026-08-12-generic-resend-retry-queue-v1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -82,8 +83,6 @@ serve(async (req) => {
     const isTest = body?.is_test === true;
     const force = body?.force === true;
 
-    if (!logId) return json({ error: "log_id required", version: FUNCTION_VERSION }, 400);
-
     // ---------- Auth: Admin-JWT oder Service-Role ----------
     const authHeader = req.headers.get("authorization") ?? "";
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
@@ -104,6 +103,20 @@ serve(async (req) => {
         .maybeSingle();
       if (!role) return json({ error: "Nur Admins dürfen E-Mails erneut senden" }, 403);
     }
+
+    // ---------- Modus: automatische Nachversand-Warteschlange ----------
+    // Cron ruft alle 10 Minuten mit { retry_queue: true } auf.
+    if (body?.retry_queue === true) {
+      const summary = await runRetryQueue(admin, {
+        dryRun: body?.dry_run === true,
+        limit: body?.limit,
+        tenantId: typeof body?.tenant_id === "string" ? body.tenant_id : null,
+        logId,
+      });
+      return json({ success: true, mode: "retry_queue", version: FUNCTION_VERSION, ...summary });
+    }
+
+    if (!logId) return json({ error: "log_id required", version: FUNCTION_VERSION }, 400);
 
     // ---------- Log-Zeile laden ----------
     const { data: log, error: logErr } = await admin
