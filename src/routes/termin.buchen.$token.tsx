@@ -187,6 +187,31 @@ function BookingPage() {
             </div>
           </CardHeader>
           <CardContent className="bg-muted/20 p-4 sm:p-7">
+            <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed shadow-sm">
+              <div className="mb-3 flex items-center gap-2 font-semibold text-foreground">
+                <CalendarCheck className="h-4 w-4 text-primary" /> So läuft Ihre Bewerbung ab
+              </div>
+              <ol className="space-y-2 text-muted-foreground">
+                <li>
+                  <span className="font-medium text-foreground">1. Termin wählen.</span>{" "}
+                  Sie bekommen sofort eine Bestätigung per E-Mail – mit dem Link zum Gespräch.
+                </li>
+                <li>
+                  <span className="font-medium text-foreground">2. Zum Termin selbst starten.</span>{" "}
+                  Das Gespräch findet online statt. Es ruft Sie niemand an – Sie öffnen zur gebuchten
+                  Uhrzeit den Link aus der E-Mail. Dauer: ca. {s.slot_duration_minutes} Minuten.
+                </li>
+                <li>
+                  <span className="font-medium text-foreground">3. Zusage im Gespräch.</span>{" "}
+                  Passt alles, erhalten Sie Ihre Zusage direkt im Anschluss per E-Mail.
+                </li>
+                <li>
+                  <span className="font-medium text-foreground">4. Im Mitarbeiter-Portal registrieren.</span>{" "}
+                  Erst danach können wir Sie einsetzen – der letzte Schritt dauert nur wenige Minuten.
+                </li>
+              </ol>
+            </div>
+
             {s.event_description && (
               <div className="mb-6 rounded-xl border border-primary/20 bg-background p-4 text-sm leading-relaxed shadow-sm">
                 <div className="mb-2 flex items-center gap-2 font-medium text-foreground">
