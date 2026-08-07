@@ -16,7 +16,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const Input = z.object({
-  days: z.number().int().min(7).max(365).default(90),
+  days: z.number().int().min(1).max(365).default(7),
   tenant_id: z.string().uuid().optional(),
 });
 
@@ -27,6 +27,7 @@ export type Bucket = {
   erschienen: number;
   abgesagt: number;
   no_show: number;
+  unklar: number;
   no_show_quote: number; // no_show / (gebucht - abgesagt)
 };
 
@@ -36,6 +37,7 @@ export type NoShowTotals = {
   erschienen: number;
   abgesagt: number;
   no_show: number;
+  unklar: number;
   nie_gebucht: number;
   buchungsquote: number;
   erscheinensquote: number;
@@ -72,13 +74,14 @@ function berlinParts(iso: string) {
 }
 
 function emptyBucket(key: string, label: string): Bucket {
-  return { key, label, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, no_show_quote: 0 };
+  return { key, label, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, unklar: 0, no_show_quote: 0 };
 }
 
 function finalize(map: Map<string, Bucket>, order?: string[]): Bucket[] {
   const list = Array.from(map.values());
   for (const b of list) {
-    const relevant = b.gebucht - b.abgesagt;
+    // Nur eindeutig bewertete Termine zaehlen — 'unklar' verzerrt sonst die Quote.
+    const relevant = b.erschienen + b.no_show;
     b.no_show_quote = relevant > 0 ? Math.round((b.no_show / relevant) * 1000) / 10 : 0;
   }
   if (order) {
@@ -139,7 +142,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     const empty: NoShowReport = {
       totals: {
-        beworben: 0, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, nie_gebucht: 0,
+        beworben: 0, gebucht: 0, erschienen: 0, abgesagt: 0, no_show: 0, unklar: 0, nie_gebucht: 0,
         buchungsquote: 0, erscheinensquote: 0, no_show_quote: 0, mehrfachbuchungen: 0,
       },
       by_lead_time: [], by_reaction_time: [], by_weekday: [], by_hour: [],
@@ -211,7 +214,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
       source: new Map<string, Bucket>(),
       mail: new Map<string, Bucket>(),
     };
-    const push = (m: Map<string, Bucket>, key: string, label: string, kind: "erschienen" | "abgesagt" | "no_show") => {
+    const push = (m: Map<string, Bucket>, key: string, label: string, kind: "erschienen" | "abgesagt" | "no_show" | "unklar") => {
       let b = m.get(key);
       if (!b) { b = emptyBucket(key, label); m.set(key, b); }
       b.gebucht += 1;
@@ -234,13 +237,16 @@ export const getNoShowReport = createServerFn({ method: "POST" })
       bookedAppIds.add(ap.application_id);
       apptCountByApp.set(ap.application_id, (apptCountByApp.get(ap.application_id) ?? 0) + 1);
 
-      const cancelled = ap.status === "cancelled";
-      const attended =
-        ap.status === "completed" ||
-        !!app.interview_completed_at ||
-        !!app.interview_started_at;
-      const kind: "erschienen" | "abgesagt" | "no_show" =
-        cancelled ? "abgesagt" : attended ? "erschienen" : "no_show";
+      // Streng bewerten — identisch zur Bewerberliste im Admin:
+      // Als "erschienen" zaehlt AUSSCHLIESSLICH ein abgeschlossenes Interview.
+      // Weder interview_appointments.status='completed' noch ein blosses
+      // interview_started_at beweisen Anwesenheit; genau diese lockere
+      // Zaehlung hat die Quote vorher stark geschoent.
+      const kind: "erschienen" | "abgesagt" | "no_show" | "unklar" =
+        ap.status === "cancelled" || app.booking_status === "cancelled" ? "abgesagt"
+        : app.interview_completed_at ? "erschienen"
+        : app.interview_started_at ? "unklar" // begonnen, nie beendet — Abbruch
+        : "no_show";
 
       totals.gebucht += 1;
       totals[kind] += 1;
@@ -283,7 +289,8 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     totals.nie_gebucht = apps.filter((a) => !bookedAppIds.has(a.id) && !a.scheduled_at).length;
     totals.mehrfachbuchungen = Array.from(apptCountByApp.values()).filter((n) => n > 1).length;
-    const relevant = totals.gebucht - totals.abgesagt;
+    // Nur eindeutig bewertete Termine bilden die Basis der Quoten.
+    const relevant = totals.erschienen + totals.no_show;
     totals.buchungsquote = totals.beworben ? Math.round((bookedAppIds.size / totals.beworben) * 1000) / 10 : 0;
     totals.erscheinensquote = relevant ? Math.round((totals.erschienen / relevant) * 1000) / 10 : 0;
     totals.no_show_quote = relevant ? Math.round((totals.no_show / relevant) * 1000) / 10 : 0;

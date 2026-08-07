@@ -14,7 +14,7 @@
 set -uo pipefail
 
 MODE="${1:-}"
-DAYS="${DAYS:-90}"
+DAYS="${DAYS:-7}"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CONF_FILE="$REPO_DIR/scripts/backend-server.env"
 [ -f "$CONF_FILE" ] && . "$CONF_FILE"
@@ -48,6 +48,13 @@ sql() {
 }
 
 # Basis-CTE: jeder vergangene Termin mit Ergebnis + Kontext.
+#
+# WICHTIG — Definition "erschienen":
+#   Nur ein tatsaechlich ABGESCHLOSSENES Interview zaehlt als erschienen
+#   (applications.interview_completed_at). Weder ein gesetzter
+#   interview_appointments.status='completed' noch ein blosses
+#   interview_started_at beweisen, dass jemand da war — genau das hat die
+#   Quote vorher massiv geschoent.
 BASE="WITH t AS (
   SELECT ia.id,
          ia.application_id,
@@ -59,10 +66,9 @@ BASE="WITH t AS (
          a.source_slug,
          a.source_landing_id,
          CASE
-           WHEN ia.status = 'cancelled' THEN 'abgesagt'
-           WHEN ia.status = 'completed'
-             OR a.interview_completed_at IS NOT NULL
-             OR a.interview_started_at   IS NOT NULL THEN 'erschienen'
+           WHEN ia.status = 'cancelled' OR a.booking_status = 'cancelled' THEN 'abgesagt'
+           WHEN a.interview_completed_at IS NOT NULL THEN 'erschienen'
+           WHEN a.interview_started_at IS NOT NULL THEN 'abgebrochen'
            ELSE 'no_show'
          END AS ergebnis,
          extract(epoch FROM (ia.starts_at - ia.created_at))/3600 AS vorlauf_h,
@@ -70,7 +76,7 @@ BASE="WITH t AS (
     FROM public.interview_appointments ia
     JOIN public.applications a ON a.id = ia.application_id
    WHERE a.is_test = false
-     AND ia.starts_at < now()
+     AND ia.starts_at < now() - interval '30 minutes'
      AND a.created_at > now() - interval '$DAYS days'
 )"
 
@@ -229,6 +235,26 @@ sql "SELECT left(coalesce(a.invite_mail_error,'(kein Text)'),110) AS fehler, cou
       WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
         AND a.invite_mail_status = 'failed'
       GROUP BY 1 ORDER BY 2 DESC LIMIT 15;"
+
+log "15  Trichter nach dem Interview: Zusage -> Registrierung"
+sql "SELECT count(*) FILTER (WHERE a.interview_completed_at IS NOT NULL) AS interview_abgeschlossen,
+            count(*) FILTER (WHERE a.interview_recommendation = 'invite' OR a.status = 'akzeptiert') AS zusage,
+            count(*) FILTER (WHERE a.interview_recommendation = 'reject' OR a.status = 'abgelehnt')  AS absage,
+            count(*) FILTER (WHERE a.interview_completed_at IS NOT NULL
+                               AND a.interview_recommendation IS NULL
+                               AND a.status NOT IN ('akzeptiert','abgelehnt'))                      AS interview_ohne_auswertung,
+            count(*) FILTER (WHERE a.user_id IS NOT NULL) AS registriert
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days';"
+
+log "16  Zusagen ohne Registrierung (wo genau haengen sie fest?)"
+sql "SELECT coalesce(a.invite_mail_status,'nie_versucht') AS registrierungsmail,
+            count(*) AS zusagen,
+            count(*) FILTER (WHERE a.user_id IS NOT NULL) AS registriert
+       FROM public.applications a
+      WHERE a.is_test = false AND a.created_at > now() - interval '$DAYS days'
+        AND (a.interview_recommendation = 'invite' OR a.status = 'akzeptiert')
+      GROUP BY 1 ORDER BY zusagen DESC;"
 
 echo
 echo "Fertig. Wichtig: Abschnitte 10-14 zeigen den Verlust VOR dem Termin"
