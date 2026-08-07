@@ -216,7 +216,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     })();
     inFlightRef.current = run;
     try { await run; } finally { inFlightRef.current = null; }
-  }, [toast]);
+  }, [toast, fetchUserEmails]);
 
 
   useEffect(() => {

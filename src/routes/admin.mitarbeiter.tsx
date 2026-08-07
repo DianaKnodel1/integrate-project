@@ -32,7 +32,7 @@ export const Route = createFileRoute("/admin/mitarbeiter")({
 });
 
 function AdminMitarbeiterPage() {
-  const { applications, profiles, adminUserIds, emailConfirmedUserIds, loadingProfiles: loading, loadData } = useAdminData();
+  const { applications, profiles, kycList, adminUserIds, emailConfirmedUserIds, userEmails, loadingProfiles: loading, loadData } = useAdminData();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"alle" | "wartet" | "aktiv" | "abgelehnt">("alle");
@@ -45,25 +45,33 @@ function AdminMitarbeiterPage() {
   const rows = useMemo(() => {
     const appById = new Map((applications as any[]).map((a) => [a.id, a]));
     const appByUserId = new Map((applications as any[]).filter((a) => a.user_id).map((a) => [a.user_id, a]));
+    // Ausweis-Dokumente liegen in kyc_verifications — nicht am Profil.
+    const kycByUser = new Map((kycList as any[]).filter((k) => k.user_id).map((k) => [k.user_id, k]));
     return (profiles as any[])
       .filter(p => !adminUserIds.has(p.user_id))
       .map(p => {
         const app = (p.application_id ? appById.get(p.application_id) : null) || (p.user_id ? appByUserId.get(p.user_id) : null) || null;
+        const kyc = p.user_id ? kycByUser.get(p.user_id) : null;
         return {
           id: p.user_id,
           name: p.full_name || app?.full_name || `${app?.first_name ?? ""} ${app?.last_name ?? ""}`.trim() || app?.email || "—",
-          email: p.email || app?.email || "—",
+          // Die echte Adresse steht im Login-Konto; Bewerbung nur als Rückfall.
+          email: (p.user_id && userEmails.get(p.user_id)) || app?.email || "—",
           phone: p.phone || app?.phone || "—",
           status: p.status as EmployeeStatus,
           onboarding: p.onboarding_status as keyof typeof ONBOARDING_STATUS_CONFIG,
           createdAt: p.created_at,
           contractSigned: !!p.contract_signed_at,
           emailConfirmed: !!(p.user_id && emailConfirmedUserIds.has(p.user_id)),
-          idUploaded: !!(p.id_front_url || p.id_back_url || p.onboarding_status === "abgeschlossen"),
+          idUploaded: !!(
+            kyc?.id_front_url || kyc?.id_back_url || kyc?.selfie_url ||
+            ["in_pruefung", "verifiziert"].includes(String(kyc?.status ?? "")) ||
+            p.onboarding_status === "abgeschlossen"
+          ),
         };
       })
       .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-  }, [applications, profiles, adminUserIds, emailConfirmedUserIds]);
+  }, [applications, profiles, kycList, adminUserIds, emailConfirmedUserIds, userEmails]);
 
   function stagesFor(r: typeof rows[number]): Stage[] {
     const s = (state: Stage["state"], label: string, key: string): Stage => ({ key, label, state });
