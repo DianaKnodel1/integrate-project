@@ -19,7 +19,7 @@ import { claimEmailEvent, finishEmailClaim } from "../_shared/send-claim.ts";
 import { APP_TZ, formatAppointmentDate, formatAppointmentTime, icsLocalBerlin } from "../_shared/format-datetime.ts";
 
 
-const FUNCTION_VERSION = "2026-07-18-booking-confirmation-v3-lookback72h";
+const FUNCTION_VERSION = "2026-08-10-booking-confirmation-v4-manual-resend";
 const REMINDER_KIND = "booking_confirmation";
 const LOOKBACK_MIN = 4320; // 72h – überbrückt längere Cron-Ausfälle; Idempotenz via reminder_log
 
@@ -181,14 +181,19 @@ serve(async (req) => {
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const dryRun = body?.dry_run === true;
+    const forceResend = body?.force_resend === true && typeof body?.appointment_id === "string";
+    const appointmentId = forceResend ? body.appointment_id : null;
 
     const since = new Date(Date.now() - LOOKBACK_MIN * 60_000).toISOString();
 
-    const { data: appts, error: aErr } = await admin.from("interview_appointments")
+    let appointmentQuery = admin.from("interview_appointments")
       .select("id, application_id, tenant_id, starts_at, ends_at, cancel_token, status, created_at")
       .eq("status", "scheduled")
-      .gte("created_at", since)
       .limit(200);
+    appointmentQuery = appointmentId
+      ? appointmentQuery.eq("id", appointmentId)
+      : appointmentQuery.gte("created_at", since);
+    const { data: appts, error: aErr } = await appointmentQuery;
     if (aErr) return json({ error: aErr.message, version: FUNCTION_VERSION }, 500);
     if (!appts || appts.length === 0) return json({ success: true, version: FUNCTION_VERSION, candidates: 0, sent: 0 });
 
@@ -236,7 +241,7 @@ serve(async (req) => {
       }
     }
 
-    const todo = appts.filter((a: any) => !doneAppts.has(a.id) && !capped.has(a.id));
+    const todo = appts.filter((a: any) => forceResend || (!doneAppts.has(a.id) && !capped.has(a.id)));
     if (todo.length === 0) return json({ success: true, version: FUNCTION_VERSION, candidates: appts.length, sent: 0, skipped_already_sent: doneAppts.size, skipped_retry_cap: capped.size });
 
     const { data: apps } = await admin.from("applications")
@@ -365,12 +370,14 @@ serve(async (req) => {
       // Zusätzlich eine kurze Empfängersperre (2 h): sie fängt den Fall ab,
       // dass derselbe Mensch über zwei Vorgänge parallel bestätigt wird —
       // eine echte Umbuchung Stunden später bleibt möglich.
-      const dup = await isDuplicateSend(admin, {
-        recipient: app.email, templateName: REMINDER_KIND,
-        metadataKey: "appointment_id", metadataValue: appt.id,
-        windowHours: 2,
-      });
-      if (dup.duplicate) { skipped++; results.push({ id: appt.id, status: "skipped", reason: dup.reason }); continue; }
+      if (!forceResend) {
+        const dup = await isDuplicateSend(admin, {
+          recipient: app.email, templateName: REMINDER_KIND,
+          metadataKey: "appointment_id", metadataValue: appt.id,
+          windowHours: 2,
+        });
+        if (dup.duplicate) { skipped++; results.push({ id: appt.id, status: "skipped", reason: dup.reason }); continue; }
+      }
 
       // Kontingent-Schutz (150/h, 2.400/Tag). Blockade wird als "skipped" geloggt.
       const allowance = await guardSend({
@@ -380,16 +387,19 @@ serve(async (req) => {
       });
       if (!allowance.allowed) { skipped++; results.push({ id: appt.id, reason: allowance.reason }); continue; }
 
-      const claim = await claimEmailEvent(admin, {
-        eventKey: `booking_confirmation:${appt.id}`,
+      const claimInput = {
+        eventKey: forceResend
+          ? `booking_confirmation:${appt.id}:manual:${crypto.randomUUID()}`
+          : `booking_confirmation:${appt.id}`,
         templateName: REMINDER_KIND,
         recipient: app.email,
         tenantId: tenant.id,
         senderEmail: tenant.sender_email ?? tenant.smtp_username,
         subject,
         html,
-        metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation" },
-      });
+        metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation", manual_resend: forceResend },
+      };
+      const claim = await claimEmailEvent(admin, claimInput);
       if (!claim) { skipped++; results.push({ id: appt.id, status: "skipped", reason: "duplicate_blocked_by_db" }); continue; }
 
       try {
