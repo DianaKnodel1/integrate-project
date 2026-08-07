@@ -55,7 +55,9 @@ const corsHeaders = {
 // erschien zwangsläufig nicht. Deshalb jetzt Nachhol-Fenster: alles von
 // "Termin startet in 40 Min" bis "Termin läuft seit 10 Min" ist versandfähig.
 // Doppelversand verhindert weiterhin application_reminder_log (status 'sent').
-const WINDOW_LOW_MIN = -10;
+// Nachhol-Fenster bis 20 Min nach Terminbeginn: Spätzugang ins Interview ist
+// bis 20 Min möglich, also darf der Link auch bis dahin noch rausgehen.
+const WINDOW_LOW_MIN = -20;
 const WINDOW_HIGH_MIN = 40;
 
 const DEFAULT_SUBJECT = "In 30 Minuten startet Ihr Bewerbungsgespräch";
@@ -461,7 +463,9 @@ serve(async (req) => {
       if (!a.magic_token) { skipped++; results.push({ application_id: a.id, status: "skipped", reason: "no_magic_token" }); if (!dryRun) await logSkip(admin, a, null, "no_magic_token"); continue; }
       const tenant = tenants.get(a.tenant_id);
       if (!tenant) { skipped++; results.push({ application_id: a.id, status: "skipped", reason: "tenant_missing" }); if (!dryRun) await logSkip(admin, a, null, "tenant_missing"); continue; }
-      if (tenant.emails_paused) { skipped++; results.push({ application_id: a.id, status: "skipped", reason: "tenant_paused" }); if (!dryRun) await logSkip(admin, a, tenant, "tenant_paused"); continue; }
+      // Interview-Einladung ist kritisch: eine Mandanten-Pause darf sie nicht
+      // verhindern (ohne Link = garantierter No-Show). Nur fehlendes SMTP stoppt.
+      if (tenant.emails_paused) console.warn("[send-appointment-reminders] critical invite despite tenant pause", { tenant: tenant.id, application: a.id });
       if (!hasValidSmtp(tenant)) { skipped++; results.push({ application_id: a.id, status: "skipped", reason: "smtp_incomplete" }); if (!dryRun) await logSkip(admin, a, tenant, "smtp_incomplete"); continue; }
 
       const sourceLanding = a.source_landing_id ? landingMap.get(a.source_landing_id) : null;
@@ -517,7 +521,7 @@ serve(async (req) => {
       // aber weiterhin Kontingent (150/h, 2.400/Tag).
       const allowance = await guardSend({
         admin, tenantId: tenant.id, templateName: REMINDER_KIND, recipient: a.email,
-        kind: "appointment", senderEmail: tenant.sender_email ?? tenant.smtp_username,
+        kind: "critical", senderEmail: tenant.sender_email ?? tenant.smtp_username,
         metadata: { application_id: a.id, source: "send-appointment-reminders" },
       });
       if (!allowance.allowed) { skipped++; results.push({ application_id: a.id, status: "skipped", reason: allowance.reason }); continue; }
