@@ -5,6 +5,8 @@ import { checkRiskFlag, type EmployeeStatus, type KycStatus, type OnboardingStat
 export type { EmployeeStatus, KycStatus, OnboardingStatus };
 import { useToast } from "@/hooks/use-toast";
 import { fetchAll } from "@/lib/fetch-all";
+import { useServerFn } from "@tanstack/react-start";
+import { listUserEmails } from "@/lib/user-emails.functions";
 
 export interface Application {
   id: string; full_name: string; first_name: string | null; last_name: string | null;
@@ -58,6 +60,8 @@ interface AdminDataContextType {
   chatConversations: ChatConversationRow[];
   adminUserIds: Set<string>;
   emailConfirmedUserIds: Set<string>;
+  /** E-Mail-Adresse je Login-Konto (aus auth.users, nicht aus profiles). */
+  userEmails: Map<string, string>;
   loading: boolean;
   loadingApplications: boolean;
   loadingProfiles: boolean;
@@ -97,6 +101,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [chatConversations, setChatConversations] = useState<ChatConversationRow[]>([]);
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
   const [emailConfirmedUserIds, setEmailConfirmedUserIds] = useState<Set<string>>(new Set());
+  const [userEmails, setUserEmails] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [loadingApplications, setLoadingApplications] = useState(true);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
