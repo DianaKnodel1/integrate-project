@@ -103,14 +103,18 @@ serve(async (req) => {
     debug.smtp_username = tenant.smtp_username;
     debug.sender_email = tenant.sender_email;
 
-    const transporter = createSmtpTransport(tenant as any);
+    // Kurze Timeouts nur für den Test: nodemailer soll seinen echten Fehler
+    // melden, bevor die Edge-Runtime den Aufruf hart abbricht (HTTP 502 ohne
+    // JSON – dann ginge die Ursache verloren).
+    const transporter = createSmtpTransport(tenant as any, {
+      connectionTimeout: 7000,
+      greetingTimeout: 7000,
+      socketTimeout: 9000,
+    });
 
     await Promise.race([
       transporter.verify(),
-      // Bewusst kurz: die Edge-Runtime bricht länger laufende Aufrufe hart ab
-      // (Gateway antwortet dann mit HTTP 502 ohne JSON). So liefern wir immer
-      // eine saubere, verständliche Fehlermeldung zurück.
-      new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 12s")), 12000)),
+      new Promise((_resolve, reject) => setTimeout(() => reject(new Error("verify timeout 10s")), 10000)),
     ]);
 
     debug.last_successful_stage = "VERIFY";

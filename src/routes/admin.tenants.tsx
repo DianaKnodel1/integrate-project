@@ -1254,9 +1254,12 @@ function AdminTenantsPage() {
         }
       }
       if (data?.success === false) {
+        const pausedHint = (t as any).emails_paused
+          ? " Hinweis: Die Mail-Pause blockiert den Test nicht – geprüft wird immer der echte SMTP-Server."
+          : "";
         toast({
           title: data?.errorCode === "AUTH_ERROR" ? "SMTP-Login abgelehnt" : "SMTP-Test fehlgeschlagen",
-          description: data?.error ?? "Unbekannter Fehler",
+          description: `${data?.error ?? "Unbekannter Fehler"}${pausedHint}`,
           variant: "destructive",
         });
       } else {
