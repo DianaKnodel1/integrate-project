@@ -439,7 +439,6 @@ function AdminBewerbungenPage() {
 
   async function doCleanup() {
     setBusy(true);
-    setBusy(true);
     try {
       const res: any = await runCleanup({ data: { older_than_days: cleanupDays, dry_run: false } });
       toast.success(`${res.deleted} Bewerbungen gelöscht.`);
@@ -448,6 +447,19 @@ function AdminBewerbungenPage() {
       toast.error(e?.message ?? "Cleanup fehlgeschlagen");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function doArchive() {
+    setArchiveBusy(true);
+    try {
+      const res: any = await runArchive({ data: { older_than_days: archiveDays, dry_run: false } });
+      toast.success(`${res.archived} Bewerbungen archiviert.`);
+      await loadData();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Archivieren fehlgeschlagen");
+    } finally {
+      setArchiveBusy(false);
     }
   }
 
