@@ -69,7 +69,8 @@ BEGIN
        'send-reminders-hourly',
        'send-appointment-reminders',
        'send-application-reminders',
-       'process-invite-resend-queue'
+       'process-invite-resend-queue',
+       'email-retry-queue'
      )
   LOOP
     BEGIN
