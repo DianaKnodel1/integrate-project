@@ -338,6 +338,8 @@ function AdminBewerbungenPage() {
         email: a.email || "—",
         phone: a.phone || "—",
         phase,
+        tenantId: a.tenant_id ?? null,
+        archived: a.is_archived === true,
         lastActivity: a.created_at,
         source: resolveSource(a),
         createdAt: a.created_at,
@@ -386,18 +388,18 @@ function AdminBewerbungenPage() {
   const groupOf = (p: Phase): string => GROUPS.find(g => g.phases.includes(p))?.key ?? "alle";
 
   const counts = useMemo(() => {
-    const c: Record<string, number> = { alle: rows.length };
+    const c: Record<string, number> = { alle: scoped.length };
     for (const g of GROUPS) if (g.key !== "alle") c[g.key] = 0;
-    for (const r of rows) {
+    for (const r of scoped) {
       const g = groupOf(r.phase);
       c[g] = (c[g] || 0) + 1;
     }
     return c;
-  }, [rows]);
+  }, [scoped]);
 
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
-    return rows.filter(r => {
+    return scoped.filter(r => {
       if (tab !== "alle" && groupOf(r.phase) !== tab) return false;
       if (!ql) return true;
       return (
@@ -408,7 +410,7 @@ function AdminBewerbungenPage() {
         (r.source?.to ?? "").toLowerCase().includes(ql)
       );
     });
-  }, [rows, tab, q]);
+  }, [scoped, tab, q]);
   const pagination = usePagination(filtered, 50);
 
   const orphanCandidates = useMemo(() => {
