@@ -37,7 +37,13 @@ async function postInterview(body: unknown) {
   let data: any = {};
   try { data = raw ? JSON.parse(raw) : {}; } catch { throw new Error("Antwort konnte nicht gelesen werden."); }
   // "Noch zu früh" ist kein Fehler — Frontend rendert Wartescreen mit Countdown.
-  if (res.status === 425 || data?.not_yet) return { __notYet: true as const, scheduled_at: data?.scheduled_at ?? null, message: data?.error ?? null };
+  if (res.status === 425 || data?.not_yet || data?.not_booked)
+    return {
+      __notYet: true as const,
+      scheduled_at: data?.scheduled_at ?? null,
+      not_booked: data?.not_booked === true || (!data?.scheduled_at && res.status === 425),
+      message: data?.error ?? null,
+    };
   if (!res.ok) throw new Error(data?.error ?? `Fehler ${res.status}`);
   return data;
 }
@@ -69,6 +75,8 @@ function InterviewPage() {
   const [consent, setConsent] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [scheduledAt, setScheduledAt] = useState<number | null>(null);
+  // Kein aktiver Termin (nie gebucht oder storniert) — eigener Screen statt Countdown ins Leere.
+  const [notBooked, setNotBooked] = useState(false);
   const [branding, setBranding] = useState<{ firmenname?: string; primary_color?: string; logo_url?: string | null; recruiter_name?: string; recruiter_avatar_url?: string | null } | null>(null);
   // Vom Server aufgelöstes Branding (Fast-Track-Firma). Hat Vorrang vor der
   // direkten Datenbank-Abfrage, die bei unveröffentlichten Seiten leer bleibt.
@@ -133,10 +141,12 @@ function InterviewPage() {
         if ((data as any).__notYet) {
           const sched = (data as any).scheduled_at ? new Date((data as any).scheduled_at).getTime() : null;
           setScheduledAt(sched);
+          setNotBooked(!sched && (data as any).not_booked === true);
           setInitializing(false);
           return;
         }
         setScheduledAt(null);
+        setNotBooked(false);
         const history = data.history ?? [];
         // Begrüßung nicht abrupt einblenden: kurz "tippen" lassen.
         if (history.length > 0 && history[history.length - 1]?.role === "assistant") {
@@ -315,6 +325,29 @@ function InterviewPage() {
           >
             Verstanden, Gespräch starten
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Kein aktiver Termin: Sackgasse vermeiden, direkt zur Selbstbedienung führen.
+  if (notBooked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 p-4">
+        <div className="max-w-lg w-full bg-white dark:bg-slate-900 rounded-2xl border border-border p-8 space-y-5 shadow-lg text-center">
+          {branding?.logo_url && <img src={branding.logo_url} alt={company} className="h-10 object-contain mx-auto" />}
+          <div className="text-5xl leading-none">📅</div>
+          <h1 className="text-2xl font-bold leading-tight">Für Sie ist aktuell kein Termin gebucht</h1>
+          <p className="text-sm text-muted-foreground">
+            Entweder wurde Ihr Termin storniert oder es wurde noch keiner ausgewählt. Sie können sich in
+            wenigen Sekunden einen neuen Termin sichern — Ihre Bewerbung bleibt dabei erhalten.
+          </p>
+          <Button size="lg" className="w-full" style={{ background: primary }} asChild>
+            <a href="/bewerbung">Neuen Termin auswählen</a>
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Sie geben dort nur Ihre E-Mail-Adresse ein und wählen einen passenden Zeitpunkt für Ihr Interview.
+          </p>
         </div>
       </div>
     );
