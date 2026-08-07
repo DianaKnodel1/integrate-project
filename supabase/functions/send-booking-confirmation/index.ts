@@ -15,7 +15,7 @@ import { resolveSender } from "../_shared/sender-resolver.ts";
 import { pickLandingLogo, resolveEmailLogo, type LogoResolution } from "../_shared/email-logo.ts";
 import { guardSend } from "../_shared/send-guard.ts";
 import { isDuplicateSend } from "../_shared/dedupe.ts";
-import { claimEmailEvent, finishEmailClaim } from "../_shared/send-claim.ts";
+import { claimEmailEvent, finishEmailClaim, retryFailedEmailClaim } from "../_shared/send-claim.ts";
 import { APP_TZ, formatAppointmentDate, formatAppointmentTime, icsLocalBerlin } from "../_shared/format-datetime.ts";
 
 
@@ -181,14 +181,19 @@ serve(async (req) => {
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const dryRun = body?.dry_run === true;
+    const forceResend = body?.force_resend === true && typeof body?.appointment_id === "string";
+    const appointmentId = forceResend ? body.appointment_id : null;
 
     const since = new Date(Date.now() - LOOKBACK_MIN * 60_000).toISOString();
 
-    const { data: appts, error: aErr } = await admin.from("interview_appointments")
+    let appointmentQuery = admin.from("interview_appointments")
       .select("id, application_id, tenant_id, starts_at, ends_at, cancel_token, status, created_at")
       .eq("status", "scheduled")
-      .gte("created_at", since)
       .limit(200);
+    appointmentQuery = appointmentId
+      ? appointmentQuery.eq("id", appointmentId)
+      : appointmentQuery.gte("created_at", since);
+    const { data: appts, error: aErr } = await appointmentQuery;
     if (aErr) return json({ error: aErr.message, version: FUNCTION_VERSION }, 500);
     if (!appts || appts.length === 0) return json({ success: true, version: FUNCTION_VERSION, candidates: 0, sent: 0 });
 
@@ -236,7 +241,7 @@ serve(async (req) => {
       }
     }
 
-    const todo = appts.filter((a: any) => !doneAppts.has(a.id) && !capped.has(a.id));
+    const todo = appts.filter((a: any) => !doneAppts.has(a.id) && (forceResend || !capped.has(a.id)));
     if (todo.length === 0) return json({ success: true, version: FUNCTION_VERSION, candidates: appts.length, sent: 0, skipped_already_sent: doneAppts.size, skipped_retry_cap: capped.size });
 
     const { data: apps } = await admin.from("applications")
@@ -380,7 +385,7 @@ serve(async (req) => {
       });
       if (!allowance.allowed) { skipped++; results.push({ id: appt.id, reason: allowance.reason }); continue; }
 
-      const claim = await claimEmailEvent(admin, {
+      const claimInput = {
         eventKey: `booking_confirmation:${appt.id}`,
         templateName: REMINDER_KIND,
         recipient: app.email,
@@ -388,8 +393,12 @@ serve(async (req) => {
         senderEmail: tenant.sender_email ?? tenant.smtp_username,
         subject,
         html,
-        metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation" },
-      });
+        metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation", manual_resend: forceResend },
+      };
+      const claim = forceResend
+        ? (await retryFailedEmailClaim(admin, { eventKey: claimInput.eventKey, metadata: claimInput.metadata })
+          ?? await claimEmailEvent(admin, claimInput))
+        : await claimEmailEvent(admin, claimInput);
       if (!claim) { skipped++; results.push({ id: appt.id, status: "skipped", reason: "duplicate_blocked_by_db" }); continue; }
 
       try {

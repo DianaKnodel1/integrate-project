@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { resendRegistrationInvite } from "@/lib/application-stage.functions";
 import { resendApplicationReceived } from "@/lib/application-received-resend.functions";
+import { resendBookingConfirmation } from "@/lib/booking-confirmation-resend.functions";
 import {
   buildMailChain, formatWhen, mailLabel, STEP_STATE_STYLE,
   statusStyle, reasonLabel, isHarmlessReason, type MailEvent,
@@ -43,6 +44,7 @@ export function MailChain({ applicationId, applicantName, events, expected, next
   const steps = buildMailChain(events, expected);
   const resend = useServerFn(resendRegistrationInvite);
   const resendReceived = useServerFn(resendApplicationReceived);
+  const resendBooking = useServerFn(resendBookingConfirmation);
 
   const history = [...events].sort((a, b) => (b.at || "").localeCompare(a.at || ""));
 
@@ -83,6 +85,7 @@ export function MailChain({ applicationId, applicantName, events, expected, next
     };
     try {
       const rebuild = templateKey === "application_received";
+      const rebuildBooking = templateKey === "booking_confirmation";
       if (rebuild) {
         const res: any = await resendReceived({ data: { applicationId } });
         if (res?.ok) {
@@ -90,6 +93,16 @@ export function MailChain({ applicationId, applicantName, events, expected, next
           onRefresh?.();
         } else {
           fail(res?.reason || "Versand fehlgeschlagen");
+        }
+        return;
+      }
+      if (rebuildBooking) {
+        const res: any = await resendBooking({ data: { applicationId } });
+        if (res?.ok) {
+          toast.success(`Terminbestätigung erneut versendet an ${res.to || "Empfänger"}`);
+          onRefresh?.();
+        } else {
+          fail(res?.reason || "Terminbestätigung konnte nicht versendet werden");
         }
         return;
       }
