@@ -482,7 +482,7 @@ serve(async (req) => {
       }
     }
 
-    type ReminderKind = "no_booking_24h" | "no_booking_72h" | "no_show_24h" | "registration_pending_24h" | "registration_pending_72h" | "rebook_after_cancel_24h" | "rebook_after_cancel_72h";
+    type ReminderKind = "no_booking_24h" | "no_booking_72h" | "no_show_30min" | "no_show_24h" | "registration_pending_2h" | "registration_pending_24h" | "registration_pending_72h" | "rebook_after_cancel_24h" | "rebook_after_cancel_72h";
     type Todo = { app: any; kind: ReminderKind; inviteToken?: string };
     const todo: Todo[] = [];
 
@@ -546,6 +546,12 @@ serve(async (req) => {
       if (noShowEligible) {
         const schedMs = new Date(a.scheduled_at).getTime();
         const sinceMin = (now - schedMs) / 60_000;
+        if (sinceMin >= NO_SHOW_FAST_MIN && sinceMin < NO_SHOW_MIN) {
+          if (!already.has(`${a.id}|no_show_30min`)) {
+            todo.push({ app: a, kind: "no_show_30min" });
+            continue;
+          }
+        }
         if (sinceMin >= NO_SHOW_MIN && sinceMin < NO_SHOW_MIN + 24 * 60) {
           if (!already.has(`${a.id}|no_show_24h`)) todo.push({ app: a, kind: "no_show_24h" });
           continue;
@@ -560,7 +566,12 @@ serve(async (req) => {
         const isRegistered = registeredEmails.has(emailKey);
         if (!isRegistered) {
           const inviteAgeMin = (now - new Date(invite.created_at).getTime()) / 60_000;
-          if (inviteAgeMin >= REG_PENDING_1_MIN && inviteAgeMin < REG_PENDING_2_MIN) {
+          if (inviteAgeMin >= REG_PENDING_0_MIN && inviteAgeMin < REG_PENDING_1_MIN) {
+            if (!already.has(`${a.id}|registration_pending_2h`)) {
+              todo.push({ app: a, kind: "registration_pending_2h", inviteToken: invite.token });
+              continue;
+            }
+          } else if (inviteAgeMin >= REG_PENDING_1_MIN && inviteAgeMin < REG_PENDING_2_MIN) {
             if (!already.has(`${a.id}|registration_pending_24h`)) {
               todo.push({ app: a, kind: "registration_pending_24h", inviteToken: invite.token });
               continue;
@@ -677,8 +688,9 @@ serve(async (req) => {
     const jitter = () => new Promise(res => setTimeout(res, JITTER_MIN_MS + Math.random() * (JITTER_MAX_MS - JITTER_MIN_MS)));
 
     for (const { app, kind, inviteToken } of todo) {
-      const isRegistration = kind === "registration_pending_24h" || kind === "registration_pending_72h";
-      const isNoShow = kind === "no_show_24h";
+      const isRegistration = kind.startsWith("registration_pending");
+      const isNoShow = kind === "no_show_24h" || kind === "no_show_30min";
+      const isNoShowFast = kind === "no_show_30min";
       const isRebook = kind === "rebook_after_cancel_24h" || kind === "rebook_after_cancel_72h";
       const emailKind: EmailKind = isRegistration
         ? "fasttrack_registration_complete"
@@ -796,14 +808,18 @@ serve(async (req) => {
         : isRebook
           ? (tenant.reminder_app_rebook_subject || DEFAULTS.rebook.subject)
           : isNoShow
-            ? (tenant.reminder_app_no_show_subject || DEFAULTS.no_show.subject)
+            ? (isNoShowFast
+                ? DEFAULTS.no_show_fast.subject
+                : (tenant.reminder_app_no_show_subject || DEFAULTS.no_show.subject))
             : (tenant.reminder_app_no_booking_subject || DEFAULTS.no_booking.subject);
       const tmplBody = isRegistration
         ? (tenant.reminder_app_registration_body || DEFAULTS.registration.body)
         : isRebook
           ? (tenant.reminder_app_rebook_body || DEFAULTS.rebook.body)
           : isNoShow
-            ? (tenant.reminder_app_no_show_body || DEFAULTS.no_show.body)
+            ? (isNoShowFast
+                ? DEFAULTS.no_show_fast.body
+                : (tenant.reminder_app_no_show_body || DEFAULTS.no_show.body))
             : (tenant.reminder_app_no_booking_body || DEFAULTS.no_booking.body);
 
       const recruiter = landing?.recruiter_name || landing?.branding?.recruiter_name || tenant.sender_name || tenant.name;
