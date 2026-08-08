@@ -25,7 +25,7 @@ ALTER TABLE public.application_reminder_log
     'registration_abandoned_24h',
     'rebook_after_cancel_24h',
     'rebook_after_cancel_72h'
-  ));
+  )) NOT VALID;
 
 -- Der finale 60-Tage-Dedupe-Index wird in 20260819000000 angelegt. Ein
 -- zwischenzeitlicher strenger Index auf tenant_id + E-Mail wuerde bei legalen
