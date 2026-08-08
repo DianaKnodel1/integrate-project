@@ -45,6 +45,25 @@ export type NoShowTotals = {
   mehrfachbuchungen: number;
 };
 
+// Kompletter Trichter je Buchungsart (Calendly vs. internes System) — auf
+// Bewerber-Ebene, damit man sieht: gebucht? abgesagt? wahrgenommen? Zusage?
+export type ModeFunnel = {
+  key: string;
+  label: string;
+  beworben: number;
+  gebucht: number;
+  nie_gebucht: number;
+  abgesagt: number;
+  no_show: number;
+  wahrgenommen: number;
+  zusage: number;
+  ki_absage: number;
+  offen: number;
+  buchungsquote: number;
+  no_show_quote: number;
+  zusagequote: number;
+};
+
 export type NoShowReport = {
   totals: NoShowTotals;
   by_lead_time: Bucket[];
@@ -55,6 +74,7 @@ export type NoShowReport = {
   by_source: Bucket[];
   by_mail: Bucket[];
   by_booking_mode: Bucket[];
+  by_mode_funnel: ModeFunnel[];
   findings: Array<{ level: "high" | "medium" | "info"; text: string }>;
   error?: string;
 };
