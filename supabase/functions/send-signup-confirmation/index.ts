@@ -145,6 +145,21 @@ serve(async (req) => {
       }
     }
     const userId = linkData!.user!.id;
+
+    // Mail-los-Modus: keine Bestätigungs-Mail. Das Konto wird sofort
+    // freigeschaltet, der Bewerber loggt sich direkt ein (das ist die Stelle,
+    // an der bisher fast alle Zusagen verloren gingen).
+    if (await isMaillessTenant(supabaseAdmin, tenant_id)) {
+      const { error: confirmErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        email_confirm: true,
+      });
+      if (confirmErr) {
+        await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {});
+        return json({ error: `Konto konnte nicht aktiviert werden: ${confirmErr.message}` }, 500);
+      }
+      return json({ success: true, user_id: userId, auto_confirmed: true }, 200);
+    }
+
     // WICHTIG: Wir verwenden NICHT properties.action_link (der wird von Mail-Scannern
     // wie Gmail beim Prefetch konsumiert → otp_expired). Stattdessen bauen wir einen
     // Link auf unsere eigene /auth/confirmed-Seite mit token_hash. Die Seite ruft
