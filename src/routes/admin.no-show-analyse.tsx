@@ -67,6 +67,7 @@ function BucketTable({ title, description, rows }: { title: string; description:
 }
 
 function NoShowPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fn = useServerFn(getNoShowReport);
   const [days, setDays] = useState(7);
   const [tenantId, setTenantId] = useState("");
