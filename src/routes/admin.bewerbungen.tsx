@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
-import { Users, Search, ExternalLink, Trash2, MailWarning, Archive } from "lucide-react";
+import { Users, Search, ExternalLink, Trash2, Archive } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
 import { deleteOrphanApplications, deleteApplication, bulkDeleteApplications } from "@/lib/admin-delete.functions";
@@ -623,7 +623,6 @@ function AdminBewerbungenPage() {
                             <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/personen/${r.id}`)} className="h-7 gap-1.5 text-xs">
                               Öffnen <ExternalLink className="h-3 w-3" />
                             </Button>
-                            <ResendInviteButton appId={r.id} />
                             <DeleteAppButton appId={r.id} name={r.name} />
                           </div>
                         </td>
@@ -645,36 +644,6 @@ function AdminBewerbungenPage() {
 
 function DeleteAppButton({ appId, name }: { appId: string; name: string }) {
   return <DeleteAppButtonInner appId={appId} name={name} />;
-}
-
-/** Einladung („Willkommen im Team") erneut versenden — z. B. nach SMTP-Fehler. */
-function ResendInviteButton({ appId }: { appId: string }) {
-  const [busy, setBusy] = useState(false);
-  const run = useServerFn(resendRegistrationInvite);
-  async function doResend() {
-    setBusy(true);
-    try {
-      const res: any = await run({ data: { applicationId: appId } });
-      if (res?.sent) toast.success("Einladung wurde erneut versendet");
-      else toast.error(`Versand fehlgeschlagen: ${res?.error ?? res?.reason ?? "unbekannt"}`);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Versand fehlgeschlagen");
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={busy}
-      onClick={doResend}
-      className="h-7 w-7 p-0"
-      title="Registrierungs-Einladung erneut senden"
-    >
-      <MailWarning className="h-3.5 w-3.5" />
-    </Button>
-  );
 }
 
 function DeleteAppButtonInner({ appId, name }: { appId: string; name: string }) {
