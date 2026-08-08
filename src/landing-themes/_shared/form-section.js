@@ -6,9 +6,15 @@
     var failed=emailStatus&&emailStatus.status==='failed';
     var skipped=emailStatus&&emailStatus.status==='skipped';
     var calendly=emailStatus&&emailStatus.reason==='calendly_handles_mail';
+    var mailless=emailStatus&&emailStatus.reason==='mailless_mode';
     if(calendly){
       s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:#ecfdf5;border-left:4px solid #10b981;border-radius:8px;color:#065f46;font-size:13.5px;line-height:1.55;text-align:left;';
       s.innerHTML='Nach der Terminwahl erhalten Sie Ihre Bestätigung, den Kalendereintrag und Erinnerungen automatisch per E-Mail und SMS.';
+      return s;
+    }
+    if(mailless){
+      s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:#ecfdf5;border-left:4px solid #10b981;border-radius:8px;color:#065f46;font-size:13.5px;line-height:1.55;text-align:left;';
+      s.innerHTML='Ihre Bewerbung ist eingegangen. Sie können direkt hier weitermachen – alle weiteren Schritte finden Sie jederzeit über diese Seite.';
       return s;
     }
     s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:'+(failed?'#fee2e2':skipped?'#f1f5f9':'#fef3c7')+';border-left:4px solid '+(failed?'#ef4444':skipped?'#94a3b8':'#f59e0b')+';border-radius:8px;color:'+(failed?'#7f1d1d':skipped?'#334155':'#78350f')+';font-size:13.5px;line-height:1.55;text-align:left;';
