@@ -434,9 +434,16 @@ function RegisterPage() {
       // Telefon zusätzlich auf auth.users (für spätere SMS-Verifizierung)
       await supabase.auth.updateUser({ phone: phone.trim() }).catch(() => {});
 
-      // 4. Erfolg → E-Mail-Bestätigung erforderlich, Wizard-State leeren
-      setStep(99);
+      // 4. Erfolg → Wizard-State leeren
       ls.removeItem(STORAGE_DRAFT);
+      if (autoConfirmed) {
+        // Kein Mail-Zwischenschritt: direkt ins Onboarding.
+        ls.removeItem(`pending_profile_updates:${newUserId}`);
+        resetWizard();
+        navigate("/onboarding");
+        return;
+      }
+      setStep(99);
     } catch (err: any) {
       toast({ title: "Fehler", description: err.message ?? "Unbekannter Fehler", variant: "destructive" });
     } finally {
