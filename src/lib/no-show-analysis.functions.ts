@@ -488,6 +488,6 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     return {
       totals, by_lead_time, by_reaction_time, by_weekday, by_hour,
-      by_tenant, by_source, by_mail, by_booking_mode, findings,
+      by_tenant, by_source, by_mail, by_booking_mode, by_mode_funnel, findings,
     };
   });
