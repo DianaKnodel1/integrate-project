@@ -461,35 +461,6 @@ function TenantForm({ tenant, onSaved }: { tenant?: Tenant; onSaved: () => void 
       </div>
 
       <div className="space-y-3 border-t border-border pt-4">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">SMTP E-Mail-Konfiguration</p>
-        <p className="text-[10px] text-muted-foreground">Manuell pro Tenant konfigurierbar. Domain muss im Mail-Provider verifiziert sein.</p>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">SMTP Host</Label>
-            <Input value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} placeholder="smtp.example.com" className="mt-1" />
-          </div>
-          <div>
-            <Label className="text-xs">SMTP Port</Label>
-            <Input value={smtpPort} onChange={(e) => setSmtpPort(e.target.value)} placeholder="587" className="mt-1" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">SMTP Username</Label>
-            <Input value={smtpUsername} onChange={(e) => setSmtpUsername(e.target.value)} placeholder="user@example.com" className="mt-1" />
-          </div>
-          <div>
-            <Label className="text-xs">SMTP Passwort</Label>
-            <Input type="password" value={smtpPassword} onChange={(e) => setSmtpPassword(e.target.value)} placeholder="••••••••" className="mt-1" />
-          </div>
-        </div>
-        <div>
-          <Label className="text-xs">Reply-To E-Mail</Label>
-          <Input value={replyToEmail} onChange={(e) => setReplyToEmail(e.target.value)} placeholder="support@example.com" className="mt-1" />
-        </div>
-      </div>
-
-      <div className="space-y-3 border-t border-border pt-4">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">E-Mail Templates</p>
         <p className="text-[10px] text-muted-foreground">{"Platzhalter: {{first_name}}, {{last_name}}, {{email}}, {{company_name}}, {{portal_link}}, {{team_leader_name}}"}</p>
         <div>
@@ -504,20 +475,6 @@ function TenantForm({ tenant, onSaved }: { tenant?: Tenant; onSaved: () => void 
           <Label className="text-xs">E-Mail Signatur</Label>
           <Textarea value={emailSignature} onChange={(e) => setEmailSignature(e.target.value)} placeholder="Mit freundlichen Grüßen,&#10;Ihr Team" rows={3} className="mt-1 font-mono text-xs" />
         </div>
-
-        {!smtpHost.trim() && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-status-pending/10 border border-status-pending/20">
-            <AlertTriangle className="h-4 w-4 text-status-pending shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-medium text-foreground">Kein SMTP konfiguriert</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Ohne vollständige SMTP-Daten können für diesen Tenant keine E-Mails gesendet werden. Bitte SMTP-Daten hinterlegen.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {tenant && <TestEmailButton tenantId={tenant.id} smtpConfigured={smtpConfigured} />}
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
@@ -1474,7 +1431,6 @@ function AdminTenantsPage() {
                       ⏸ Mails pausiert · {pauseTrigger(t)}
                     </Badge>
                   )}
-                  <SmtpBadge state={smtpStateOf(t, smtpHealth[t.id])} health={smtpHealth[t.id]} />
                   <TenantReadinessBadge
                     readiness={readiness[t.id]}
                     loading={readinessLoading}
@@ -1494,16 +1450,6 @@ function AdminTenantsPage() {
                     <span className="truncate max-w-[120px]">{t.team_leader_name}</span>
                   </div>
                   <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs"
-                      disabled={testingId === t.id}
-                      onClick={() => runSmtpTest(t)}
-                      title="SMTP-Verbindung jetzt prüfen. Bei Erfolg wird eine automatische Pause aufgehoben."
-                    >
-                      {testingId === t.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "SMTP testen"}
-                    </Button>
                     {(t as any).emails_paused ? (
                       <Button variant="default" size="sm" onClick={() => resumeEmails(t)} className="text-xs" title={(t as any).emails_paused_reason ?? ""}>
                         Versand fortsetzen
