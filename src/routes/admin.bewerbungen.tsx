@@ -520,6 +520,40 @@ function AdminBewerbungenPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="gap-1.5">
+                <Trash2 className="h-4 w-4" /> Bewerber zurücksetzen
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Alle Bewerber löschen</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Löscht sämtliche Bewerbungen inklusive Termine und Verlauf — damit die Statistik
+                  wieder bei null startet. Mitarbeiter-Konten, Verträge und Aufgaben bleiben
+                  vollständig erhalten. Diese Aktion kann nicht rückgängig gemacht werden.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="py-2 space-y-2">
+                <label className="text-sm">Zum Bestätigen <b>BEWERBER LOESCHEN</b> eintippen:</label>
+                <Input
+                  value={resetConfirm}
+                  onChange={(e) => setResetConfirm(e.target.value)}
+                  placeholder="BEWERBER LOESCHEN"
+                />
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={resetBusy}>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={resetBusy || resetConfirm.trim().toUpperCase() !== "BEWERBER LOESCHEN"}
+                  onClick={(e) => { e.preventDefault(); doResetApplicants(); }}
+                >
+                  {resetBusy ? "Lösche…" : "Endgültig löschen"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
