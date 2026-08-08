@@ -543,7 +543,7 @@ export const Route = createFileRoute("/api/public/applications")({
             mailTenantLoaded = true;
             const { data: tenant, error: tenantErr } = await supabaseAdmin
               .from("tenants")
-              .select("id, name, domain, primary_domain, smtp_host, smtp_port, smtp_username, smtp_password, is_active, emails_paused, emails_paused_reason")
+              .select("id, name, domain, primary_domain, smtp_host, smtp_port, smtp_username, smtp_password, is_active, emails_paused, emails_paused_reason, mailless_mode")
               .eq("id", resolvedTenantId)
               .maybeSingle();
             if (tenantErr) {
@@ -698,12 +698,31 @@ export const Route = createFileRoute("/api/public/applications")({
             first_name: firstName, last_name: lastName,
             utm_content: appId, utm_source: d.source_slug,
           }).toString();
+          // Die Danke-Karte nennt die Firma, an die vermittelt wird. Bei einer
+          // Vermittlung ist das die verknüpfte Fast-Track-Landing, nicht die
+          // eigene Landingpage.
+          let targetName = "";
+          let targetLogo: string | null = null;
+          const linkedFastId = (landingPage as any)?.linked_fasttrack_landing_id
+            ?? d.target_landing_id ?? null;
+          if (linkedFastId) {
+            const { data: ftLp } = await supabaseAdmin
+              .from("landing_pages")
+              .select("intermediate_company_name, logo_url, branding")
+              .eq("id", linkedFastId)
+              .maybeSingle();
+            const ftBranding = (ftLp as any)?.branding ?? {};
+            targetName = (ftLp as any)?.intermediate_company_name || ftBranding.firmenname || "";
+            targetLogo = (ftLp as any)?.logo_url || ftBranding.logo_image || null;
+          }
+          const ownBranding = (landingPage as any)?.branding ?? {};
           broker_block = {
             partner_name:
-              (landingPage as any)?.intermediate_company_name
-              || ((landingPage as any)?.branding?.firmenname ?? "")
-              || "",
-            partner_logo: (landingPage as any)?.logo_url ?? null,
+              targetName
+              || (landingPage as any)?.intermediate_company_name
+              || (ownBranding.firmenname ?? "")
+              || "unserem Partnerunternehmen",
+            partner_logo: targetLogo || (landingPage as any)?.logo_url || ownBranding.logo_image || null,
             calendly_url: calBase ? `${calBase}${sep}${qs}` : "",
             button_label: "Jetzt Termin buchen",
             intro_headline: null,
@@ -739,8 +758,13 @@ export const Route = createFileRoute("/api/public/applications")({
         // Für diesen Modus verschickt das Portal bewusst KEINE eigene
         // Eingangsbestätigung (A/B gegen die interne Terminbuchung).
         const calendlyHandlesMail = (isBroker || useCalendly) && !!broker_block?.calendly_url;
+        // Mailless-Mode: das Portal verschickt grundsätzlich keine Bewerber-Mails
+        // mehr (Calendly übernimmt Bestätigung/Reminder per Mail + SMS).
+        const maillessTenant = resolvedTenantId && !d.is_test
+          ? (await loadMailTenant()).tenant?.mailless_mode === true
+          : false;
         const shouldSendConfirmation =
-          wasNewlyCreated && resolvedTenantId && !d.is_test && !calendlyHandlesMail;
+          wasNewlyCreated && resolvedTenantId && !d.is_test && !calendlyHandlesMail && !maillessTenant;
 
         console.log("[applications] confirmation_decision", {
           requestId,
@@ -813,6 +837,9 @@ export const Route = createFileRoute("/api/public/applications")({
         } else if (calendlyHandlesMail && !d.is_test) {
           email_status = { attempted: false, status: "skipped", template: "application_received", reason: "calendly_handles_mail" };
           await logMailResult("application_received", "skipped", "calendly_handles_mail");
+        } else if (maillessTenant && wasNewlyCreated) {
+          email_status = { attempted: false, status: "skipped", template: "application_received", reason: "mailless_mode" };
+          await logMailResult("application_received", "skipped", "mailless_mode");
         } else if (!wasNewlyCreated && !d.is_test) {
           email_status = { attempted: false, status: "skipped", template: "application_received", reason: "duplicate_application" };
           await logMailResult("application_received", "skipped", "duplicate_application");

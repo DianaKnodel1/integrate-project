@@ -6,9 +6,15 @@
     var failed=emailStatus&&emailStatus.status==='failed';
     var skipped=emailStatus&&emailStatus.status==='skipped';
     var calendly=emailStatus&&emailStatus.reason==='calendly_handles_mail';
+    var mailless=emailStatus&&emailStatus.reason==='mailless_mode';
     if(calendly){
       s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:#ecfdf5;border-left:4px solid #10b981;border-radius:8px;color:#065f46;font-size:13.5px;line-height:1.55;text-align:left;';
       s.innerHTML='Nach der Terminwahl erhalten Sie Ihre Bestätigung, den Kalendereintrag und Erinnerungen automatisch per E-Mail und SMS.';
+      return s;
+    }
+    if(mailless){
+      s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:#ecfdf5;border-left:4px solid #10b981;border-radius:8px;color:#065f46;font-size:13.5px;line-height:1.55;text-align:left;';
+      s.innerHTML='Ihre Bewerbung ist eingegangen. Sie können direkt hier weitermachen – alle weiteren Schritte finden Sie jederzeit über diese Seite.';
       return s;
     }
     s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:'+(failed?'#fee2e2':skipped?'#f1f5f9':'#fef3c7')+';border-left:4px solid '+(failed?'#ef4444':skipped?'#94a3b8':'#f59e0b')+';border-radius:8px;color:'+(failed?'#7f1d1d':skipped?'#334155':'#78350f')+';font-size:13.5px;line-height:1.55;text-align:left;';
@@ -294,9 +300,9 @@
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 18px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
       var pl=document.createElement('div');pl.textContent='Wir verbinden Sie mit';pl.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
-      var pn=document.createElement('div');pn.textContent=broker.partner_name||'';pn.style.cssText='font-size:17px;font-weight:700;color:#0f172a;';
+      var pn=document.createElement('div');pn.textContent=broker.partner_name||'unserem Partnerunternehmen';pn.style.cssText='font-size:17px;font-weight:700;color:#0f172a;';
       pc.appendChild(pl);pc.appendChild(pn);box.appendChild(pc);
-      if(broker.calendly_url){var cta2=document.createElement('a');cta2.href=broker.calendly_url;cta2.target='_blank';cta2.rel='noopener';cta2.textContent=(broker.button_label||'Jetzt Termin auswählen')+'  →';
+      if(broker.calendly_url){var cta2=document.createElement('a');cta2.href=broker.calendly_url;cta2.target='_blank';cta2.rel='noopener';cta2.textContent=(broker.button_label||'Jetzt Termin buchen')+'  →';
         cta2.style.cssText='display:inline-block;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:999px;font-size:16px;';box.appendChild(cta2);}
       box.appendChild(spamHintBox(emailStatus));
     } else if(isFast){

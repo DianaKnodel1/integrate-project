@@ -42,7 +42,7 @@ function showApplicationModal(opts){
     partnerLabel.textContent = 'Wir verbinden Sie mit';
     partnerLabel.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
     var partnerName = document.createElement('div');
-    partnerName.textContent = broker.partner_name || '';
+    partnerName.textContent = broker.partner_name || 'unserem Partnerunternehmen';
     partnerName.style.cssText='font-size:17px;font-weight:700;color:#0f172a;';
     partnerCard.appendChild(partnerLabel); partnerCard.appendChild(partnerName);
     if (broker.partner_logo) {
