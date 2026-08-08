@@ -308,6 +308,16 @@ serve(async (req) => {
         continue;
       }
       if (!hasValidSmtp(tenant)) { skipped++; results.push({ id: appt.id, reason: "no_smtp" }); continue; }
+      // Ersatzabsender-Hinweis: geht mit ins Log, damit im E-Mail-Center sichtbar
+      // bleibt, welcher Mandant seine SMTP-Daten nachziehen muss.
+      const fallbackMeta = resolved.fallbackUsed
+        ? {
+            sender_fallback: true,
+            sender_fallback_reason: resolved.fallbackReason ?? null,
+            sender_intended_tenant_id: resolved.intendedTenantId ?? null,
+            sender_used_tenant_id: tenant.id,
+          }
+        : {};
 
       const sourceLanding = app.source_landing_id ? lpMap.get(app.source_landing_id) : null;
       const targetLanding = app.target_landing_id ? lpMap.get(app.target_landing_id) : null;
@@ -452,7 +462,7 @@ serve(async (req) => {
           application_id: app.id, tenant_id: tenant.id, reminder_kind: REMINDER_KIND,
           recipient_email: app.email, status: "sent",
         }, { onConflict: "application_id,reminder_kind" });
-        await finishEmailClaim(admin, claim, { status: "sent", metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation", ...logoMetadata } });
+        await finishEmailClaim(admin, claim, { status: "sent", metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation", ...logoMetadata, ...fallbackMeta } });
         sent++; results.push({ id: appt.id, status: "sent" });
         await new Promise((r) => setTimeout(r, 3000));
       } catch (e: any) {
@@ -462,7 +472,7 @@ serve(async (req) => {
           application_id: app.id, tenant_id: tenant.id, reminder_kind: REMINDER_KIND,
           recipient_email: app.email, status: "failed", error: err,
         }, { onConflict: "application_id,reminder_kind" });
-        await finishEmailClaim(admin, claim, { status: "failed", error: err, metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation", ...logoMetadata } });
+        await finishEmailClaim(admin, claim, { status: "failed", error: err, metadata: { appointment_id: appt.id, application_id: app.id, source: "send-booking-confirmation", ...logoMetadata, ...fallbackMeta } });
         results.push({ id: appt.id, status: "failed", error: err });
       }
     }

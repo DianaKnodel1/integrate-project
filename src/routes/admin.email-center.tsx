@@ -187,6 +187,33 @@ function AdminEmailCenterPage() {
     return [...byAppointment.values()].sort((a, b) => (a.last < b.last ? 1 : -1));
   }, [rows]);
 
+  /**
+   * Mails, die nur über einen Ersatzabsender rausgingen, weil der eigentlich
+   * zuständige Mandant nicht senden konnte. Die Mail ist beim Bewerber
+   * angekommen — die SMTP-Konfiguration muss aber nachgezogen werden.
+   */
+  const fallbackSends = useMemo(() => {
+    const byTenant = new Map<string, { intended: string; reason: string; count: number; last: string }>();
+    for (const r of rows) {
+      const meta = (r.metadata ?? {}) as any;
+      if (meta.sender_fallback !== true) continue;
+      const key = String(meta.sender_intended_tenant_id ?? "unbekannt");
+      const cur = byTenant.get(key);
+      if (cur) {
+        cur.count++;
+        if (r.created_at > cur.last) cur.last = r.created_at;
+        continue;
+      }
+      byTenant.set(key, {
+        intended: key,
+        reason: String(meta.sender_fallback_reason ?? "unbekannt"),
+        count: 1,
+        last: r.created_at,
+      });
+    }
+    return [...byTenant.values()].sort((a, b) => (a.last < b.last ? 1 : -1));
+  }, [rows]);
+
   const BLOCK_REASONS: Record<string, { label: string; action: string }> = {
     missing_fasttrack_portal_domain: {
       label: "Keine Fast-Track-Portal-Domain hinterlegt",
@@ -452,6 +479,31 @@ function AdminEmailCenterPage() {
       <EmailRetryQueuePanel />
 
       {/* Doppelversand-Warnung */}
+      {fallbackSends.length > 0 && (
+        <Card className="border-amber-500/60 bg-amber-500/10">
+          <CardContent className="p-4">
+            <div className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+              Mit Ersatzabsender verschickt ({fallbackSends.reduce((n, f) => n + f.count, 0)})
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              Terminbestätigung bzw. Interview-Link sind rausgegangen — aber über einen
+              anderen Mandanten, weil der zuständige nicht senden konnte. SMTP-Daten prüfen.
+            </div>
+            <div className="mt-2 space-y-1">
+              {fallbackSends.map(f => (
+                <div key={f.intended} className="text-xs flex items-center gap-3">
+                  <span className="flex-1 truncate font-medium">
+                    {tenantNames[f.intended] ?? "Mandant nicht zugeordnet"}
+                  </span>
+                  <span className="truncate max-w-[18rem] text-muted-foreground">{f.reason}</span>
+                  <span className="tabular-nums">{f.count}×</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {blockedConfirmations.length > 0 && (
         <Card className="border-rose-500/60 bg-rose-500/10">
           <CardContent className="p-4">
