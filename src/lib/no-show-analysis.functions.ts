@@ -167,13 +167,14 @@ export const getNoShowReport = createServerFn({ method: "POST" })
         buchungsquote: 0, erscheinensquote: 0, no_show_quote: 0, mehrfachbuchungen: 0,
       },
       by_lead_time: [], by_reaction_time: [], by_weekday: [], by_hour: [],
-      by_tenant: [], by_source: [], by_mail: [], by_booking_mode: [], findings: [],
+      by_tenant: [], by_source: [], by_mail: [], by_booking_mode: [],
+      by_mode_funnel: [], findings: [],
     };
 
     // 1) Bewerbungen im Zeitraum
     let appQ = supabase
       .from("applications")
-      .select("id, email, tenant_id, created_at, booking_status, scheduled_at, interview_started_at, interview_completed_at, source_slug, source_landing_id, is_test")
+      .select("id, email, tenant_id, created_at, status, booking_status, scheduled_at, interview_started_at, interview_completed_at, source_slug, source_landing_id, calendly_event_uri, is_test")
       .eq("is_test", false)
       .gte("created_at", sinceIso);
     if (data.tenant_id) appQ = appQ.eq("tenant_id", data.tenant_id);
