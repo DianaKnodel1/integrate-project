@@ -26,9 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { usePagination } from "@/hooks/use-pagination";
 import { fetchAll } from "@/lib/fetch-all";
 import { PaginationBar } from "@/components/PaginationBar";
-import { MailChain } from "@/components/mail/MailChain";
 import { computeNextStep } from "@/lib/mail-next-step";
-import { mailLabel, mergeMailEvents, type MailEvent } from "@/lib/mail-chain";
 
 /**
  * Bewerbungen — nur applications (Funnel bis Registrierung).
@@ -255,11 +253,6 @@ function AdminBewerbungenPage() {
       } : null;
       const sched = bookingByApp.get(a.id) ?? (a.scheduled_at ? new Date(a.scheduled_at) : null);
       const phase = computePhase(a, sched, prof);
-      const mailEvents: MailEvent[] = mergeMailEvents([
-        ...(mailSendEventsByApp.get(a.id) ?? []),
-        ...(email ? mailEventsByEmail.get(email) ?? [] : []),
-        ...(mailEventsByApp.get(a.id) ?? []),
-      ]);
       return {
         id: a.id,
         name: a.full_name || `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || email || "—",
@@ -272,33 +265,9 @@ function AdminBewerbungenPage() {
         source: resolveSource(a),
         createdAt: a.created_at,
         hasProfile: !!prof,
-        mailEvents,
-        // Termin-Mail nur erwartet, wenn tatsächlich ein Termin existiert;
-        // Zusage-Mail nur nach angenommener Bewerbung.
-        mailExpected: { termin: !!sched, zusage: phase === "angenommen" },
-        // Was das System als Nächstes verschickt — macht graue Punkte erklärbar.
-        nextStep: computeNextStep({
-          createdAt: a.created_at ?? null,
-          scheduledAt: sched,
-          bookingStatus: a.booking_status ?? null,
-          interviewCompletedAt: a.interview_completed_at ?? null,
-          recommendation: (a.interview_recommendation as string | null) ?? null,
-          inviteSentAt:
-            mailEvents.find((e) =>
-              ["welcome_invitation", "registration_invitation", "invitation", "reminder_invite", "bewerbung_magic_link"].includes(e.key)
-              // "stuck" = im Reminder-Protokoll als versendet vermerkt, im
-              // Versand-Log ohne Endstatus. Die Mail ist trotzdem rausgegangen.
-              && ["sent", "stuck"].includes(e.status),
-            )?.at ?? null,
-          registered: !!prof,
-          cancelledAt: a.stage_changed_at ?? null,
-          inviteMailStatus: a.invite_mail_status ?? null,
-          inviteMailError: a.invite_mail_error ?? null,
-          inviteMailAt: a.invite_mail_at ?? null,
-        }),
       };
     }).sort((a, b) => (b.lastActivity || "").localeCompare(a.lastActivity || ""));
-  }, [applications, bookingByApp, landingById, profileByKey, emailConfirmedUserIds, mailSendEventsByApp, mailEventsByEmail, mailEventsByApp]);
+  }, [applications, bookingByApp, landingById, profileByKey]);
 
   // Chips folgen dem echten Weg des Bewerbers — so ist sofort sichtbar,
   // an welcher Stelle Leute verloren gehen.
@@ -629,15 +598,6 @@ function AdminBewerbungenPage() {
                             <span className={`inline-block px-1.5 py-0.5 rounded ${PHASE_COLOR[r.phase]}`}>
                               {meta?.emoji} {meta?.label}
                             </span>
-                            <MailChain
-                              applicationId={r.id}
-                              applicantName={r.name}
-                              events={r.mailEvents}
-                              expected={r.mailExpected}
-                              nextStep={r.nextStep}
-                              onRefresh={() => setMailReload((n) => n + 1)}
-                            />
-
                           </div>
                         </td>
 
