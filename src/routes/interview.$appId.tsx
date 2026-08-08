@@ -84,12 +84,15 @@ function InterviewPage() {
   // Vom Server aufgelöstes Branding (Fast-Track-Firma). Hat Vorrang vor der
   // direkten Datenbank-Abfrage, die bei unveröffentlichten Seiten leer bleibt.
   const [serverBranding, setServerBranding] = useState<{ recruiter_name?: string; recruiter_avatar_url?: string | null; company_name?: string } | null>(null);
+  // Vom Server aufgeloeste Portal-Basis der Partnerfirma (Fast-Track).
+  const [serverPortalBase, setServerPortalBase] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const zusageRef = useRef<HTMLDivElement>(null);
 
   const applyServerBranding = (data: any) => {
     if (data?.branding) setServerBranding(data.branding);
     if (data?.applicant_email) setApplicantEmail(String(data.applicant_email));
+    if (data?.portal_base) setServerPortalBase(String(data.portal_base).replace(/\/+$/, ""));
   };
 
 
@@ -299,15 +302,18 @@ function InterviewPage() {
   // Kein erfundener Name mehr: ohne gepflegten Recruiter zeigt der Chat das HR-Team.
   const recruiterDisplayName = serverBranding?.recruiter_name || branding?.recruiter_name || "Ihr HR-Team";
   const primary = branding?.primary_color || "#2563eb";
-  const portalBase =
-    (portal || "").replace(/\/+$/, "") ||
-    (typeof window !== "undefined" ? window.location.origin : "");
+  // Reihenfolge bewusst: serverseitig aufgeloeste Partner-Domain zuerst.
+  // NIE window.location.origin — bei Vermittlungs-Bewerbungen waere das die
+  // Vermittlungs-Domain und der Bewerber wuerde sich bei der falschen Firma
+  // registrieren. Ohne Basis lieber gar kein Link.
+  const portalBase = serverPortalBase || (portal || "").replace(/\/+$/, "");
   // Ohne Token (z. B. Mailversand-Fehler) zeigt die Karte den Hinweis auf die E-Mail.
   // Ohne Token (Mailfehler / kein Token gefunden) trotzdem zur Portal-Registrierung
   // führen — der Bewerber landet so in jedem Fall auf der richtigen Seite.
   const registerQuery = applicantEmail ? `?email=${encodeURIComponent(applicantEmail)}` : "";
-  const registerFallbackHref: string | null =
-    (portalBase ? `${portalBase}/register` : "/register") + registerQuery;
+  const registerFallbackHref: string | null = portalBase
+    ? `${portalBase}/register${registerQuery}`
+    : null;
 
 
 
