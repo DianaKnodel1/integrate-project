@@ -172,8 +172,9 @@ function AdminBewerbungenPage() {
   const [tenantFilter, setTenantFilter] = useState("");
   const [tenants, setTenants] = useState<Array<{ id: string; name: string }>>([]);
   const [showArchived, setShowArchived] = useState(false);
-  const [archiveDays, setArchiveDays] = useState(30);
+  const [archiveDays, setArchiveDays] = useState(180);
   const [archiveBusy, setArchiveBusy] = useState(false);
+  const [archivePreview, setArchivePreview] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -455,9 +456,23 @@ function AdminBewerbungenPage() {
     try {
       const res: any = await runArchive({ data: { older_than_days: archiveDays, dry_run: false } });
       toast.success(`${res.archived} Bewerbungen archiviert.`);
+      setArchivePreview(null);
       await loadData();
     } catch (e: any) {
       toast.error(e?.message ?? "Archivieren fehlgeschlagen");
+    } finally {
+      setArchiveBusy(false);
+    }
+  }
+
+  /** Trockenlauf: zeigt vor dem Archivieren, wie viele Datensätze betroffen wären. */
+  async function previewArchive() {
+    setArchiveBusy(true);
+    try {
+      const res: any = await runArchive({ data: { older_than_days: archiveDays, dry_run: true } });
+      setArchivePreview(res.candidates ?? 0);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Vorschau fehlgeschlagen");
     } finally {
       setArchiveBusy(false);
     }
@@ -550,18 +565,26 @@ function AdminBewerbungenPage() {
                 <Input
                   type="number" min={0} max={3650}
                   value={archiveDays}
-                  onChange={e => setArchiveDays(Math.max(0, parseInt(e.target.value || "0", 10)))}
+                  onChange={e => { setArchivePreview(null); setArchiveDays(Math.max(0, parseInt(e.target.value || "0", 10))); }}
                   className="w-24"
                 />
                 <span className="text-sm">Tage</span>
+                <Button size="sm" variant="outline" disabled={archiveBusy} onClick={previewArchive}>
+                  Vorschau
+                </Button>
               </div>
+              {archivePreview !== null && (
+                <div className="text-sm text-muted-foreground">
+                  {archivePreview} Bewerbungen würden archiviert.
+                </div>
+              )}
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={archiveBusy}>Abbrechen</AlertDialogCancel>
                 <AlertDialogAction
-                  disabled={archiveBusy}
+                  disabled={archiveBusy || archivePreview === null}
                   onClick={(e) => { e.preventDefault(); doArchive(); }}
                 >
-                  {archiveBusy ? "Archiviere…" : "Archivieren"}
+                  {archiveBusy ? "Archiviere…" : archivePreview === null ? "Erst Vorschau" : "Archivieren"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
