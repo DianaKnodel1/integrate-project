@@ -362,10 +362,6 @@ function AdminBewerbungenPage() {
     }
   }
 
-  async function doBulkDelete() {
-    return doBulkDeleteInner();
-  }
-
   /** Löscht alle Bewerber-Daten. Mitarbeiter-Konten bleiben bestehen. */
   async function doResetApplicants() {
     setResetBusy(true);
@@ -381,7 +377,7 @@ function AdminBewerbungenPage() {
     }
   }
 
-  async function doBulkDeleteInner() {
+  async function doBulkDelete() {
     setBulkBusy(true);
     try {
       const ids = Array.from(selected);
