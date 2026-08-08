@@ -223,7 +223,7 @@ serve(async (req) => {
     // Tenants vorladen
     const { data: tList, error: tErr } = await admin
       .from("tenants")
-      .select("id,name,domain,primary_domain,primary_domain_changed_at,is_active,emails_paused,emails_paused_reason,logo_url,primary_color,sender_email,sender_name,reply_to_email,smtp_host,smtp_port,smtp_username,smtp_password,reminder_invite_subject,reminder_invite_body,reminder_confirm_subject,reminder_confirm_body,reminder_completion_subject,reminder_completion_body,reminder_no_booking_subject,reminder_no_booking_body,reminder_recovery_subject,reminder_recovery_body");
+      .select("id,name,domain,primary_domain,primary_domain_changed_at,is_active,emails_paused,emails_paused_reason,mailless_mode,logo_url,primary_color,sender_email,sender_name,reply_to_email,smtp_host,smtp_port,smtp_username,smtp_password,reminder_invite_subject,reminder_invite_body,reminder_confirm_subject,reminder_confirm_body,reminder_completion_subject,reminder_completion_body,reminder_no_booking_subject,reminder_no_booking_body,reminder_recovery_subject,reminder_recovery_body");
     if (tErr) return json({ error: tErr.message }, 500);
 
     const tenants = new Map<string, TenantRow>();
@@ -231,6 +231,8 @@ serve(async (req) => {
       // Deaktivierte oder pausierte Tenants komplett überspringen — globaler Kill-Switch.
       if (t.is_active === false) return;
       if (t.emails_paused) return;
+      // Mail-los-Modus: dieser Tenant verschickt gar nichts (Calendly + /bewerbung).
+      if (t.mailless_mode !== false) return;
       tenants.set(t.id, t as TenantRow);
     });
 
