@@ -93,9 +93,12 @@ export async function resolveSender(
   kind: EmailKind,
 ): Promise<ResolvedSender> {
   const side = SIDE[kind];
+  const critical = CRITICAL_KINDS.has(kind);
 
   if (!applicationId) {
-    return { tenant: null, kind, side, reason: "application_id_missing" };
+    return critical
+      ? await criticalFallback(admin, kind, side, null, "application_id_missing")
+      : { tenant: null, kind, side, reason: "application_id_missing" };
   }
 
   const { data: app, error: appErr } = await admin
@@ -105,7 +108,8 @@ export async function resolveSender(
     .maybeSingle();
 
   if (appErr || !app) {
-    return { tenant: null, kind, side, reason: `application_not_found${appErr ? `: ${appErr.message}` : ""}` };
+    const r = `application_not_found${appErr ? `: ${appErr.message}` : ""}`;
+    return critical ? await criticalFallback(admin, kind, side, null, r) : { tenant: null, kind, side, reason: r };
   }
 
   let tenantId: string | null = side === "broker" ? (app.broker_tenant_id ?? null) : (app.fasttrack_tenant_id ?? null);
@@ -141,20 +145,82 @@ export async function resolveSender(
   if (!tenantId && side === "broker") tenantId = app.tenant_id ?? null;
 
   if (!tenantId) {
-    return { tenant: null, kind, side, reason: side === "fasttrack" ? "missing_fasttrack_tenant" : "missing_broker_tenant" };
+    const r = side === "fasttrack" ? "missing_fasttrack_tenant" : "missing_broker_tenant";
+    return critical
+      ? await criticalFallback(admin, kind, side, app, r)
+      : { tenant: null, kind, side, reason: r };
   }
 
   const { data: tenant, error: tErr } = await admin
     .from("tenants").select(TENANT_SELECT).eq("id", tenantId).maybeSingle();
   if (tErr || !tenant) {
-    return { tenant: null, kind, side, reason: `tenant_not_found${tErr ? `: ${tErr.message}` : ""}` };
+    const r = `tenant_not_found${tErr ? `: ${tErr.message}` : ""}`;
+    return critical
+      ? await criticalFallback(admin, kind, side, app, r, tenantId)
+      : { tenant: null, kind, side, reason: r };
   }
 
   const paused = pauseBlocks(tenant, kind);
-  if (paused) return { tenant: null, kind, side, reason: paused };
-  if (!smtpOk(tenant)) return { tenant: null, kind, side, reason: "smtp_incomplete" };
+  if (paused) {
+    return critical
+      ? await criticalFallback(admin, kind, side, app, paused, tenantId)
+      : { tenant: null, kind, side, reason: paused };
+  }
+  if (!smtpOk(tenant)) {
+    return critical
+      ? await criticalFallback(admin, kind, side, app, "smtp_incomplete", tenantId)
+      : { tenant: null, kind, side, reason: "smtp_incomplete" };
+  }
 
   return { tenant, kind, side, reason: null };
+}
+
+/**
+ * Ersatzabsender für kritische Mails (Terminbestätigung, Interview-Link).
+ *
+ * Ohne diese Mails erscheint der Bewerber garantiert nicht zum Termin — ein
+ * fehlender oder unvollständig konfigurierter Mandant darf sie deshalb nicht
+ * verhindern. Reihenfolge: anderer Mandant derselben Bewerbung (Vermittlung ↔
+ * Fast-Track) → erster aktiver Mandant mit vollständigem SMTP.
+ * Der Ausfall bleibt über fallbackReason im Log sichtbar und muss nachgezogen
+ * werden — es ist ein Notnagel, keine Dauerlösung.
+ */
+async function criticalFallback(
+  admin: any,
+  kind: EmailKind,
+  side: "broker" | "fasttrack",
+  app: any | null,
+  reason: string,
+  intendedTenantId: string | null = null,
+): Promise<ResolvedSender> {
+  const tried = new Set<string>(intendedTenantId ? [intendedTenantId] : []);
+  const candidates: string[] = [];
+  for (const id of [app?.broker_tenant_id, app?.fasttrack_tenant_id, app?.tenant_id]) {
+    if (id && !tried.has(id) && !candidates.includes(id)) candidates.push(id);
+  }
+
+  for (const id of candidates) {
+    const { data: t } = await admin.from("tenants").select(TENANT_SELECT).eq("id", id).maybeSingle();
+    if (t && t.is_active !== false && smtpOk(t)) {
+      console.warn("[sender-resolver] critical fallback sender", { kind, reason, from: intendedTenantId, to: id });
+      return { tenant: t, kind, side, reason: null, fallbackUsed: true, intendedTenantId, fallbackReason: reason };
+    }
+  }
+
+  const { data: any_ } = await admin
+    .from("tenants").select(TENANT_SELECT)
+    .eq("is_active", true)
+    .not("smtp_host", "is", null)
+    .not("smtp_password", "is", null)
+    .order("created_at", { ascending: true })
+    .limit(10);
+  for (const t of (any_ ?? [])) {
+    if (tried.has(t.id) || !smtpOk(t)) continue;
+    console.warn("[sender-resolver] critical fallback sender (global)", { kind, reason, to: t.id });
+    return { tenant: t, kind, side, reason: null, fallbackUsed: true, intendedTenantId, fallbackReason: reason };
+  }
+
+  return { tenant: null, kind, side, reason, intendedTenantId };
 }
 
 // Convenience: direkter Tenant-Fetch (für Cron-Fälle, wo keine application vorliegt).
