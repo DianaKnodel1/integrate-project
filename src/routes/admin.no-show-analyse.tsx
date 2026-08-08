@@ -3,7 +3,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getNoShowReport, type Bucket, type NoShowReport } from "@/lib/no-show-analysis.functions";
+import { getNoShowReport, type Bucket, type ModeFunnel, type NoShowReport } from "@/lib/no-show-analysis.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,60 @@ function BucketTable({ title, description, rows }: { title: string; description:
             </div>
           </div>
         ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function FunnelTable({ rows }: { rows: ModeFunnel[] }) {
+  if (!rows.length) return null;
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Trichter je Buchungsart</CardTitle>
+        <CardDescription>
+          Calendly (Mails/SMS über Calendly) gegen internes Buchungssystem — von der Bewerbung bis zur Zusage.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left text-xs text-muted-foreground">
+              <th className="py-2 pr-3 font-medium">Buchungsart</th>
+              <th className="px-2 py-2 text-right font-medium">Bewerbungen</th>
+              <th className="px-2 py-2 text-right font-medium">Termin gebucht</th>
+              <th className="px-2 py-2 text-right font-medium">nie gebucht</th>
+              <th className="px-2 py-2 text-right font-medium">abgesagt</th>
+              <th className="px-2 py-2 text-right font-medium">nicht erschienen</th>
+              <th className="px-2 py-2 text-right font-medium">wahrgenommen</th>
+              <th className="px-2 py-2 text-right font-medium">Zusage</th>
+              <th className="px-2 py-2 text-right font-medium">Absage</th>
+              <th className="px-2 py-2 text-right font-medium">noch offen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.key} className="border-b last:border-0">
+                <td className="py-2 pr-3">{r.label}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.beworben}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.gebucht} · {r.buchungsquote}%</td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.nie_gebucht}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.abgesagt}</td>
+                <td className="px-2 py-2 text-right tabular-nums">
+                  {r.no_show} · <Quote value={r.no_show_quote} />
+                </td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.wahrgenommen}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.zusage} · {r.zusagequote}%</td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.ki_absage}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{r.offen}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-3 text-xs text-muted-foreground">
+          „wahrgenommen“ = abgeschlossenes Interview. „Zusage“/„Absage“ = Ergebnis dieses Interviews.
+          „noch offen“ = Termin liegt in der Zukunft oder Gespräch wurde begonnen, aber nicht beendet.
+        </p>
       </CardContent>
     </Card>
   );
@@ -166,6 +220,8 @@ function NoShowPage() {
           </CardContent>
         </Card>
       )}
+
+      {report && <FunnelTable rows={report.by_mode_funnel} />}
 
       {report && (
         <div className="grid gap-4 lg:grid-cols-2">

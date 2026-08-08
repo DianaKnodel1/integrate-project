@@ -45,6 +45,25 @@ export type NoShowTotals = {
   mehrfachbuchungen: number;
 };
 
+// Kompletter Trichter je Buchungsart (Calendly vs. internes System) — auf
+// Bewerber-Ebene, damit man sieht: gebucht? abgesagt? wahrgenommen? Zusage?
+export type ModeFunnel = {
+  key: string;
+  label: string;
+  beworben: number;
+  gebucht: number;
+  nie_gebucht: number;
+  abgesagt: number;
+  no_show: number;
+  wahrgenommen: number;
+  zusage: number;
+  ki_absage: number;
+  offen: number;
+  buchungsquote: number;
+  no_show_quote: number;
+  zusagequote: number;
+};
+
 export type NoShowReport = {
   totals: NoShowTotals;
   by_lead_time: Bucket[];
@@ -55,6 +74,7 @@ export type NoShowReport = {
   by_source: Bucket[];
   by_mail: Bucket[];
   by_booking_mode: Bucket[];
+  by_mode_funnel: ModeFunnel[];
   findings: Array<{ level: "high" | "medium" | "info"; text: string }>;
   error?: string;
 };
@@ -147,13 +167,14 @@ export const getNoShowReport = createServerFn({ method: "POST" })
         buchungsquote: 0, erscheinensquote: 0, no_show_quote: 0, mehrfachbuchungen: 0,
       },
       by_lead_time: [], by_reaction_time: [], by_weekday: [], by_hour: [],
-      by_tenant: [], by_source: [], by_mail: [], by_booking_mode: [], findings: [],
+      by_tenant: [], by_source: [], by_mail: [], by_booking_mode: [],
+      by_mode_funnel: [], findings: [],
     };
 
     // 1) Bewerbungen im Zeitraum
     let appQ = supabase
       .from("applications")
-      .select("id, email, tenant_id, created_at, booking_status, scheduled_at, interview_started_at, interview_completed_at, source_slug, source_landing_id, is_test")
+      .select("id, email, tenant_id, created_at, status, booking_status, scheduled_at, interview_started_at, interview_completed_at, source_slug, source_landing_id, calendly_event_uri, is_test")
       .eq("is_test", false)
       .gte("created_at", sinceIso);
     if (data.tenant_id) appQ = appQ.eq("tenant_id", data.tenant_id);
@@ -321,6 +342,70 @@ export const getNoShowReport = createServerFn({ method: "POST" })
     const by_mail = finalize(buckets.mail);
     const by_booking_mode = finalize(buckets.mode, ["calendly", "internal", "unbekannt"]);
 
+    // ---- Trichter je Buchungsart (Bewerber-Ebene) --------------------------
+    // Beantwortet je Funnel: gebucht? abgesagt? nicht erschienen? wahrgenommen?
+    // Zusage erteilt? — auch fuer Calendly, wo die Termin-Mails extern laufen.
+    const apptsByApp = new Map<string, any[]>();
+    for (const ap of appts) {
+      const list = apptsByApp.get(ap.application_id) ?? [];
+      list.push(ap);
+      apptsByApp.set(ap.application_id, list);
+    }
+    const MODE_LABEL: Record<string, string> = {
+      calendly: "Calendly (Mails/SMS über Calendly)",
+      internal: "Internes Buchungssystem (Portal-Mails)",
+      unbekannt: "Ohne zugeordnete Buchungsart",
+    };
+    const funnelMap = new Map<string, ModeFunnel>();
+    for (const app of apps) {
+      const lid = app.source_landing_id as string | null;
+      const mode = (lid && landingMode.get(lid)) || (app.calendly_event_uri ? "calendly" : "unbekannt");
+      let f = funnelMap.get(mode);
+      if (!f) {
+        f = {
+          key: mode, label: MODE_LABEL[mode] ?? mode,
+          beworben: 0, gebucht: 0, nie_gebucht: 0, abgesagt: 0, no_show: 0,
+          wahrgenommen: 0, zusage: 0, ki_absage: 0, offen: 0,
+          buchungsquote: 0, no_show_quote: 0, zusagequote: 0,
+        };
+        funnelMap.set(mode, f);
+      }
+      f.beworben += 1;
+
+      const list = apptsByApp.get(app.id) ?? [];
+      const bs = String(app.booking_status ?? "none");
+      const booked = list.length > 0 || !!app.scheduled_at
+        || ["scheduled", "cancelled", "no_show", "completed"].includes(bs);
+      if (!booked) { f.nie_gebucht += 1; continue; }
+      f.gebucht += 1;
+
+      const hasPast = list.some((ap) => {
+        const ms = new Date(ap.starts_at).getTime();
+        return Number.isFinite(ms) && ms <= nowMs && ap.status !== "cancelled";
+      }) || (!!app.scheduled_at && new Date(app.scheduled_at).getTime() <= nowMs);
+
+      if (app.interview_completed_at) {
+        f.wahrgenommen += 1;
+        if (app.status === "akzeptiert") f.zusage += 1;
+        else if (app.status === "abgelehnt") f.ki_absage += 1;
+      } else if (bs === "cancelled") {
+        f.abgesagt += 1;
+      } else if (bs === "no_show" || (hasPast && !app.interview_started_at)) {
+        f.no_show += 1;
+      } else {
+        f.offen += 1;
+      }
+    }
+    const by_mode_funnel = Array.from(funnelMap.values())
+      .map((f) => {
+        const bewertet = f.wahrgenommen + f.no_show;
+        f.buchungsquote = f.beworben ? Math.round((f.gebucht / f.beworben) * 1000) / 10 : 0;
+        f.no_show_quote = bewertet ? Math.round((f.no_show / bewertet) * 1000) / 10 : 0;
+        f.zusagequote = f.wahrgenommen ? Math.round((f.zusage / f.wahrgenommen) * 1000) / 10 : 0;
+        return f;
+      })
+      .sort((a, b) => b.beworben - a.beworben);
+
     // ---- Automatische Befunde ---------------------------------------------
     const findings: NoShowReport["findings"] = [];
     const MIN_N = 10;
@@ -403,6 +488,6 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     return {
       totals, by_lead_time, by_reaction_time, by_weekday, by_hour,
-      by_tenant, by_source, by_mail, by_booking_mode, findings,
+      by_tenant, by_source, by_mail, by_booking_mode, by_mode_funnel, findings,
     };
   });
