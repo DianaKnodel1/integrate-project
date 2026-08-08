@@ -302,7 +302,7 @@ serve(async (req) => {
           reason: `routing_${resolved.reason || "failed"}`,
           metadata: {
             appointment_id: appt.id, application_id: app.id,
-            config_blocked: true, blocked_reason: "routing_failed",
+            config_blocked: true, blocked_reason: resolved.reason || "routing_failed",
           },
         });
         continue;
