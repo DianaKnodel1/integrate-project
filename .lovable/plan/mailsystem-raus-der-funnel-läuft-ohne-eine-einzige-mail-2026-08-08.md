@@ -2,7 +2,7 @@
 
 Ja, ich bin dafür. Die Mails haben in den letzten Wochen fast ausschließlich Arbeit gemacht (SMTP-Pausen, Bounces, Retry-Queue, blockierte Bestätigungen) und im Funnel messbar nichts gebracht: 14 Zusagen, 0 Registrierungen. Beim Kollegen läuft jeder Schritt im Browser weiter, ohne dass ein Postfach dazwischenliegt. Genau das bauen wir.
 
-**Eine Ausnahme empfehle ich dringend:** Passwort-Vergessen im Mitarbeiterportal. Das ist keine Funnel-Mail, sondern die einzige Möglichkeit, wie ein Mitarbeiter wieder an sein Konto kommt. Ohne sie musst du jedes vergessene Passwort von Hand zurücksetzen. Diese eine Mail bleibt, alles andere geht raus.
+**Eine Ausnahme empfehle ich dringend: Passwort-Vergessen im Mitarbeiterportal. Das ist keine Funnel-Mail, sondern die einzige Möglichkeit, wie ein Mitarbeiter wieder an sein Konto kommt. Ohne sie musst du jedes vergessene Passwort von Hand zurücksetzen. Diese eine Mail bleibt, alles andere geht raus.**
 
 ## Was verschwindet
 
@@ -26,21 +26,27 @@ Bewerbung absenden
 ## Was gebaut wird
 
 ### 1. Versand stillgelegt
+
 Alle Versandwege laufen künftig gegen eine zentrale Sperre und verschicken nichts mehr. Die Cron-Jobs für Erinnerungen werden abgeschaltet, damit sie nicht sinnlos laufen. Passwort-Reset ist davon ausgenommen. Der Code bleibt im Projekt liegen (falls du in Monaten doch vergleichen willst), ist aber nirgends mehr erreichbar oder aktiv.
 
 ### 2. `/admin/bewerbungen` ohne jeden Mail-Bezug
+
 Mail-Kette, Mail-Historie, Versandstatus, „Mail erneut senden", die Statusstufe „E-Mail bestätigt" und die Mail-Warnsymbole fallen weg. Übrig bleibt der Funnel, der wirklich zählt: beworben → Termin gebucht → erschienen → Zusage/Absage → registriert → Onboarding fertig. Das macht die Liste deutlich schneller, weil zwei große Log-Abfragen pro Seitenaufruf entfallen.
 
 ### 3. Mail-Oberflächen aus dem Admin entfernt
+
 E-Mail-Center, Mail-Logs, Retry-Queue, Bounce-Panel und SMTP-Gesundheit verschwinden aus Navigation und Kommandopalette. Die SMTP-Felder bleiben in den Mandanten-Einstellungen, weil der Passwort-Reset sie braucht — sie stehen aber unter „nur für Konto-Wiederherstellung".
 
 ### 4. Registrierung ohne Bestätigungsmail
+
 Konto anlegen, sofort eingeloggt, direkt ins Onboarding. Der Zwischenschritt „Bitte bestätigen Sie Ihre E-Mail" fällt ersatzlos weg — das ist die Stelle, an der du aktuell praktisch alle Zusagen verlierst.
 
 ### 5. Calendly ist der Standard
+
 Neue Landingpages stehen auf „Calendly". Die interne Terminbuchung bleibt als Auswahl bestehen, ist aber nicht mehr Standard.
 
 ### 6. Zahlen
+
 Die No-Show-Analyse mit Trichter je Buchungsart bleibt die Wahrheitsquelle: beworben → gebucht → abgesagt → nicht erschienen → erschienen → Zusage → registriert → Onboarding fertig.
 
 ## Bereits erledigt
