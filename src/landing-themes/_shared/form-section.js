@@ -290,21 +290,20 @@
     box.appendChild(cls);box.appendChild(chk);box.appendChild(h);box.appendChild(p);
 
     if(broker){
-      h.textContent=broker.intro_headline||'✅ Bewerbung eingegangen';
-      p.innerHTML=(broker.intro_subline)
-        ||(emailStatus&&emailStatus.reason==='calendly_handles_mail'
-            ?'Wählen Sie jetzt direkt hier Ihren Wunschtermin für das kurze Gespräch aus.'
-            :(emailStatus&&emailStatus.status==='sent'
-                ?'Sie erhalten zusätzlich eine E-Mail mit Ihrem persönlichen Termin-Link.'
-                :'Ihr persönlicher Termin-Link ist direkt hier verfügbar.'));
-      var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 18px;';
+      h.textContent=broker.intro_headline||'Herzlichen Glückwunsch!';
+      p.textContent=broker.intro_subline||'Wir haben Ihre Bewerbung erfolgreich erhalten.';
+      var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 22px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
       var pl=document.createElement('div');pl.textContent='Wir verbinden Sie mit';pl.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
       var pn=document.createElement('div');pn.textContent=broker.partner_name||'unserem Partnerunternehmen';pn.style.cssText='font-size:17px;font-weight:700;color:#0f172a;';
       pc.appendChild(pl);pc.appendChild(pn);box.appendChild(pc);
+      var hr=document.createElement('hr');hr.style.cssText='border:0;border-top:1px solid #e2e8f0;margin:18px 0;';box.appendChild(hr);
+      var nextH=document.createElement('h4');nextH.textContent='Wie geht es jetzt weiter?';nextH.style.cssText='margin:0 0 8px;font-size:17px;font-weight:700;';
+      var nextP=document.createElement('p');nextP.textContent='Um den Prozess zu beschleunigen, laden wir Sie herzlich zu einem kurzen Online-Bewerbungsgespräch ein.';nextP.style.cssText='margin:0 0 16px;color:#475569;font-size:14px;line-height:1.55;';
+      box.appendChild(nextH);box.appendChild(nextP);
       if(broker.calendly_url){var cta2=document.createElement('a');cta2.href=broker.calendly_url;cta2.target='_blank';cta2.rel='noopener';cta2.textContent=(broker.button_label||'Jetzt Termin buchen')+'  →';
-        cta2.style.cssText='display:inline-block;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:999px;font-size:16px;';box.appendChild(cta2);}
-      box.appendChild(spamHintBox(emailStatus));
+        cta2.style.cssText='display:inline-block;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:999px;font-size:16px;box-shadow:0 6px 20px -6px rgba(34,197,94,.55);';box.appendChild(cta2);
+        var hint2=document.createElement('p');hint2.textContent='Es öffnet sich ein neues Fenster zur Terminauswahl.';hint2.style.cssText='margin:12px 0 0;font-size:12px;color:#94a3b8;';box.appendChild(hint2);}
     } else if(isFast){
       h.textContent='✅ Bewerbung eingegangen';
       p.textContent='Im nächsten Schritt werden Sie zum Mitarbeiter-Portal weitergeleitet, um Ihre Registrierung abzuschließen.';
