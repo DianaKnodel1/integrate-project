@@ -49,6 +49,58 @@ export const archiveOldApplications = createServerFn({ method: "POST" })
     return { archived: count ?? 0, candidates: candidates ?? 0 };
   });
 
+const ResetApplicantsSchema = z.object({
+  confirm: z.literal("BEWERBER LOESCHEN"),
+  dry_run: z.boolean().optional(),
+});
+
+/**
+ * Setzt die Bewerber-Daten komplett zurück (saubere Statistik).
+ *
+ * Gelöscht werden: alle Bewerbungen inkl. abhängiger Daten (Termine,
+ * Reminder-Protokoll, Einladungs-Queue). Mitarbeiter-Konten (profiles,
+ * Auth-Accounts, Verträge, Aufgaben) bleiben vollständig erhalten.
+ */
+export const resetApplicants = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ResetApplicantsSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context as any);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sb = supabaseAdmin as any;
+
+    const { count: total, error: cErr } = await sb
+      .from("applications")
+      .select("id", { count: "exact", head: true });
+    if (cErr) throw new Error(cErr.message);
+
+    if (data.dry_run) return { ok: true, dry_run: true, applications: total ?? 0, deleted: 0 };
+
+    // Abhängige Protokolle ohne Fremdschlüssel zuerst leeren.
+    for (const table of ["application_reminder_log", "interview_appointments", "invite_resend_queue"]) {
+      try {
+        await sb.from(table).delete().not("id", "is", null);
+      } catch {}
+    }
+
+    const { error: delErr, count: deleted } = await sb
+      .from("applications")
+      .delete({ count: "exact" })
+      .not("id", "is", null);
+    if (delErr) throw new Error(delErr.message);
+
+    try {
+      await sb.from("activity_log").insert({
+        action: "bewerber_reset",
+        entity_type: "application",
+        actor_id: context.userId,
+        comment: `Bewerber-Daten zurückgesetzt: ${deleted ?? total ?? 0} Bewerbungen gelöscht. Mitarbeiter unangetastet.`,
+      });
+    } catch {}
+
+    return { ok: true, dry_run: false, applications: total ?? 0, deleted: deleted ?? total ?? 0 };
+  });
+
 /** Holt archivierte Bewerbungen wieder in die aktive Liste zurück. */
 export const unarchiveApplications = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

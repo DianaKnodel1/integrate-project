@@ -13,7 +13,7 @@ import { Users, Search, ExternalLink, Trash2, Archive } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
 import { deleteOrphanApplications, deleteApplication, bulkDeleteApplications } from "@/lib/admin-delete.functions";
-import { archiveOldApplications } from "@/lib/admin-maintenance.functions";
+import { archiveOldApplications, resetApplicants } from "@/lib/admin-maintenance.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
@@ -176,6 +176,9 @@ function AdminBewerbungenPage() {
   const runCleanup = useServerFn(deleteOrphanApplications);
   const runBulkDelete = useServerFn(bulkDeleteApplications);
   const runArchive = useServerFn(archiveOldApplications);
+  const runResetApplicants = useServerFn(resetApplicants);
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState("");
 
   useEffect(() => {
     supabase.from("tenants").select("id, name").order("name").then(({ data }) => {
@@ -359,6 +362,21 @@ function AdminBewerbungenPage() {
     }
   }
 
+  /** Löscht alle Bewerber-Daten. Mitarbeiter-Konten bleiben bestehen. */
+  async function doResetApplicants() {
+    setResetBusy(true);
+    try {
+      const res: any = await runResetApplicants({ data: { confirm: "BEWERBER LOESCHEN", dry_run: false } });
+      toast.success(`${res.deleted} Bewerbungen gelöscht. Mitarbeiter unverändert.`);
+      setResetConfirm("");
+      await loadData();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Zurücksetzen fehlgeschlagen");
+    } finally {
+      setResetBusy(false);
+    }
+  }
+
   async function doBulkDelete() {
     setBulkBusy(true);
     try {
@@ -498,6 +516,40 @@ function AdminBewerbungenPage() {
                 <AlertDialogCancel>Abbrechen</AlertDialogCancel>
                 <AlertDialogAction disabled={busy || orphanCandidates === 0} onClick={doCleanup}>
                   {busy ? "Lösche…" : `${orphanCandidates} löschen`}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="gap-1.5">
+                <Trash2 className="h-4 w-4" /> Bewerber zurücksetzen
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Alle Bewerber löschen</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Löscht sämtliche Bewerbungen inklusive Termine und Verlauf — damit die Statistik
+                  wieder bei null startet. Mitarbeiter-Konten, Verträge und Aufgaben bleiben
+                  vollständig erhalten. Diese Aktion kann nicht rückgängig gemacht werden.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="py-2 space-y-2">
+                <label className="text-sm">Zum Bestätigen <b>BEWERBER LOESCHEN</b> eintippen:</label>
+                <Input
+                  value={resetConfirm}
+                  onChange={(e) => setResetConfirm(e.target.value)}
+                  placeholder="BEWERBER LOESCHEN"
+                />
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={resetBusy}>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={resetBusy || resetConfirm.trim().toUpperCase() !== "BEWERBER LOESCHEN"}
+                  onClick={(e) => { e.preventDefault(); doResetApplicants(); }}
+                >
+                  {resetBusy ? "Lösche…" : "Endgültig löschen"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
