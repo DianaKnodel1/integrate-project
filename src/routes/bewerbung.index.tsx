@@ -33,6 +33,30 @@ type LookupState =
   | { kind: "invalid" }
   | { kind: "ready"; appId: string; fullName?: string; landingSlug?: string | null; interviewMode: "chat" | "voice" | "both" };
 
+const STEPS: { title: string; text: string }[] = [
+  { title: "Kurzes Gespräch im Chat", text: "Ein paar Fragen zu Ihrer Person, Motivation und Verfügbarkeit — ganz in Ruhe, ohne Zeitdruck." },
+  { title: "Vorläufige Zusage", text: "Passt alles, erhalten Sie Ihre Zusage direkt im Anschluss auf dieser Seite." },
+  { title: "Registrierung im Portal", text: "Ein Klick auf „Jetzt registrieren“ — Ihre E-Mail ist bereits hinterlegt." },
+];
+
+function StepList() {
+  return (
+    <ol className="mb-6 space-y-3 text-left">
+      {STEPS.map((s, i) => (
+        <li key={s.title} className="flex gap-3">
+          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+            {i + 1}
+          </span>
+          <span>
+            <span className="block text-sm font-semibold text-slate-900">{s.title}</span>
+            <span className="block text-sm text-slate-600">{s.text}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function BewerbungLandingPage() {
   const [state, setState] = useState<LookupState>({ kind: "loading" });
   const [email, setEmail] = useState("");
@@ -122,7 +146,7 @@ function BewerbungLandingPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl p-8 text-center">
         {state.kind === "loading" && (
           <>
             <Loader2 className="w-10 h-10 text-blue-500 mx-auto mb-3 animate-spin" />
@@ -137,6 +161,7 @@ function BewerbungLandingPage() {
               Bitte geben Sie die E-Mail-Adresse ein, mit der Sie sich beworben haben.
               Wir prüfen Ihre Bewerbung und öffnen anschließend den nächsten Schritt.
             </p>
+            <StepList />
             <form onSubmit={submitEmail} className="space-y-3 text-left">
               <input
                 type="email"
@@ -186,9 +211,9 @@ function BewerbungLandingPage() {
             </div>
             <h1 className="text-2xl font-bold mb-1">Willkommen{state.fullName ? `, ${state.fullName.split(" ")[0]}` : ""}!</h1>
             <p className="text-sm text-muted-foreground mb-6">
-              Ihr Termin ist bestätigt. Bitte starten Sie jetzt Ihr kurzes Bewerbungsgespräch
-              — es dauert nur wenige Minuten.
+              Schön, dass Sie da sind. So läuft Ihr Bewerbungsgespräch ab:
             </p>
+            <StepList />
             {state.interviewMode === "both" ? (
               <div className="space-y-2">
                 <Button
