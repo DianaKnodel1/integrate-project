@@ -9,12 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
-import { Users, Search, ExternalLink, Trash2, MailWarning, Archive } from "lucide-react";
+import { Users, Search, ExternalLink, Trash2, Archive } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
 import { deleteOrphanApplications, deleteApplication, bulkDeleteApplications } from "@/lib/admin-delete.functions";
 import { archiveOldApplications } from "@/lib/admin-maintenance.functions";
-import { resendRegistrationInvite } from "@/lib/application-stage.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
@@ -24,11 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePagination } from "@/hooks/use-pagination";
-import { fetchAll } from "@/lib/fetch-all";
 import { PaginationBar } from "@/components/PaginationBar";
-import { MailChain } from "@/components/mail/MailChain";
-import { computeNextStep } from "@/lib/mail-next-step";
-import { mailLabel, mergeMailEvents, type MailEvent } from "@/lib/mail-chain";
 
 /**
  * Bewerbungen — nur applications (Funnel bis Registrierung).
@@ -40,7 +35,7 @@ type Phase =
   | "interview_laeuft"
   | "auswertung_fehler"
   | "angenommen" | "abgelehnt"
-  | "registriert" | "email_bestaetigt" | "onboarding_komplett" | "mitarbeiter_aktiv";
+  | "registriert" | "onboarding_komplett" | "mitarbeiter_aktiv";
 
 const PHASES: { key: Phase | "alle"; label: string; emoji: string }[] = [
   { key: "alle", label: "Alle", emoji: "👥" },
@@ -53,7 +48,6 @@ const PHASES: { key: Phase | "alle"; label: string; emoji: string }[] = [
   { key: "angenommen", label: "Zusage erteilt", emoji: "✅" },
   { key: "abgelehnt", label: "Abgelehnt", emoji: "❌" },
   { key: "registriert", label: "Registriert", emoji: "🧾" },
-  { key: "email_bestaetigt", label: "E-Mail bestätigt", emoji: "✉️" },
   { key: "onboarding_komplett", label: "Onboarding fertig", emoji: "📄" },
   { key: "mitarbeiter_aktiv", label: "Mitarbeiter aktiv", emoji: "🚀" },
 ];
@@ -68,7 +62,6 @@ const PHASE_COLOR: Record<Phase, string> = {
   angenommen: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
   abgelehnt: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
   registriert: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300",
-  email_bestaetigt: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
   onboarding_komplett: "bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300",
   mitarbeiter_aktiv: "bg-emerald-500 text-white dark:bg-emerald-600 border-0",
 };
@@ -78,7 +71,6 @@ const PHASE_COLOR: Record<Phase, string> = {
 type ProfileInfo = {
   onboarding: string | null;
   status: string | null;
-  emailConfirmed: boolean;
   contractSigned: boolean;
 } | null;
 
@@ -89,7 +81,6 @@ function computePhase(a: any, scheduledAt: Date | null, prof: ProfileInfo): Phas
   if (prof) {
     if (prof.status === "angenommen") return "mitarbeiter_aktiv";
     if (prof.onboarding === "abgeschlossen" || prof.contractSigned) return "onboarding_komplett";
-    if (prof.emailConfirmed) return "email_bestaetigt";
     return "registriert";
   }
   // Ein tatsächlich geführtes Interview schlägt jeden Buchungsstatus: Calendly
@@ -119,7 +110,7 @@ function phaseToStages(phase: Phase): Stage[] {
     "interview_laeuft",
     "auswertung_fehler",
     "angenommen","abgelehnt",
-    "registriert","email_bestaetigt",
+    "registriert",
     "onboarding_komplett","mitarbeiter_aktiv",
   ];
 
@@ -141,7 +132,7 @@ function phaseToStages(phase: Phase): Stage[] {
     : phase === "no_show" ? 1
     : phase === "interview_laeuft" ? 1
     : phase === "auswertung_fehler" || phase === "angenommen" || phase === "abgelehnt" ? 2
-    : phase === "registriert" || phase === "email_bestaetigt" ? 3
+    : phase === "registriert" ? 3
     : 4;
 
   const labels = ["Termin", "Interview", "Zusage", "Registriert", "Onboarding"];
@@ -230,89 +221,6 @@ function AdminBewerbungenPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Mail-Historie: alle protokollierten Mails je Bewerber (Versand-Log per
-  // E-Mail-Adresse, Reminder-Log per application_id). Daraus entsteht die
-  // feste 4er-Kette in der Liste und die Historie im Dialog.
-  const [mailEventsByApp, setMailEventsByApp] = useState<Map<string, MailEvent[]>>(new Map());
-  const [mailSendEventsByApp, setMailSendEventsByApp] = useState<Map<string, MailEvent[]>>(new Map());
-  const [mailEventsByEmail, setMailEventsByEmail] = useState<Map<string, MailEvent[]>>(new Map());
-  const [mailReload, setMailReload] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("application_reminder_log")
-        .select("application_id, reminder_kind, status, sent_at, error")
-        .order("sent_at", { ascending: false })
-        .limit(3000);
-      if (cancelled || !data) return;
-      const m = new Map<string, MailEvent[]>();
-      for (const r of data as any[]) {
-        const list = m.get(r.application_id) ?? [];
-        list.push({
-          key: r.reminder_kind,
-          label: mailLabel(r.reminder_kind),
-          status: r.status ?? "unknown",
-          at: r.sent_at,
-          error: r.error ?? null,
-          source: "reminder_log",
-        });
-        m.set(r.application_id, list);
-      }
-      setMailEventsByApp(m);
-    })();
-    return () => { cancelled = true; };
-  }, [applications, mailReload]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      // Vollständiges Zeitfenster statt "neueste 5.000 Zeilen": bei hohem
-      // Volumen fielen ältere echte Versände sonst unsichtbar heraus.
-      const since = new Date(Date.now() - 90 * 86400_000).toISOString();
-      const data = await fetchAll<any>(() =>
-        supabase
-          .from("email_send_log")
-          .select("id, recipient_email, template_name, status, created_at, error_message, metadata")
-          // Technische Zeilen (abgelöste Retries, bereinigte Doppelversände) ausblenden.
-          .not("status", "in", "(superseded,duplicate)")
-          .gte("created_at", since)
-          .order("created_at", { ascending: false }),
-      ).catch(() => [] as any[]);
-      if (cancelled || !data) return;
-      const byEmail = new Map<string, MailEvent[]>();
-      const byApplication = new Map<string, MailEvent[]>();
-      for (const r of data as any[]) {
-        const email = String(r.recipient_email ?? "").toLowerCase().trim();
-        const applicationId = String(r.metadata?.application_id ?? "").trim();
-        const event: MailEvent = {
-          key: r.template_name ?? "unbekannt",
-          label: mailLabel(r.template_name),
-          status: r.status ?? "unknown",
-          at: r.created_at,
-          error: r.error_message ?? null,
-          source: "email_send_log",
-          logId: r.id ?? null,
-        };
-        if (applicationId) {
-          const list = byApplication.get(applicationId) ?? [];
-          list.push(event);
-          byApplication.set(applicationId, list);
-        } else if (email) {
-          // Legacy-Zeilen ohne application_id bleiben als vorsichtiger Fallback.
-          const list = byEmail.get(email) ?? [];
-          list.push(event);
-          byEmail.set(email, list);
-        }
-      }
-      setMailSendEventsByApp(byApplication);
-      setMailEventsByEmail(byEmail);
-    })();
-    return () => { cancelled = true; };
-  }, [applications, mailReload]);
-
-
   const nameOf = (id: string | null | undefined): string | null => {
     if (!id) return null;
     const l = landingById.get(id);
@@ -338,16 +246,10 @@ function AdminBewerbungenPage() {
       const prof: ProfileInfo = p ? {
         onboarding: p.onboarding_status ?? null,
         status: p.status ?? null,
-        emailConfirmed: !!(p.user_id && emailConfirmedUserIds.has(p.user_id)),
         contractSigned: !!p.contract_signed_at,
       } : null;
       const sched = bookingByApp.get(a.id) ?? (a.scheduled_at ? new Date(a.scheduled_at) : null);
       const phase = computePhase(a, sched, prof);
-      const mailEvents: MailEvent[] = mergeMailEvents([
-        ...(mailSendEventsByApp.get(a.id) ?? []),
-        ...(email ? mailEventsByEmail.get(email) ?? [] : []),
-        ...(mailEventsByApp.get(a.id) ?? []),
-      ]);
       return {
         id: a.id,
         name: a.full_name || `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || email || "—",
@@ -360,33 +262,9 @@ function AdminBewerbungenPage() {
         source: resolveSource(a),
         createdAt: a.created_at,
         hasProfile: !!prof,
-        mailEvents,
-        // Termin-Mail nur erwartet, wenn tatsächlich ein Termin existiert;
-        // Zusage-Mail nur nach angenommener Bewerbung.
-        mailExpected: { termin: !!sched, zusage: phase === "angenommen" },
-        // Was das System als Nächstes verschickt — macht graue Punkte erklärbar.
-        nextStep: computeNextStep({
-          createdAt: a.created_at ?? null,
-          scheduledAt: sched,
-          bookingStatus: a.booking_status ?? null,
-          interviewCompletedAt: a.interview_completed_at ?? null,
-          recommendation: (a.interview_recommendation as string | null) ?? null,
-          inviteSentAt:
-            mailEvents.find((e) =>
-              ["welcome_invitation", "registration_invitation", "invitation", "reminder_invite", "bewerbung_magic_link"].includes(e.key)
-              // "stuck" = im Reminder-Protokoll als versendet vermerkt, im
-              // Versand-Log ohne Endstatus. Die Mail ist trotzdem rausgegangen.
-              && ["sent", "stuck"].includes(e.status),
-            )?.at ?? null,
-          registered: !!prof,
-          cancelledAt: a.stage_changed_at ?? null,
-          inviteMailStatus: a.invite_mail_status ?? null,
-          inviteMailError: a.invite_mail_error ?? null,
-          inviteMailAt: a.invite_mail_at ?? null,
-        }),
       };
     }).sort((a, b) => (b.lastActivity || "").localeCompare(a.lastActivity || ""));
-  }, [applications, bookingByApp, landingById, profileByKey, emailConfirmedUserIds, mailSendEventsByApp, mailEventsByEmail, mailEventsByApp]);
+  }, [applications, bookingByApp, landingById, profileByKey]);
 
   // Chips folgen dem echten Weg des Bewerbers — so ist sofort sichtbar,
   // an welcher Stelle Leute verloren gehen.
@@ -399,7 +277,7 @@ function AdminBewerbungenPage() {
     { key: "abgesagt",    label: "Abgesagt",          emoji: "🚫", phases: ["abgesagt"] },
     { key: "zusage",      label: "Zusage erteilt",    emoji: "✅", phases: ["angenommen"] },
     { key: "abgelehnt",   label: "Abgelehnt",         emoji: "❌", phases: ["abgelehnt"] },
-    { key: "onboarded",   label: "Onboarded",         emoji: "🚀", phases: ["registriert", "email_bestaetigt", "onboarding_komplett", "mitarbeiter_aktiv"] },
+    { key: "onboarded",   label: "Onboarded",         emoji: "🚀", phases: ["registriert", "onboarding_komplett", "mitarbeiter_aktiv"] },
   ];
   const groupOf = (p: Phase): string => GROUPS.find(g => g.phases.includes(p))?.key ?? "alle";
 
@@ -717,15 +595,6 @@ function AdminBewerbungenPage() {
                             <span className={`inline-block px-1.5 py-0.5 rounded ${PHASE_COLOR[r.phase]}`}>
                               {meta?.emoji} {meta?.label}
                             </span>
-                            <MailChain
-                              applicationId={r.id}
-                              applicantName={r.name}
-                              events={r.mailEvents}
-                              expected={r.mailExpected}
-                              nextStep={r.nextStep}
-                              onRefresh={() => setMailReload((n) => n + 1)}
-                            />
-
                           </div>
                         </td>
 
@@ -752,7 +621,6 @@ function AdminBewerbungenPage() {
                             <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/personen/${r.id}`)} className="h-7 gap-1.5 text-xs">
                               Öffnen <ExternalLink className="h-3 w-3" />
                             </Button>
-                            <ResendInviteButton appId={r.id} />
                             <DeleteAppButton appId={r.id} name={r.name} />
                           </div>
                         </td>
@@ -774,36 +642,6 @@ function AdminBewerbungenPage() {
 
 function DeleteAppButton({ appId, name }: { appId: string; name: string }) {
   return <DeleteAppButtonInner appId={appId} name={name} />;
-}
-
-/** Einladung („Willkommen im Team") erneut versenden — z. B. nach SMTP-Fehler. */
-function ResendInviteButton({ appId }: { appId: string }) {
-  const [busy, setBusy] = useState(false);
-  const run = useServerFn(resendRegistrationInvite);
-  async function doResend() {
-    setBusy(true);
-    try {
-      const res: any = await run({ data: { applicationId: appId } });
-      if (res?.sent) toast.success("Einladung wurde erneut versendet");
-      else toast.error(`Versand fehlgeschlagen: ${res?.error ?? res?.reason ?? "unbekannt"}`);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Versand fehlgeschlagen");
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={busy}
-      onClick={doResend}
-      className="h-7 w-7 p-0"
-      title="Registrierungs-Einladung erneut senden"
-    >
-      <MailWarning className="h-3.5 w-3.5" />
-    </Button>
-  );
 }
 
 function DeleteAppButtonInner({ appId, name }: { appId: string; name: string }) {

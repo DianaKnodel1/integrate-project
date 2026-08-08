@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutGrid, Users, ClipboardList, CheckSquare, CalendarDays, Wallet, LogOut, MessageCircle, RotateCcw, History, Settings, Phone, Mail, Search, ShieldCheck, LayoutDashboard, Upload, Server, Handshake, BarChart3 } from "lucide-react";
+import { LayoutGrid, Users, ClipboardList, CheckSquare, CalendarDays, Wallet, LogOut, MessageCircle, RotateCcw, History, Settings, Phone, Search, ShieldCheck, LayoutDashboard, Upload, Server, Handshake, BarChart3 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AdminCommandPalette } from "@/components/AdminCommandPalette";
 import { useAdminBadges } from "@/hooks/use-admin-badges";
@@ -64,7 +64,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Chat", url: "/admin/chat", icon: MessageCircle, badgeKey: "unreadChat" },
       { title: "SMS", url: "/admin/sms", icon: Phone },
-      { title: "E-Mail-Center", url: "/admin/email-center", icon: Mail },
     ],
   },
   {

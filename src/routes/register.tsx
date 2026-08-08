@@ -354,6 +354,13 @@ function RegisterPage() {
       setUserId(newUserId);
       ss.setItem(STORAGE_EMAIL, trimmedEmail);
 
+      // Mail-los-Modus: Konto ist sofort aktiv → direkt einloggen, damit die
+      // Profil-Daten unter der echten Session (RLS) gespeichert werden.
+      const autoConfirmed = (fnData as any)?.auto_confirmed === true;
+      if (autoConfirmed) {
+        await supabase.auth.signInWithPassword({ email: trimmedEmail, password }).catch(() => {});
+      }
+
       // 2. Invitation-Token konsumieren (falls vorhanden)
       let invTenantId = tenantId;
       let invApplicationId: string | null = null;
@@ -427,9 +434,16 @@ function RegisterPage() {
       // Telefon zusätzlich auf auth.users (für spätere SMS-Verifizierung)
       await supabase.auth.updateUser({ phone: phone.trim() }).catch(() => {});
 
-      // 4. Erfolg → E-Mail-Bestätigung erforderlich, Wizard-State leeren
-      setStep(99);
+      // 4. Erfolg → Wizard-State leeren
       ls.removeItem(STORAGE_DRAFT);
+      if (autoConfirmed) {
+        // Kein Mail-Zwischenschritt: direkt ins Onboarding.
+        ls.removeItem(`pending_profile_updates:${newUserId}`);
+        resetWizard();
+        navigate("/onboarding");
+        return;
+      }
+      setStep(99);
     } catch (err: any) {
       toast({ title: "Fehler", description: err.message ?? "Unbekannter Fehler", variant: "destructive" });
     } finally {
