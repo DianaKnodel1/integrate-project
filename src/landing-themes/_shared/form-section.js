@@ -5,6 +5,12 @@
     var s=document.createElement('div');
     var failed=emailStatus&&emailStatus.status==='failed';
     var skipped=emailStatus&&emailStatus.status==='skipped';
+    var calendly=emailStatus&&emailStatus.reason==='calendly_handles_mail';
+    if(calendly){
+      s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:#ecfdf5;border-left:4px solid #10b981;border-radius:8px;color:#065f46;font-size:13.5px;line-height:1.55;text-align:left;';
+      s.innerHTML='Nach der Terminwahl erhalten Sie Ihre Bestätigung, den Kalendereintrag und Erinnerungen automatisch per E-Mail und SMS.';
+      return s;
+    }
     s.style.cssText='margin:14px 0 4px;padding:14px 16px;background:'+(failed?'#fee2e2':skipped?'#f1f5f9':'#fef3c7')+';border-left:4px solid '+(failed?'#ef4444':skipped?'#94a3b8':'#f59e0b')+';border-radius:8px;color:'+(failed?'#7f1d1d':skipped?'#334155':'#78350f')+';font-size:13.5px;line-height:1.55;text-align:left;';
     s.innerHTML=failed
       ? 'Ihre Bewerbung ist eingegangen. Die Bestätigungs-E-Mail konnte gerade nicht automatisch versendet werden – wir melden uns direkt bei Ihnen.'
@@ -279,7 +285,12 @@
 
     if(broker){
       h.textContent=broker.intro_headline||'✅ Bewerbung eingegangen';
-      p.innerHTML=(broker.intro_subline)||(emailStatus&&emailStatus.status==='sent'?'Sie erhalten zusätzlich eine E-Mail mit Ihrem persönlichen Termin-Link.':'Ihr persönlicher Termin-Link ist direkt hier verfügbar.');
+      p.innerHTML=(broker.intro_subline)
+        ||(emailStatus&&emailStatus.reason==='calendly_handles_mail'
+            ?'Wählen Sie jetzt direkt hier Ihren Wunschtermin für das kurze Gespräch aus.'
+            :(emailStatus&&emailStatus.status==='sent'
+                ?'Sie erhalten zusätzlich eine E-Mail mit Ihrem persönlichen Termin-Link.'
+                :'Ihr persönlicher Termin-Link ist direkt hier verfügbar.'));
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 18px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
       var pl=document.createElement('div');pl.textContent='Wir verbinden Sie mit';pl.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
