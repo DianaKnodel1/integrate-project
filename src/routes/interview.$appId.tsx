@@ -70,6 +70,9 @@ function InterviewPage() {
   const [ended, setEnded] = useState(false);
   const [appStatus, setAppStatus] = useState<string | null>(null);
   const [registrationLink, setRegistrationLink] = useState<string | null>(null);
+  // E-Mail des Bewerbers: erlaubt die Registrierung direkt nach der Zusage,
+  // ohne auf eine Mail mit Token zu warten (Feld ist vorbefüllt).
+  const [applicantEmail, setApplicantEmail] = useState<string | null>(null);
   const [inviteMailFailed, setInviteMailFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
@@ -86,6 +89,7 @@ function InterviewPage() {
 
   const applyServerBranding = (data: any) => {
     if (data?.branding) setServerBranding(data.branding);
+    if (data?.applicant_email) setApplicantEmail(String(data.applicant_email));
   };
 
 
@@ -301,7 +305,9 @@ function InterviewPage() {
   // Ohne Token (z. B. Mailversand-Fehler) zeigt die Karte den Hinweis auf die E-Mail.
   // Ohne Token (Mailfehler / kein Token gefunden) trotzdem zur Portal-Registrierung
   // führen — der Bewerber landet so in jedem Fall auf der richtigen Seite.
-  const registerFallbackHref: string | null = portalBase ? `${portalBase}/register` : "/register";
+  const registerQuery = applicantEmail ? `?email=${encodeURIComponent(applicantEmail)}` : "";
+  const registerFallbackHref: string | null =
+    (portalBase ? `${portalBase}/register` : "/register") + registerQuery;
 
 
 
