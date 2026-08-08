@@ -64,7 +64,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Chat", url: "/admin/chat", icon: MessageCircle, badgeKey: "unreadChat" },
       { title: "SMS", url: "/admin/sms", icon: Phone },
-      { title: "E-Mail-Center", url: "/admin/email-center", icon: Mail },
     ],
   },
   {
