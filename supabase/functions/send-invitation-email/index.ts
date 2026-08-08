@@ -166,10 +166,20 @@ serve(async (req) => {
     // vom übergebenen tenantId. Damit sendet z.B. "welcome/registration" IMMER über
     // Fast-Track-SMTP, auch wenn der Caller versehentlich den Broker-Tenant mitschickt.
     let effectiveTenantId = tenantId;
+    // Hinweis auf einen Ersatzabsender (kritische Mails) für das E-Mail-Center.
+    let senderFallbackMeta: Record<string, unknown> = {};
     const routingKind = TEMPLATE_TO_KIND[templateNameOverride ?? "invitation"];
     if (body.applicationId && routingKind) {
       const resolved = await resolveSender(supabaseAdmin, body.applicationId, routingKind);
       if (resolved.tenant?.id) {
+        if (resolved.fallbackUsed) {
+          senderFallbackMeta = {
+            sender_fallback: true,
+            sender_fallback_reason: resolved.fallbackReason ?? null,
+            sender_intended_tenant_id: resolved.intendedTenantId ?? null,
+            sender_used_tenant_id: resolved.tenant.id,
+          };
+        }
         if (resolved.tenant.id !== tenantId) {
           console.log("[send-invitation-email] tenant_reroute", {
             application_id: body.applicationId,
@@ -422,6 +432,7 @@ serve(async (req) => {
       request_id: body.requestId ?? null,
       application_id: body.applicationId ?? null,
       ...logoMetadata,
+      ...senderFallbackMeta,
     };
 
     // Kontingent-Schutz: verhindert SMTP-Blocks (150/h, 2.400/Tag) und
