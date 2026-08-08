@@ -8,12 +8,9 @@
 
 DROP INDEX IF EXISTS public.applications_tenant_email_unique;
 
-CREATE UNIQUE INDEX IF NOT EXISTS applications_tenant_email_unique
-  ON public.applications (
-    tenant_id,
-    lower(email),
-    (floor(extract(epoch FROM created_at) / (60 * 86400)))
-  )
-  WHERE tenant_id IS NOT NULL AND is_test IS NOT TRUE;
+-- Kein UNIQUE-Index auf historische Bewerbungen: bestehende Doppelzeilen im
+-- selben Zeitraum sind gueltige Altdaten und wuerden den Deploy abbrechen.
+-- Neue Doppel-Absendungen werden atomar im Applications-Endpunkt erkannt und
+-- auf die vorhandene Bewerbung zurueckgefuehrt.
 
 NOTIFY pgrst, 'reload schema';

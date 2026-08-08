@@ -104,6 +104,7 @@ MISSING="$(docker exec -i "$DB_CT" psql -U supabase_admin -d postgres -tAc "
     ('tenants','webid_enabled'),
     ('tenants','allowed_employment_types'),
     ('tenants','emails_paused'),
+    ('tenants','mailless_mode'),
     ('tenants','bewerbung_magic_link_subject'),
     ('email_send_log','message_id')
   ) AS x(t,c)
