@@ -92,8 +92,11 @@ function computePhase(a: any, scheduledAt: Date | null, prof: ProfileInfo): Phas
     if (prof.emailConfirmed) return "email_bestaetigt";
     return "registriert";
   }
-  if (a.booking_status === "no_show") return "no_show";
-  if (a.booking_status === "cancelled") return "abgesagt";
+  // Ein tatsächlich geführtes Interview schlägt jeden Buchungsstatus: Calendly
+  // meldet gelegentlich "no_show"/"canceled", obwohl das Gespräch stattfand.
+  const attended = !!a.interview_completed_at || !!a.interview_started_at;
+  if (!attended && a.booking_status === "no_show") return "no_show";
+  if (!attended && a.booking_status === "cancelled") return "abgesagt";
   if (rec === "invite" || a.status === "akzeptiert") return "angenommen";
   if (rec === "reject" || a.status === "abgelehnt") return "abgelehnt";
   // Interview beendet, aber keine verwertbare KI-Auswertung: technischer Fehler,
