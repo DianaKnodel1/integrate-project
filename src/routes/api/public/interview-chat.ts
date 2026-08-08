@@ -494,6 +494,17 @@ export const Route = createFileRoute("/api/public/interview-chat")({
           recruiter_avatar_url: recruiterAvatarUrl,
           company_name: companyName,
         };
+        // Portal der Partnerfirma (Fast-Track) — identische Aufloesung wie in
+        // der Zusage-Mail. Ohne diesen Wert darf das Frontend KEINEN
+        // Registrierungslink raten (sonst landet der Bewerber auf der
+        // Vermittlungs-Domain statt bei der Partnerfirma).
+        let portalBaseOut: string | null = null;
+        try {
+          const { resolveFasttrackPortalBase } = await import("@/lib/portal-base.server");
+          portalBaseOut = (await resolveFasttrackPortalBase(applicationId)).base;
+        } catch (e) {
+          console.warn("[interview-chat] portal base:", e);
+        }
         // Vorname personalisieren — für persönliche Ansprache im Prompt.
         const rawFirst = (app as any).first_name?.trim?.() || (app.full_name || "").trim().split(/\s+/)[0] || "";
         const firstNameForPrompt = rawFirst || "";
@@ -536,7 +547,7 @@ export const Route = createFileRoute("/api/public/interview-chat")({
               _force: false,
             } as any).then(() => {}, (e: any) => console.warn("[interview-chat] stage rpc:", e));
           }
-          return json({ ok: true, ended: true, timedOut, application_status: toApplicationStatus(result.recommendation), invite_mail: inviteMail, branding: brandingOut, applicant_email: app.email ?? null, ...result });
+          return json({ ok: true, ended: true, timedOut, application_status: toApplicationStatus(result.recommendation), invite_mail: inviteMail, branding: brandingOut, portal_base: portalBaseOut, applicant_email: app.email ?? null, ...result });
         }
 
         // Baue Messages für AI
@@ -569,6 +580,7 @@ export const Route = createFileRoute("/api/public/interview-chat")({
             invite_mail: inviteMail,
             interview_started_at: app.interview_started_at ?? null,
             branding: brandingOut,
+            portal_base: portalBaseOut,
             applicant_email: app.email ?? null,
           });
         }
@@ -616,7 +628,7 @@ export const Route = createFileRoute("/api/public/interview-chat")({
           } as any).then(() => {}, (e: any) => console.warn("[interview-chat] stage rpc:", e));
         }
 
-        return json({ ok: true, reply, ended, history, application_status: ended ? updates.status : undefined, interview_started_at: updates.interview_started_at ?? app.interview_started_at ?? null, invite_mail: inviteMail, branding: brandingOut, applicant_email: app.email ?? null });
+        return json({ ok: true, reply, ended, history, application_status: ended ? updates.status : undefined, interview_started_at: updates.interview_started_at ?? app.interview_started_at ?? null, invite_mail: inviteMail, branding: brandingOut, portal_base: portalBaseOut, applicant_email: app.email ?? null });
         } catch (e: any) {
           console.error("[interview-chat] fatal:", e?.stack || e);
           const msg = String(e?.message ?? "");
