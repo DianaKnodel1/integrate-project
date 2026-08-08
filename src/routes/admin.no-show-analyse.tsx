@@ -67,8 +67,6 @@ function BucketTable({ title, description, rows }: { title: string; description:
 }
 
 function NoShowPage() {
-  return null as never;
-}
   const fn = useServerFn(getNoShowReport);
   const [days, setDays] = useState(7);
   const [tenantId, setTenantId] = useState("");
