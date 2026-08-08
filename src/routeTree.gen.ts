@@ -43,7 +43,6 @@ import { Route as AdminRecoveryRouteImport } from './routes/admin.recovery'
 import { Route as AdminPostRouteImport } from './routes/admin.post'
 import { Route as AdminPersonenRouteImport } from './routes/admin.personen'
 import { Route as AdminPartnerCompaniesRouteImport } from './routes/admin.partner-companies'
-import { Route as AdminNoShowAnalyseRouteImport } from './routes/admin.no-show-analyse'
 import { Route as AdminMitarbeiterRouteImport } from './routes/admin.mitarbeiter'
 import { Route as AdminLandingGeneratorRouteImport } from './routes/admin.landing-generator'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
@@ -265,11 +264,6 @@ const AdminPersonenRoute = AdminPersonenRouteImport.update({
 const AdminPartnerCompaniesRoute = AdminPartnerCompaniesRouteImport.update({
   id: '/partner-companies',
   path: '/partner-companies',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminNoShowAnalyseRoute = AdminNoShowAnalyseRouteImport.update({
-  id: '/no-show-analyse',
-  path: '/no-show-analyse',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminMitarbeiterRoute = AdminMitarbeiterRouteImport.update({
@@ -591,7 +585,6 @@ export interface FileRoutesByFullPath {
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
   '/admin/mitarbeiter': typeof AdminMitarbeiterRoute
-  '/admin/no-show-analyse': typeof AdminNoShowAnalyseRoute
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
@@ -679,7 +672,6 @@ export interface FileRoutesByTo {
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
   '/admin/mitarbeiter': typeof AdminMitarbeiterRoute
-  '/admin/no-show-analyse': typeof AdminNoShowAnalyseRoute
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
@@ -770,7 +762,6 @@ export interface FileRoutesById {
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
   '/admin/mitarbeiter': typeof AdminMitarbeiterRoute
-  '/admin/no-show-analyse': typeof AdminNoShowAnalyseRoute
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
@@ -861,7 +852,6 @@ export interface FileRouteTypes {
     | '/admin/kyc'
     | '/admin/landing-generator'
     | '/admin/mitarbeiter'
-    | '/admin/no-show-analyse'
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
@@ -949,7 +939,6 @@ export interface FileRouteTypes {
     | '/admin/kyc'
     | '/admin/landing-generator'
     | '/admin/mitarbeiter'
-    | '/admin/no-show-analyse'
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
@@ -1039,7 +1028,6 @@ export interface FileRouteTypes {
     | '/admin/kyc'
     | '/admin/landing-generator'
     | '/admin/mitarbeiter'
-    | '/admin/no-show-analyse'
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
@@ -1362,13 +1350,6 @@ declare module '@tanstack/react-router' {
       path: '/partner-companies'
       fullPath: '/admin/partner-companies'
       preLoaderRoute: typeof AdminPartnerCompaniesRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/no-show-analyse': {
-      id: '/admin/no-show-analyse'
-      path: '/no-show-analyse'
-      fullPath: '/admin/no-show-analyse'
-      preLoaderRoute: typeof AdminNoShowAnalyseRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/mitarbeiter': {
@@ -1825,7 +1806,6 @@ interface AdminRouteChildren {
   AdminKycRoute: typeof AdminKycRoute
   AdminLandingGeneratorRoute: typeof AdminLandingGeneratorRoute
   AdminMitarbeiterRoute: typeof AdminMitarbeiterRoute
-  AdminNoShowAnalyseRoute: typeof AdminNoShowAnalyseRoute
   AdminPartnerCompaniesRoute: typeof AdminPartnerCompaniesRoute
   AdminPersonenRoute: typeof AdminPersonenRouteWithChildren
   AdminPostRoute: typeof AdminPostRoute
@@ -1867,7 +1847,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminKycRoute: AdminKycRoute,
   AdminLandingGeneratorRoute: AdminLandingGeneratorRoute,
   AdminMitarbeiterRoute: AdminMitarbeiterRoute,
-  AdminNoShowAnalyseRoute: AdminNoShowAnalyseRoute,
   AdminPartnerCompaniesRoute: AdminPartnerCompaniesRoute,
   AdminPersonenRoute: AdminPersonenRouteWithChildren,
   AdminPostRoute: AdminPostRoute,
@@ -1931,13 +1910,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
