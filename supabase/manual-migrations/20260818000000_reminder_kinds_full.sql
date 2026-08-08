@@ -26,6 +26,6 @@ ALTER TABLE public.application_reminder_log
     'registration_abandoned_24h',
     'rebook_after_cancel_24h',
     'rebook_after_cancel_72h'
-  ));
+  )) NOT VALID;
 
 NOTIFY pgrst, 'reload schema';
