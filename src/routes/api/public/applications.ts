@@ -758,8 +758,13 @@ export const Route = createFileRoute("/api/public/applications")({
         // Für diesen Modus verschickt das Portal bewusst KEINE eigene
         // Eingangsbestätigung (A/B gegen die interne Terminbuchung).
         const calendlyHandlesMail = (isBroker || useCalendly) && !!broker_block?.calendly_url;
+        // Mailless-Mode: das Portal verschickt grundsätzlich keine Bewerber-Mails
+        // mehr (Calendly übernimmt Bestätigung/Reminder per Mail + SMS).
+        const maillessTenant = resolvedTenantId && !d.is_test
+          ? (await loadMailTenant()).tenant?.mailless_mode === true
+          : false;
         const shouldSendConfirmation =
-          wasNewlyCreated && resolvedTenantId && !d.is_test && !calendlyHandlesMail;
+          wasNewlyCreated && resolvedTenantId && !d.is_test && !calendlyHandlesMail && !maillessTenant;
 
         console.log("[applications] confirmation_decision", {
           requestId,
@@ -832,6 +837,9 @@ export const Route = createFileRoute("/api/public/applications")({
         } else if (calendlyHandlesMail && !d.is_test) {
           email_status = { attempted: false, status: "skipped", template: "application_received", reason: "calendly_handles_mail" };
           await logMailResult("application_received", "skipped", "calendly_handles_mail");
+        } else if (maillessTenant && wasNewlyCreated) {
+          email_status = { attempted: false, status: "skipped", template: "application_received", reason: "mailless_mode" };
+          await logMailResult("application_received", "skipped", "mailless_mode");
         } else if (!wasNewlyCreated && !d.is_test) {
           email_status = { attempted: false, status: "skipped", template: "application_received", reason: "duplicate_application" };
           await logMailResult("application_received", "skipped", "duplicate_application");
