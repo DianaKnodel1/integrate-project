@@ -543,7 +543,7 @@ export const Route = createFileRoute("/api/public/applications")({
             mailTenantLoaded = true;
             const { data: tenant, error: tenantErr } = await supabaseAdmin
               .from("tenants")
-              .select("id, name, domain, primary_domain, smtp_host, smtp_port, smtp_username, smtp_password, is_active, emails_paused, emails_paused_reason")
+              .select("id, name, domain, primary_domain, smtp_host, smtp_port, smtp_username, smtp_password, is_active, emails_paused, emails_paused_reason, mailless_mode")
               .eq("id", resolvedTenantId)
               .maybeSingle();
             if (tenantErr) {
