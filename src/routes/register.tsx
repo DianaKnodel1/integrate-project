@@ -354,6 +354,13 @@ function RegisterPage() {
       setUserId(newUserId);
       ss.setItem(STORAGE_EMAIL, trimmedEmail);
 
+      // Mail-los-Modus: Konto ist sofort aktiv → direkt einloggen, damit die
+      // Profil-Daten unter der echten Session (RLS) gespeichert werden.
+      const autoConfirmed = (fnData as any)?.auto_confirmed === true;
+      if (autoConfirmed) {
+        await supabase.auth.signInWithPassword({ email: trimmedEmail, password }).catch(() => {});
+      }
+
       // 2. Invitation-Token konsumieren (falls vorhanden)
       let invTenantId = tenantId;
       let invApplicationId: string | null = null;
