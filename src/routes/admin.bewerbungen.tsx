@@ -13,7 +13,7 @@ import { Users, Search, ExternalLink, Trash2, Archive } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
 import { deleteOrphanApplications, deleteApplication, bulkDeleteApplications } from "@/lib/admin-delete.functions";
-import { archiveOldApplications } from "@/lib/admin-maintenance.functions";
+import { archiveOldApplications, resetApplicants } from "@/lib/admin-maintenance.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
@@ -176,6 +176,9 @@ function AdminBewerbungenPage() {
   const runCleanup = useServerFn(deleteOrphanApplications);
   const runBulkDelete = useServerFn(bulkDeleteApplications);
   const runArchive = useServerFn(archiveOldApplications);
+  const runResetApplicants = useServerFn(resetApplicants);
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState("");
 
   useEffect(() => {
     supabase.from("tenants").select("id, name").order("name").then(({ data }) => {
@@ -360,6 +363,25 @@ function AdminBewerbungenPage() {
   }
 
   async function doBulkDelete() {
+    return doBulkDeleteInner();
+  }
+
+  /** Löscht alle Bewerber-Daten. Mitarbeiter-Konten bleiben bestehen. */
+  async function doResetApplicants() {
+    setResetBusy(true);
+    try {
+      const res: any = await runResetApplicants({ data: { confirm: "BEWERBER LOESCHEN", dry_run: false } });
+      toast.success(`${res.deleted} Bewerbungen gelöscht. Mitarbeiter unverändert.`);
+      setResetConfirm("");
+      await loadData();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Zurücksetzen fehlgeschlagen");
+    } finally {
+      setResetBusy(false);
+    }
+  }
+
+  async function doBulkDeleteInner() {
     setBulkBusy(true);
     try {
       const ids = Array.from(selected);
