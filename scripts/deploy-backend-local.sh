@@ -49,7 +49,9 @@ else
     echo "$NEW" | while read -r sql; do
       name="$(basename "$sql")"
       info "apply: $name"
-      docker exec -i "$DB_CT" psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 < "$sql"
+      # Eine Migration ist atomar: Bei einem Fehler wird die komplette Datei
+      # zurueckgerollt, statt das Schema halb geaendert zu hinterlassen.
+      docker exec -i "$DB_CT" psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 --single-transaction < "$sql"
       echo "$name" >> "$STATE"
       ok "$name"
     done
