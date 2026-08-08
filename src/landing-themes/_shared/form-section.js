@@ -300,9 +300,9 @@
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 18px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
       var pl=document.createElement('div');pl.textContent='Wir verbinden Sie mit';pl.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
-      var pn=document.createElement('div');pn.textContent=broker.partner_name||'';pn.style.cssText='font-size:17px;font-weight:700;color:#0f172a;';
+      var pn=document.createElement('div');pn.textContent=broker.partner_name||'unserem Partnerunternehmen';pn.style.cssText='font-size:17px;font-weight:700;color:#0f172a;';
       pc.appendChild(pl);pc.appendChild(pn);box.appendChild(pc);
-      if(broker.calendly_url){var cta2=document.createElement('a');cta2.href=broker.calendly_url;cta2.target='_blank';cta2.rel='noopener';cta2.textContent=(broker.button_label||'Jetzt Termin auswählen')+'  →';
+      if(broker.calendly_url){var cta2=document.createElement('a');cta2.href=broker.calendly_url;cta2.target='_blank';cta2.rel='noopener';cta2.textContent=(broker.button_label||'Jetzt Termin buchen')+'  →';
         cta2.style.cssText='display:inline-block;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:999px;font-size:16px;';box.appendChild(cta2);}
       box.appendChild(spamHintBox(emailStatus));
     } else if(isFast){
