@@ -439,10 +439,10 @@ serve(async (req) => {
     const landingIds = Array.from(new Set(
       todo.flatMap((a: any) => [a.source_landing_id, a.target_landing_id]).filter(Boolean),
     ));
-    const landingMap = new Map<string, { id: string; domain: string | null; flow_type: string | null; linked_fasttrack_landing_id: string | null }>();
+    const landingMap = new Map<string, { id: string; domain: string | null; flow_type: string | null; linked_fasttrack_landing_id: string | null; booking_mode?: string | null }>();
     if (landingIds.length) {
       const { data: lp } = await admin.from("landing_pages")
-        .select("id,domain,flow_type,linked_fasttrack_landing_id").in("id", landingIds);
+        .select("id,domain,flow_type,linked_fasttrack_landing_id,booking_mode").in("id", landingIds);
       (lp ?? []).forEach((l: any) => landingMap.set(l.id, l));
 
       const linkedIds = Array.from(new Set(
@@ -450,7 +450,7 @@ serve(async (req) => {
       )).filter((id) => !landingMap.has(id as string));
       if (linkedIds.length) {
         const { data: linked } = await admin.from("landing_pages")
-          .select("id,domain,flow_type,linked_fasttrack_landing_id").in("id", linkedIds);
+          .select("id,domain,flow_type,linked_fasttrack_landing_id,booking_mode").in("id", linkedIds);
         (linked ?? []).forEach((l: any) => landingMap.set(l.id, l));
       }
     }
@@ -470,6 +470,20 @@ serve(async (req) => {
 
       const sourceLanding = a.source_landing_id ? landingMap.get(a.source_landing_id) : null;
       const targetLanding = a.target_landing_id ? landingMap.get(a.target_landing_id) : null;
+
+      // Calendly-Modus: Terminmails/Erinnerungen laufen komplett über Calendly
+      // (Mail + SMS + Kalendereintrag mit /bewerbung-Link in der Beschreibung).
+      const bookingModeOf = (l: typeof sourceLanding) => String(l?.booking_mode || "").toLowerCase();
+      const calendlyManaged = [sourceLanding, targetLanding]
+        .some((l) => l && bookingModeOf(l) === "calendly");
+      const internalManaged = [sourceLanding, targetLanding]
+        .some((l) => l && bookingModeOf(l) === "internal");
+      if (calendlyManaged && !internalManaged) {
+        skipped++;
+        results.push({ application_id: a.id, status: "skipped", reason: "calendly_handles_mail" });
+        if (!dryRun) await logSkip(admin, a, tenant, "calendly_handles_mail");
+        continue;
+      }
       const linkedFastTrack = sourceLanding?.linked_fasttrack_landing_id
         ? landingMap.get(sourceLanding.linked_fasttrack_landing_id)
         : null;

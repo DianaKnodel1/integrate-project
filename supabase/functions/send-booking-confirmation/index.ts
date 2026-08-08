@@ -262,7 +262,7 @@ serve(async (req) => {
       ...todo.map((a: any) => appMap.get(a.application_id)?.source_landing_id).filter(Boolean),
     ]));
     const { data: lpList } = lps.length
-      ? await admin.from("landing_pages").select("id, domain, logo_url, branding, slots, intermediate_logo_url, recruiter_name, recruiter_avatar_url, linked_fasttrack_landing_id, flow_type").in("id", lps)
+      ? await admin.from("landing_pages").select("id, domain, logo_url, branding, slots, intermediate_logo_url, recruiter_name, recruiter_avatar_url, linked_fasttrack_landing_id, flow_type, booking_mode").in("id", lps)
       : { data: [] as any[] };
     const lpMap = new Map<string, any>((lpList ?? []).map((l: any) => [l.id, l]));
 
@@ -272,7 +272,7 @@ serve(async (req) => {
     )).filter((id) => !lpMap.has(id));
     if (extraIds.length) {
       const { data: extraLps } = await admin.from("landing_pages")
-        .select("id, domain, logo_url, branding, slots, intermediate_logo_url, recruiter_name, recruiter_avatar_url, linked_fasttrack_landing_id, flow_type").in("id", extraIds);
+        .select("id, domain, logo_url, branding, slots, intermediate_logo_url, recruiter_name, recruiter_avatar_url, linked_fasttrack_landing_id, flow_type, booking_mode").in("id", extraIds);
       for (const l of (extraLps ?? []) as any[]) lpMap.set(l.id, l);
     }
 
@@ -282,6 +282,26 @@ serve(async (req) => {
     for (const appt of todo as any[]) {
       const app = appMap.get(appt.application_id);
       if (!app?.email) { skipped++; results.push({ id: appt.id, reason: "no_email" }); continue; }
+
+      // Calendly-Modus: Bestätigung + Erinnerungen + Kalendereintrag kommen von
+      // Calendly selbst. Keine eigene Terminbestätigung (A/B gegen intern).
+      {
+        const src = app.source_landing_id ? lpMap.get(app.source_landing_id) : null;
+        const tgt = app.target_landing_id ? lpMap.get(app.target_landing_id) : null;
+        const mode = (l: any) => String(l?.booking_mode || "").toLowerCase();
+        const isCalendly = [src, tgt].some((l) => l && mode(l) === "calendly");
+        const isInternal = [src, tgt].some((l) => l && mode(l) === "internal");
+        if (!forceResend && isCalendly && !isInternal) {
+          skipped++;
+          results.push({ id: appt.id, reason: "calendly_handles_mail" });
+          await admin.from("application_reminder_log").upsert({
+            application_id: app.id, tenant_id: app.tenant_id ?? appt.tenant_id ?? null,
+            reminder_kind: REMINDER_KIND, recipient_email: app.email,
+            status: "skipped", error: "calendly_handles_mail",
+          }, { onConflict: "application_id,reminder_kind" });
+          continue;
+        }
+      }
       const resolved = await resolveSender(admin, app.id, "broker_booking_confirmation");
       const tenant = resolved.tenant as TenantRow | null;
       if (!tenant) {

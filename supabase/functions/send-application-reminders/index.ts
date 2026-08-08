@@ -797,6 +797,20 @@ serve(async (req) => {
 
       const rawCalendly = calendlyFromLanding(landing);
 
+      // Calendly-Modus: Termin-Mails (kein Termin gebucht / No-Show / Neubuchung)
+      // übernimmt Calendly selbst inkl. SMS + Kalendereintrag. Wir schicken
+      // dafür KEINE eigenen Mails — nur der interne Buchungsmodus bekommt sie.
+      if (!isRegistration && !isAbandoned && !useInternalBooking && rawCalendly) {
+        skipped++;
+        results.push({ app: app.id, kind, status: "skipped", reason: "calendly_handles_mail" });
+        if (!dryRun) await admin.from("application_reminder_log").upsert({
+          application_id: app.id, tenant_id: tenant.id, reminder_kind: kind,
+          recipient_email: app.email, status: "skipped", error: "calendly_handles_mail",
+          sent_at: new Date().toISOString(),
+        }, { onConflict: "application_id,reminder_kind" });
+        continue;
+      }
+
       // Registration-Reminder braucht KEIN Calendly, sondern portal_link.
       let calendlyLink = "";
       let portalLink = "";

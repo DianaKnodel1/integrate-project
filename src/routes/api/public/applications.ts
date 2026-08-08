@@ -685,16 +685,31 @@ export const Route = createFileRoute("/api/public/applications")({
           const base = d.portal_url.replace(/\/+$/, "");
           redirect_url = `${base}/`;
         } else if (useCalendly && d.portal_url && d.source_slug) {
-          const base = d.portal_url.replace(/\/+$/, "");
+          // Kollegen-Ablauf: KEINE Zwischenseite / Auto-Weiterleitung mehr.
+          // Direkt auf der Landingpage die Danke-Karte mit einem Button
+          // "Jetzt Termin buchen" (Calendly, vorbefüllt) rendern.
           const parts = d.full_name.trim().split(/\s+/);
           const firstName = parts[0] ?? "";
           const lastName = parts.slice(1).join(" ");
+          const calBase = String(calendlyOnLanding || "").trim();
+          const sep = calBase.includes("?") ? "&" : "?";
           const qs = new URLSearchParams({
-            app: appId, landing: d.source_slug,
+            name: d.full_name, email: d.email,
             first_name: firstName, last_name: lastName,
-            email: d.email, phone: d.phone ?? "",
+            utm_content: appId, utm_source: d.source_slug,
           }).toString();
-          redirect_url = `${base}/bewerbung/verbinden?${qs}`;
+          broker_block = {
+            partner_name:
+              (landingPage as any)?.intermediate_company_name
+              || ((landingPage as any)?.branding?.firmenname ?? "")
+              || "",
+            partner_logo: (landingPage as any)?.logo_url ?? null,
+            calendly_url: calBase ? `${calBase}${sep}${qs}` : "",
+            button_label: "Jetzt Termin buchen",
+            intro_headline: null,
+            intro_subline: null,
+            portal_register_url: null,
+          };
         }
 
         // Fast-Track: KEINE "Willkommen im Team"-Mail mehr beim Bewerbungseingang.
@@ -720,8 +735,12 @@ export const Route = createFileRoute("/api/public/applications")({
           || (useCalendly ? calendlyOnLanding : null)
           || ownBookingUrl
           || null;
+        // Calendly übernimmt Mail + SMS + Kalendereintrag komplett selbst.
+        // Für diesen Modus verschickt das Portal bewusst KEINE eigene
+        // Eingangsbestätigung (A/B gegen die interne Terminbuchung).
+        const calendlyHandlesMail = (isBroker || useCalendly) && !!broker_block?.calendly_url;
         const shouldSendConfirmation =
-          wasNewlyCreated && resolvedTenantId && !d.is_test;
+          wasNewlyCreated && resolvedTenantId && !d.is_test && !calendlyHandlesMail;
 
         console.log("[applications] confirmation_decision", {
           requestId,
@@ -729,6 +748,7 @@ export const Route = createFileRoute("/api/public/applications")({
           shouldSendConfirmation,
           isFast,
           wasNewlyCreated,
+          calendly_handles_mail: calendlyHandlesMail,
           tenant_id: resolvedTenantId,
           is_test: d.is_test,
           has_booking_link: !!confirmationBookingLink,
@@ -790,6 +810,9 @@ export const Route = createFileRoute("/api/public/applications")({
             email_status = { attempted: true, status: "failed", template: "application_received", reason };
             await logMailResult("application_received", "failed", reason);
           }
+        } else if (calendlyHandlesMail && !d.is_test) {
+          email_status = { attempted: false, status: "skipped", template: "application_received", reason: "calendly_handles_mail" };
+          await logMailResult("application_received", "skipped", "calendly_handles_mail");
         } else if (!wasNewlyCreated && !d.is_test) {
           email_status = { attempted: false, status: "skipped", template: "application_received", reason: "duplicate_application" };
           await logMailResult("application_received", "skipped", "duplicate_application");

@@ -54,6 +54,7 @@ export type NoShowReport = {
   by_tenant: Bucket[];
   by_source: Bucket[];
   by_mail: Bucket[];
+  by_booking_mode: Bucket[];
   findings: Array<{ level: "high" | "medium" | "info"; text: string }>;
   error?: string;
 };
@@ -146,7 +147,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
         buchungsquote: 0, erscheinensquote: 0, no_show_quote: 0, mehrfachbuchungen: 0,
       },
       by_lead_time: [], by_reaction_time: [], by_weekday: [], by_hour: [],
-      by_tenant: [], by_source: [], by_mail: [], findings: [],
+      by_tenant: [], by_source: [], by_mail: [], by_booking_mode: [], findings: [],
     };
 
     // 1) Bewerbungen im Zeitraum
@@ -199,9 +200,16 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     const landingIds = Array.from(new Set(apps.map((a) => a.source_landing_id).filter(Boolean))) as string[];
     const landingLabel = new Map<string, string>();
+    // Buchungsart der Quell-Landing: 'calendly' (Kollegen-Ablauf, Mails via
+    // Calendly) vs. 'internal' (eigener Kalender + eigene Mailkette). Damit
+    // laesst sich der A/B-Test der beiden Funnel direkt vergleichen.
+    const landingMode = new Map<string, string>();
     if (landingIds.length) {
-      const { data: lps } = await supabase.from("landing_pages").select("id, slug, domain").in("id", landingIds);
-      for (const l of (lps ?? []) as any[]) landingLabel.set(l.id, l.domain || l.slug || l.id);
+      const { data: lps } = await supabase.from("landing_pages").select("id, slug, domain, booking_mode").in("id", landingIds);
+      for (const l of (lps ?? []) as any[]) {
+        landingLabel.set(l.id, l.domain || l.slug || l.id);
+        landingMode.set(l.id, String(l.booking_mode || "").toLowerCase());
+      }
     }
 
     // ---- Aggregation -------------------------------------------------------
@@ -213,6 +221,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
       tenant: new Map<string, Bucket>(),
       source: new Map<string, Bucket>(),
       mail: new Map<string, Bucket>(),
+      mode: new Map<string, Bucket>(),
     };
     const push = (m: Map<string, Bucket>, key: string, label: string, kind: "erschienen" | "abgesagt" | "no_show" | "unklar") => {
       let b = m.get(key);
@@ -285,6 +294,14 @@ export const getNoShowReport = createServerFn({ method: "POST" })
         keine_erinnerung: "Bestätigung, aber keine Erinnerung",
       };
       push(buckets.mail, mailKey, mailLabel[mailKey]!, kind);
+
+      const mode = (srcId && landingMode.get(srcId)) || "unbekannt";
+      const modeLabel: Record<string, string> = {
+        calendly: "Calendly (Mails über Calendly)",
+        internal: "Internes Buchungssystem (Portal-Mails)",
+        unbekannt: "Unbekannt",
+      };
+      push(buckets.mode, mode, modeLabel[mode] ?? mode, kind);
     }
 
     totals.nie_gebucht = apps.filter((a) => !bookedAppIds.has(a.id) && !a.scheduled_at).length;
@@ -302,6 +319,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
     const by_tenant = finalize(buckets.tenant);
     const by_source = finalize(buckets.source);
     const by_mail = finalize(buckets.mail);
+    const by_booking_mode = finalize(buckets.mode, ["calendly", "internal", "unbekannt"]);
 
     // ---- Automatische Befunde ---------------------------------------------
     const findings: NoShowReport["findings"] = [];
@@ -356,6 +374,17 @@ export const getNoShowReport = createServerFn({ method: "POST" })
       });
     }
 
+    const cal = by_booking_mode.find((b) => b.key === "calendly");
+    const int = by_booking_mode.find((b) => b.key === "internal");
+    if (cal && int && cal.gebucht >= MIN_N && int.gebucht >= MIN_N && Math.abs(cal.no_show_quote - int.no_show_quote) >= 10) {
+      const better = cal.no_show_quote < int.no_show_quote ? cal : int;
+      const worse = better === cal ? int : cal;
+      findings.push({
+        level: "high",
+        text: `Buchungsart im Vergleich: „${better.label}“ ${better.no_show_quote}% No-Show gegenüber „${worse.label}“ ${worse.no_show_quote}%. Bei vergleichbarem Traffic auf die bessere Variante setzen.`,
+      });
+    }
+
     if (totals.abgesagt > 0 && totals.abgesagt / Math.max(1, totals.gebucht) > 0.15) {
       findings.push({
         level: "info",
@@ -374,6 +403,6 @@ export const getNoShowReport = createServerFn({ method: "POST" })
 
     return {
       totals, by_lead_time, by_reaction_time, by_weekday, by_hour,
-      by_tenant, by_source, by_mail, findings,
+      by_tenant, by_source, by_mail, by_booking_mode, findings,
     };
   });
