@@ -334,7 +334,6 @@ function AdminBewerbungenPage() {
       const prof: ProfileInfo = p ? {
         onboarding: p.onboarding_status ?? null,
         status: p.status ?? null,
-        emailConfirmed: !!(p.user_id && emailConfirmedUserIds.has(p.user_id)),
         contractSigned: !!p.contract_signed_at,
       } : null;
       const sched = bookingByApp.get(a.id) ?? (a.scheduled_at ? new Date(a.scheduled_at) : null);
@@ -395,7 +394,7 @@ function AdminBewerbungenPage() {
     { key: "abgesagt",    label: "Abgesagt",          emoji: "🚫", phases: ["abgesagt"] },
     { key: "zusage",      label: "Zusage erteilt",    emoji: "✅", phases: ["angenommen"] },
     { key: "abgelehnt",   label: "Abgelehnt",         emoji: "❌", phases: ["abgelehnt"] },
-    { key: "onboarded",   label: "Onboarded",         emoji: "🚀", phases: ["registriert", "email_bestaetigt", "onboarding_komplett", "mitarbeiter_aktiv"] },
+    { key: "onboarded",   label: "Onboarded",         emoji: "🚀", phases: ["registriert", "onboarding_komplett", "mitarbeiter_aktiv"] },
   ];
   const groupOf = (p: Phase): string => GROUPS.find(g => g.phases.includes(p))?.key ?? "alle";
 
