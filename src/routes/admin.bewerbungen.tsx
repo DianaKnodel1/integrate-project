@@ -40,7 +40,7 @@ type Phase =
   | "interview_laeuft"
   | "auswertung_fehler"
   | "angenommen" | "abgelehnt"
-  | "registriert" | "email_bestaetigt" | "onboarding_komplett" | "mitarbeiter_aktiv";
+  | "registriert" | "onboarding_komplett" | "mitarbeiter_aktiv";
 
 const PHASES: { key: Phase | "alle"; label: string; emoji: string }[] = [
   { key: "alle", label: "Alle", emoji: "👥" },
@@ -53,7 +53,6 @@ const PHASES: { key: Phase | "alle"; label: string; emoji: string }[] = [
   { key: "angenommen", label: "Zusage erteilt", emoji: "✅" },
   { key: "abgelehnt", label: "Abgelehnt", emoji: "❌" },
   { key: "registriert", label: "Registriert", emoji: "🧾" },
-  { key: "email_bestaetigt", label: "E-Mail bestätigt", emoji: "✉️" },
   { key: "onboarding_komplett", label: "Onboarding fertig", emoji: "📄" },
   { key: "mitarbeiter_aktiv", label: "Mitarbeiter aktiv", emoji: "🚀" },
 ];
@@ -68,7 +67,6 @@ const PHASE_COLOR: Record<Phase, string> = {
   angenommen: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
   abgelehnt: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
   registriert: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300",
-  email_bestaetigt: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
   onboarding_komplett: "bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300",
   mitarbeiter_aktiv: "bg-emerald-500 text-white dark:bg-emerald-600 border-0",
 };
@@ -78,7 +76,6 @@ const PHASE_COLOR: Record<Phase, string> = {
 type ProfileInfo = {
   onboarding: string | null;
   status: string | null;
-  emailConfirmed: boolean;
   contractSigned: boolean;
 } | null;
 
@@ -89,7 +86,6 @@ function computePhase(a: any, scheduledAt: Date | null, prof: ProfileInfo): Phas
   if (prof) {
     if (prof.status === "angenommen") return "mitarbeiter_aktiv";
     if (prof.onboarding === "abgeschlossen" || prof.contractSigned) return "onboarding_komplett";
-    if (prof.emailConfirmed) return "email_bestaetigt";
     return "registriert";
   }
   // Ein tatsächlich geführtes Interview schlägt jeden Buchungsstatus: Calendly
@@ -119,7 +115,7 @@ function phaseToStages(phase: Phase): Stage[] {
     "interview_laeuft",
     "auswertung_fehler",
     "angenommen","abgelehnt",
-    "registriert","email_bestaetigt",
+    "registriert",
     "onboarding_komplett","mitarbeiter_aktiv",
   ];
 
@@ -141,7 +137,7 @@ function phaseToStages(phase: Phase): Stage[] {
     : phase === "no_show" ? 1
     : phase === "interview_laeuft" ? 1
     : phase === "auswertung_fehler" || phase === "angenommen" || phase === "abgelehnt" ? 2
-    : phase === "registriert" || phase === "email_bestaetigt" ? 3
+    : phase === "registriert" ? 3
     : 4;
 
   const labels = ["Termin", "Interview", "Zusage", "Registriert", "Onboarding"];
