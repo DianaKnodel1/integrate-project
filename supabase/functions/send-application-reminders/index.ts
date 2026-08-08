@@ -952,6 +952,13 @@ serve(async (req) => {
       // ── Platzhalter-Zeile VOR dem Versand ──────────────────────────────────
       // Der eindeutige Index (template_name + Empfänger + Vorgang + Tag) lässt
       // nur eine 'sent'-Zeile zu. Schlägt der Insert fehl, hat ein paralleler
+      // Mail-los-Modus: dieser Tenant verschickt gar nichts (Calendly + /bewerbung).
+      if ((tenant as any).mailless_mode !== false) {
+        skipped++;
+        results.push({ app: app.id, kind, status: "skipped", reason: "mailless_mode" });
+        continue;
+      }
+
       // Lauf diese Mail bereits übernommen → hier nicht nochmal senden.
       let claim: EmailClaim | null = null;
       // Auch der manuelle Sofort-Versand reserviert. Er darf bewusst wiederholen,
