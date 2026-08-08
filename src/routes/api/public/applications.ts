@@ -698,12 +698,31 @@ export const Route = createFileRoute("/api/public/applications")({
             first_name: firstName, last_name: lastName,
             utm_content: appId, utm_source: d.source_slug,
           }).toString();
+          // Die Danke-Karte nennt die Firma, an die vermittelt wird. Bei einer
+          // Vermittlung ist das die verknüpfte Fast-Track-Landing, nicht die
+          // eigene Landingpage.
+          let targetName = "";
+          let targetLogo: string | null = null;
+          const linkedFastId = (landingPage as any)?.linked_fasttrack_landing_id
+            ?? d.target_landing_id ?? null;
+          if (linkedFastId) {
+            const { data: ftLp } = await supabaseAdmin
+              .from("landing_pages")
+              .select("intermediate_company_name, logo_url, branding")
+              .eq("id", linkedFastId)
+              .maybeSingle();
+            const ftBranding = (ftLp as any)?.branding ?? {};
+            targetName = (ftLp as any)?.intermediate_company_name || ftBranding.firmenname || "";
+            targetLogo = (ftLp as any)?.logo_url || ftBranding.logo_image || null;
+          }
+          const ownBranding = (landingPage as any)?.branding ?? {};
           broker_block = {
             partner_name:
-              (landingPage as any)?.intermediate_company_name
-              || ((landingPage as any)?.branding?.firmenname ?? "")
-              || "",
-            partner_logo: (landingPage as any)?.logo_url ?? null,
+              targetName
+              || (landingPage as any)?.intermediate_company_name
+              || (ownBranding.firmenname ?? "")
+              || "unserem Partnerunternehmen",
+            partner_logo: targetLogo || (landingPage as any)?.logo_url || ownBranding.logo_image || null,
             calendly_url: calBase ? `${calBase}${sep}${qs}` : "",
             button_label: "Jetzt Termin buchen",
             intro_headline: null,
