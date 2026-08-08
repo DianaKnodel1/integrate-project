@@ -176,50 +176,23 @@ export async function resolveSender(
 }
 
 /**
- * Ersatzabsender für kritische Mails (Terminbestätigung, Interview-Link).
+ * KEIN Ersatzabsender mehr.
  *
- * Ohne diese Mails erscheint der Bewerber garantiert nicht zum Termin — ein
- * fehlender oder unvollständig konfigurierter Mandant darf sie deshalb nicht
- * verhindern. Reihenfolge: anderer Mandant derselben Bewerbung (Vermittlung ↔
- * Fast-Track) → erster aktiver Mandant mit vollständigem SMTP.
- * Der Ausfall bleibt über fallbackReason im Log sichtbar und muss nachgezogen
- * werden — es ist ein Notnagel, keine Dauerlösung.
+ * Eine Mail darf niemals über einen fremden Mandanten rausgehen — sonst
+ * werden Firmen/Marken vertauscht. Wenn der zuständige Mandant nicht senden
+ * kann (SMTP unvollständig, Tenant fehlt/inaktiv), wird die Mail bewusst
+ * NICHT versendet, sondern als blockiert geloggt und im E-Mail-Center
+ * angezeigt, damit die SMTP-Daten korrigiert werden.
  */
 async function criticalFallback(
-  admin: any,
+  _admin: any,
   kind: EmailKind,
   side: "broker" | "fasttrack",
-  app: any | null,
+  _app: any | null,
   reason: string,
   intendedTenantId: string | null = null,
 ): Promise<ResolvedSender> {
-  const tried = new Set<string>(intendedTenantId ? [intendedTenantId] : []);
-  const candidates: string[] = [];
-  for (const id of [app?.broker_tenant_id, app?.fasttrack_tenant_id, app?.tenant_id]) {
-    if (id && !tried.has(id) && !candidates.includes(id)) candidates.push(id);
-  }
-
-  for (const id of candidates) {
-    const { data: t } = await admin.from("tenants").select(TENANT_SELECT).eq("id", id).maybeSingle();
-    if (t && t.is_active !== false && smtpOk(t)) {
-      console.warn("[sender-resolver] critical fallback sender", { kind, reason, from: intendedTenantId, to: id });
-      return { tenant: t, kind, side, reason: null, fallbackUsed: true, intendedTenantId, fallbackReason: reason };
-    }
-  }
-
-  const { data: any_ } = await admin
-    .from("tenants").select(TENANT_SELECT)
-    .eq("is_active", true)
-    .not("smtp_host", "is", null)
-    .not("smtp_password", "is", null)
-    .order("created_at", { ascending: true })
-    .limit(10);
-  for (const t of (any_ ?? [])) {
-    if (tried.has(t.id) || !smtpOk(t)) continue;
-    console.warn("[sender-resolver] critical fallback sender (global)", { kind, reason, to: t.id });
-    return { tenant: t, kind, side, reason: null, fallbackUsed: true, intendedTenantId, fallbackReason: reason };
-  }
-
+  console.warn("[sender-resolver] critical mail blocked (kein Ersatzabsender)", { kind, reason, tenant: intendedTenantId });
   return { tenant: null, kind, side, reason, intendedTenantId };
 }
 
