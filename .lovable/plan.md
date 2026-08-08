@@ -1,51 +1,65 @@
-# Das System ohne Mails bauen — Kollegen-Ablauf als Standard
+# Mailsystem raus — der Funnel läuft ohne eine einzige Mail
 
-## Meine Meinung vorweg
+Ja, ich bin dafür. Die Mails haben in den letzten Wochen fast ausschließlich Arbeit gemacht (SMTP-Pausen, Bounces, Retry-Queue, blockierte Bestätigungen) und im Funnel messbar nichts gebracht: 14 Zusagen, 0 Registrierungen. Beim Kollegen läuft jeder Schritt im Browser weiter, ohne dass ein Postfach dazwischenliegt. Genau das bauen wir.
 
-Ja — für den Bewerber-Funnel klar dafür. Aber nicht „Mailsystem löschen", sondern **Mailversand hart abschalten und die Mail-Oberflächen aus dem Weg räumen**. Grund: Der Unterschied zwischen dir und deinem Kollegen entsteht nicht dadurch, dass er bessere Mails schreibt — er hat schlicht **keinen einzigen Schritt, der über ein Postfach läuft**. Jeder Mail-Schritt ist ein Absprungpunkt (Spam, Tippfehler in der Adresse, „mache ich später"). Bei dir liegen davon vier hintereinander im Funnel.
+**Eine Ausnahme empfehle ich dringend:** Passwort-Vergessen im Mitarbeiterportal. Das ist keine Funnel-Mail, sondern die einzige Möglichkeit, wie ein Mitarbeiter wieder an sein Konto kommt. Ohne sie musst du jedes vergessene Passwort von Hand zurücksetzen. Diese eine Mail bleibt, alles andere geht raus.
 
-Der wichtigste Einzelpunkt in deinen Zahlen: **14 Zusagen, 0 Registrierungen.** Das ist kein Motivationsproblem, das ist ein kaputter Übergang. Beim Kollegen ist die Zusage ein Klick, dann Konto anlegen, dann sofort drin. Bei dir kommt dazwischen eine Mail plus eine **E-Mail-Bestätigung beim Registrieren** — genau die hat er nicht.
+## Was verschwindet
 
-Der Code bleibt erhalten (SMTP, Vorlagen, Logs), damit du beim internen Buchungssystem weiter vergleichen kannst. Er wird nur nicht mehr benutzt.
+Keine Eingangsbestätigung, keine Terminbestätigung, keine Termin-Erinnerung, keine Nachfass-Mail bei fehlender Buchung, keine No-Show-Mail, keine Zusage-Mail, keine Registrierungs- und Onboarding-Erinnerung, keine Bestätigungsmail beim Registrieren.
+
+Termin-Mail, SMS und Kalendereintrag kommen komplett von Calendly.
+
+## Der neue Ablauf
+
+```text
+Bewerbung absenden
+  -> Danke-Karte auf derselben Seite, Button "Jetzt Termin buchen"
+  -> Calendly (Name/E-Mail/Telefon vorbefuellt) — Calendly schickt Mail + SMS
+  -> Bewerber oeffnet /bewerbung, gibt seine E-Mail ein
+  -> Interview im Chat
+  -> Zusage: Button "Jetzt registrieren"
+  -> /register mit vorbefuellter E-Mail, KEINE Bestaetigungsmail
+  -> sofort eingeloggt im Onboarding
+```
 
 ## Was gebaut wird
 
-### 1. Ein Hauptschalter „Mailversand" pro Mandant — Standard: aus
-Alle Mails laufen bereits durch eine gemeinsame Versandprüfung. Dort kommt ein Schalter davor: steht er auf „aus", wird nichts verschickt, sondern nur mit dem Grund „mailless_mode" protokolliert. Das gilt für alles: Eingangsbestätigung, Terminbestätigung, Erinnerungen, Zusage, Registrierungs-Erinnerungen, Onboarding-Nachfassen. Ein Schalter zurück, und alles läuft wieder wie heute.
+### 1. Versand stillgelegt
+Alle Versandwege laufen künftig gegen eine zentrale Sperre und verschicken nichts mehr. Die Cron-Jobs für Erinnerungen werden abgeschaltet, damit sie nicht sinnlos laufen. Passwort-Reset ist davon ausgenommen. Der Code bleibt im Projekt liegen (falls du in Monaten doch vergleichen willst), ist aber nirgends mehr erreichbar oder aktiv.
 
-### 2. Registrierung ohne E-Mail-Bestätigung
-Heute schickt die Registrierung eine Bestätigungsmail und der Bewerber muss sie anklicken. Das fällt weg: Konto anlegen, sofort eingeloggt, direkt weiter ins Onboarding. Das ist die Stelle, an der du aktuell 14 von 14 verlierst.
+### 2. `/admin/bewerbungen` ohne jeden Mail-Bezug
+Mail-Kette, Mail-Historie, Versandstatus, „Mail erneut senden", die Statusstufe „E-Mail bestätigt" und die Mail-Warnsymbole fallen weg. Übrig bleibt der Funnel, der wirklich zählt: beworben → Termin gebucht → erschienen → Zusage/Absage → registriert → Onboarding fertig. Das macht die Liste deutlich schneller, weil zwei große Log-Abfragen pro Seitenaufruf entfallen.
 
-### 3. Calendly als Standard-Buchungsart
-Neue Landingpages stehen künftig auf „Calendly". Terminmail, SMS und Kalendereintrag kommen von Calendly — dafür braucht es nichts von uns. Die interne Terminbuchung bleibt vorhanden, damit du sie bewusst als Vergleichsgruppe schalten kannst.
+### 3. Mail-Oberflächen aus dem Admin entfernt
+E-Mail-Center, Mail-Logs, Retry-Queue, Bounce-Panel und SMTP-Gesundheit verschwinden aus Navigation und Kommandopalette. Die SMTP-Felder bleiben in den Mandanten-Einstellungen, weil der Passwort-Reset sie braucht — sie stehen aber unter „nur für Konto-Wiederherstellung".
 
-### 4. Der Weg ohne Postfach
-- Bewerbung abschicken → Danke-Karte direkt auf der Seite mit „Jetzt Termin buchen" (Calendly, vorbefüllt).
-- Interview-Zugang über `/bewerbung` + E-Mail-Adresse. Diese URL gehört in die Calendly-Event-Beschreibung, damit sie im Kalendereintrag und in Calendlys Erinnerungen steht.
-- Zusage → Button „Jetzt registrieren" → Registrierung mit vorbefüllter E-Mail auf der Partner-Domain → sofort Onboarding.
+### 4. Registrierung ohne Bestätigungsmail
+Konto anlegen, sofort eingeloggt, direkt ins Onboarding. Der Zwischenschritt „Bitte bestätigen Sie Ihre E-Mail" fällt ersatzlos weg — das ist die Stelle, an der du aktuell praktisch alle Zusagen verlierst.
 
-### 5. Mail-Oberflächen wegräumen
-Mail-Center, Mail-Logs, Retry-Queue, Bounce-Panel und SMTP-Gesundheit verschwinden aus der Navigation und aus der Bewerber-Detailansicht (die Mail-Kette dort ebenfalls). Die Seiten bleiben unter ihrer Adresse erreichbar, damit du beim internen A/B-Zweig noch nachsehen kannst — sie stehen nur niemandem mehr im Weg. Die Cronjobs für Erinnerungen laufen weiter, verschicken im Mail-los-Modus aber nichts und beenden sich sauber.
+### 5. Calendly ist der Standard
+Neue Landingpages stehen auf „Calendly". Die interne Terminbuchung bleibt als Auswahl bestehen, ist aber nicht mehr Standard.
 
-### 6. Statistik bleibt vollständig
-Die No-Show-Analyse mit Trichter je Buchungsart bleibt wie gebaut: beworben → gebucht → erschienen → Zusage → registriert → Onboarding fertig. Das ist ab jetzt deine einzige Wahrheitsquelle, weil es keine Mail-Statusmeldungen mehr gibt.
+### 6. Zahlen
+Die No-Show-Analyse mit Trichter je Buchungsart bleibt die Wahrheitsquelle: beworben → gebucht → abgesagt → nicht erschienen → erschienen → Zusage → registriert → Onboarding fertig.
 
-## Noch offen aus dem letzten Schritt
+## Bereits erledigt
 
-Zwei Korrekturen waren bereits begonnen und gehören mit in diesen Stand:
-- `/bewerbung` leitet Bewerber ohne Termin bei Calendly-Seiten jetzt zu Calendly statt zur internen Terminauswahl (fertig).
-- Der Registrierungslink im Interview nutzt jetzt die serverseitig aufgelöste Partner-Domain statt der Browser-Adresse; die Login-Verlinkung in der Zusage-Karte muss noch auf denselben Wert umgestellt werden, sonst zeigt sie bei fehlender Basis ins Leere.
+- `/bewerbung` leitet Bewerber ohne Termin bei Calendly-Seiten direkt zu Calendly (vorher: interne Terminauswahl mit Fehlermeldung).
+- Der Registrierungslink nach der Zusage nutzt die serverseitig aufgelöste Partner-Domain statt der Browser-Adresse.
+- Die zentrale Versandsperre steckt bereits in der Versandprüfung und im Bewerbungs-Erinnerungslauf.
 
 ## Technische Details
 
-- `supabase/functions/_shared/send-guard.ts`: neue Sperre `mailless_mode` vor allen anderen Prüfungen; greift auch für als kritisch markierte Mails.
-- `tenants`: Spalte `mailless_mode boolean not null default true` (Migration in `supabase/manual-migrations/`), plus Umschalter in `admin.tenants.tsx`.
-- `src/routes/register.tsx`: Aufruf von `send-signup-confirmation` entfernen, nach `signUp` direkt Session herstellen und ins Onboarding leiten; Hinweistext „Bitte bestätigen Sie Ihre E-Mail" entfernen.
-- Supabase-Auth: `enable_confirmations` für Signups aus, damit Konten sofort nutzbar sind.
-- `src/lib/landing-generator.functions.ts` / Landing-Formular: Standardwert `booking_mode = 'calendly'`.
-- `src/components/AdminLayout.tsx` + `AdminCommandPalette.tsx`: Mail-Einträge ausblenden; `admin.bewerbungen.tsx`: `MailChain` und Mail-Aktionen aus der Detailansicht nehmen.
-- `src/components/interview/ZusageCard.tsx` / `interview.$appId.tsx`: `loginHref` an dieselbe aufgelöste Portal-Basis binden.
+- `supabase/functions/_shared/send-guard.ts`: Sperre `mailless_mode` greift vor allen anderen Prüfungen, auch für `critical`; `bypassMailless` nur für `send-password-reset`.
+- `tenants.mailless_mode boolean not null default true` (Migration in `supabase/manual-migrations/`), plus `mailless_mode` in den Tenant-Selects von `send-reminders` und `send-application-reminders`; beide Läufe überspringen solche Tenants mit Grund `mailless_mode`.
+- Cron-Einträge für `send-reminders`, `send-application-reminders`, `send-appointment-reminders`, `send-booking-confirmation` und die Retry-Queue deaktivieren (SQL-Skript unter `scripts/`).
+- `src/routes/register.tsx`: `send-signup-confirmation` entfernen, nach `signUp` Session herstellen, direkt ins Onboarding; Supabase-Auth `enable_confirmations` aus.
+- `src/routes/admin.bewerbungen.tsx`: `MailChain`, `email_send_log`/`application_reminder_log`-Abfragen, `mailEvents*`-State, `MailWarning`-Spalte und die Stufe `email_bestaetigt` entfernen.
+- `src/components/AdminLayout.tsx` + `AdminCommandPalette.tsx`: Mail-Einträge entfernen.
+- `src/lib/landing-generator.functions.ts` / Landing-Formular: `booking_mode` Standard `calendly`.
+- `src/components/interview/ZusageCard.tsx`: `loginHref` an dieselbe aufgelöste Portal-Basis binden.
 
-## Was ich nicht empfehle
+## Danach
 
-Das Mailsystem tatsächlich zu löschen. Sobald du beim internen Buchungszweig Zahlen vergleichen willst, brauchst du es wieder — und ein Hauptschalter kostet dich nichts, während ein Rückbau Tage kostet.
+Build und Typprüfung, dann deployen. Für den ersten Calendly-Test brauchst du im Calendly-Event: SMS-Erinnerung aktiv, Mail-Erinnerung 24 h und 1 h vorher, und in der Event-Beschreibung den Link auf `portal.<deine-domain>/bewerbung`.

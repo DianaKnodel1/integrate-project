@@ -31,11 +31,34 @@ export type SendKind = "transactional" | "reminder" | "appointment" | "critical"
 export interface AllowanceResult {
   allowed: boolean;
   /** Maschinenlesbarer Grund, landet als skip_reason im Log. */
-  reason?: "outside_send_window" | "tenant_1h_cap" | "tenant_24h_cap";
+  reason?: "outside_send_window" | "tenant_1h_cap" | "tenant_24h_cap" | "mailless_mode";
   count1h: number;
   count24h: number;
   /** true = Limit war erreicht, wurde für eine kritische Mail bewusst ignoriert. */
   overLimit?: boolean;
+}
+
+/**
+ * Mail-los-Modus: Der Bewerber-Funnel läuft ohne eine einzige Mail
+ * (Calendly übernimmt Termin-Mail/SMS, Interview-Zugang über /bewerbung,
+ * Registrierung direkt nach der Zusage). Steht der Schalter am Tenant auf
+ * true, wird NICHTS verschickt — auch keine als "critical" markierte Mail.
+ * Nur Konto-Wiederherstellung (Passwort-Reset) umgeht den Schalter.
+ */
+export async function isMaillessTenant(admin: any, tenantId: string | null): Promise<boolean> {
+  const envDefault = (Deno.env.get("MAILLESS_MODE") ?? "true").toLowerCase() !== "false";
+  if (!tenantId) return envDefault;
+  try {
+    const { data, error } = await admin
+      .from("tenants")
+      .select("mailless_mode")
+      .eq("id", tenantId)
+      .maybeSingle();
+    if (error || !data) return envDefault;
+    return data.mailless_mode !== false;
+  } catch {
+    return envDefault;
+  }
 }
 
 /** Aktuelle Stunde in Europe/Berlin (unabhängig von der Server-Zeitzone). */
@@ -78,7 +101,11 @@ export async function checkSendAllowance(
   tenantId: string | null,
   kind: SendKind,
   now: Date = new Date(),
+  opts?: { bypassMailless?: boolean },
 ): Promise<AllowanceResult> {
+  if (!opts?.bypassMailless && (await isMaillessTenant(admin, tenantId))) {
+    return { allowed: false, reason: "mailless_mode", count1h: 0, count24h: 0 };
+  }
   const count1h = await countSince(admin, tenantId, new Date(now.getTime() - 3600_000).toISOString());
   const count24h = await countSince(admin, tenantId, new Date(now.getTime() - 24 * 3600_000).toISOString());
 
@@ -152,8 +179,12 @@ export async function guardSend(opts: {
   senderEmail?: string | null;
   metadata?: Record<string, unknown>;
   now?: Date;
+  /** Nur für Konto-Wiederherstellung (Passwort-Reset). */
+  bypassMailless?: boolean;
 }): Promise<AllowanceResult> {
-  const res = await checkSendAllowance(opts.admin, opts.tenantId, opts.kind, opts.now ?? new Date());
+  const res = await checkSendAllowance(opts.admin, opts.tenantId, opts.kind, opts.now ?? new Date(), {
+    bypassMailless: opts.bypassMailless,
+  });
   if (!res.allowed) {
     await logEmailEvent({
       admin: opts.admin,
@@ -162,7 +193,9 @@ export async function guardSend(opts: {
       recipient: opts.recipient,
       status: "skipped",
       senderEmail: opts.senderEmail ?? null,
-      error: `Versand blockiert: ${res.reason}`,
+      error: res.reason === "mailless_mode"
+        ? "Mail-los-Modus aktiv – Versand bewusst deaktiviert"
+        : `Versand blockiert: ${res.reason}`,
       metadata: {
         ...(opts.metadata ?? {}),
         skip_reason: res.reason,
