@@ -13,19 +13,22 @@ ALTER TABLE public.application_reminder_log
   CHECK (reminder_kind IN (
     'no_booking_24h',
     'no_booking_72h',
+    'no_show_30min',
     'no_show_24h',
+    'interview_abandoned',
     'interview_invite_30min',
     'interview_reminder_24h',
-    'booking_confirmation'
+    'booking_confirmation',
+    'registration_pending_2h',
+    'registration_pending_24h',
+    'registration_pending_72h',
+    'registration_abandoned_24h',
+    'rebook_after_cancel_24h',
+    'rebook_after_cancel_72h'
   ));
 
--- Dedupe-Index: nur echte (nicht-Test-)Bewerbungen der letzten 60 Tage.
--- Teil-Index mit Zeitbezug ist nicht IMMUTABLE, deshalb greift die
--- Eindeutigkeit ueber tenant_id + kleingeschriebene E-Mail; aeltere
--- Wiederbewerbungen werden von der Anwendung ueber das 60-Tage-Fenster
--- unterschieden.
-CREATE UNIQUE INDEX IF NOT EXISTS applications_tenant_email_unique
-  ON public.applications (tenant_id, lower(email))
-  WHERE tenant_id IS NOT NULL AND is_test IS NOT TRUE;
+-- Der finale 60-Tage-Dedupe-Index wird in 20260819000000 angelegt. Ein
+-- zwischenzeitlicher strenger Index auf tenant_id + E-Mail wuerde bei legalen
+-- historischen Wiederbewerbungen scheitern und den gesamten Deploy stoppen.
 
 NOTIFY pgrst, 'reload schema';
