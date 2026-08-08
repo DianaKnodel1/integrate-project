@@ -223,6 +223,22 @@ function AdminEmailCenterPage() {
       label: "Absender-Mandant nicht auflösbar",
       action: "Zuordnung der Bewerbung zum Mandanten prüfen (Admin → Bewerbungen), danach erneut senden",
     },
+    smtp_incomplete: {
+      label: "SMTP-Zugangsdaten des Mandanten unvollständig",
+      action: "SMTP-Host/Port/Benutzer/Passwort beim Mandanten vervollständigen (Admin → Einstellungen), danach erneut senden",
+    },
+    tenant_not_found: {
+      label: "Mandant nicht gefunden",
+      action: "Mandanten-Zuordnung der Bewerbung prüfen, danach erneut senden",
+    },
+    missing_broker_tenant: {
+      label: "Kein Vermittlungs-Mandant zugeordnet",
+      action: "Bewerbung dem richtigen Mandanten zuordnen, danach erneut senden",
+    },
+    missing_fasttrack_tenant: {
+      label: "Kein Fast-Track-Mandant zugeordnet",
+      action: "Landing-Page-Verknüpfung prüfen, danach erneut senden",
+    },
   };
 
   const [resendingConfirmation, setResendingConfirmation] = useState<string | null>(null);
