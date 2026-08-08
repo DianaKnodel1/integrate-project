@@ -3,7 +3,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getNoShowReport, type Bucket, type NoShowReport } from "@/lib/no-show-analysis.functions";
+import { getNoShowReport, type Bucket, type ModeFunnel, type NoShowReport } from "@/lib/no-show-analysis.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,8 @@ function BucketTable({ title, description, rows }: { title: string; description:
 }
 
 function NoShowPage() {
+  return null as never;
+}
   const fn = useServerFn(getNoShowReport);
   const [days, setDays] = useState(7);
   const [tenantId, setTenantId] = useState("");
