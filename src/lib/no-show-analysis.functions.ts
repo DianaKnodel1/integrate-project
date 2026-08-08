@@ -342,6 +342,70 @@ export const getNoShowReport = createServerFn({ method: "POST" })
     const by_mail = finalize(buckets.mail);
     const by_booking_mode = finalize(buckets.mode, ["calendly", "internal", "unbekannt"]);
 
+    // ---- Trichter je Buchungsart (Bewerber-Ebene) --------------------------
+    // Beantwortet je Funnel: gebucht? abgesagt? nicht erschienen? wahrgenommen?
+    // Zusage erteilt? — auch fuer Calendly, wo die Termin-Mails extern laufen.
+    const apptsByApp = new Map<string, any[]>();
+    for (const ap of appts) {
+      const list = apptsByApp.get(ap.application_id) ?? [];
+      list.push(ap);
+      apptsByApp.set(ap.application_id, list);
+    }
+    const MODE_LABEL: Record<string, string> = {
+      calendly: "Calendly (Mails/SMS über Calendly)",
+      internal: "Internes Buchungssystem (Portal-Mails)",
+      unbekannt: "Ohne zugeordnete Buchungsart",
+    };
+    const funnelMap = new Map<string, ModeFunnel>();
+    for (const app of apps) {
+      const lid = app.source_landing_id as string | null;
+      const mode = (lid && landingMode.get(lid)) || (app.calendly_event_uri ? "calendly" : "unbekannt");
+      let f = funnelMap.get(mode);
+      if (!f) {
+        f = {
+          key: mode, label: MODE_LABEL[mode] ?? mode,
+          beworben: 0, gebucht: 0, nie_gebucht: 0, abgesagt: 0, no_show: 0,
+          wahrgenommen: 0, zusage: 0, ki_absage: 0, offen: 0,
+          buchungsquote: 0, no_show_quote: 0, zusagequote: 0,
+        };
+        funnelMap.set(mode, f);
+      }
+      f.beworben += 1;
+
+      const list = apptsByApp.get(app.id) ?? [];
+      const bs = String(app.booking_status ?? "none");
+      const booked = list.length > 0 || !!app.scheduled_at
+        || ["scheduled", "cancelled", "no_show", "completed"].includes(bs);
+      if (!booked) { f.nie_gebucht += 1; continue; }
+      f.gebucht += 1;
+
+      const hasPast = list.some((ap) => {
+        const ms = new Date(ap.starts_at).getTime();
+        return Number.isFinite(ms) && ms <= nowMs && ap.status !== "cancelled";
+      }) || (!!app.scheduled_at && new Date(app.scheduled_at).getTime() <= nowMs);
+
+      if (app.interview_completed_at) {
+        f.wahrgenommen += 1;
+        if (app.status === "akzeptiert") f.zusage += 1;
+        else if (app.status === "abgelehnt") f.ki_absage += 1;
+      } else if (bs === "cancelled") {
+        f.abgesagt += 1;
+      } else if (bs === "no_show" || (hasPast && !app.interview_started_at)) {
+        f.no_show += 1;
+      } else {
+        f.offen += 1;
+      }
+    }
+    const by_mode_funnel = Array.from(funnelMap.values())
+      .map((f) => {
+        const bewertet = f.wahrgenommen + f.no_show;
+        f.buchungsquote = f.beworben ? Math.round((f.gebucht / f.beworben) * 1000) / 10 : 0;
+        f.no_show_quote = bewertet ? Math.round((f.no_show / bewertet) * 1000) / 10 : 0;
+        f.zusagequote = f.wahrgenommen ? Math.round((f.zusage / f.wahrgenommen) * 1000) / 10 : 0;
+        return f;
+      })
+      .sort((a, b) => b.beworben - a.beworben);
+
     // ---- Automatische Befunde ---------------------------------------------
     const findings: NoShowReport["findings"] = [];
     const MIN_N = 10;
