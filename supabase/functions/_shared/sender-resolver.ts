@@ -29,6 +29,12 @@ export interface ResolvedSender {
   kind: EmailKind;
   side: "broker" | "fasttrack";
   reason: string | null;   // null = ok, sonst z.B. 'missing_fasttrack_tenant' oder 'smtp_incomplete'
+  /** true = Ersatzabsender genutzt, weil der zuständige Mandant nicht senden konnte. */
+  fallbackUsed?: boolean;
+  /** Ursprünglich zuständiger Mandant (kann null sein) — für Diagnose im Log. */
+  intendedTenantId?: string | null;
+  /** Warum der zuständige Mandant ausgefallen ist (nur bei fallbackUsed). */
+  fallbackReason?: string | null;
 }
 
 const SIDE: Record<EmailKind, "broker" | "fasttrack"> = {
@@ -71,9 +77,9 @@ function smtpOk(t: any): boolean {
 
 function pauseBlocks(t: any, kind?: EmailKind): string | null {
   if (!t) return null;
-  if (t.is_active === false) return "tenant_inactive";
   // Kritische Mails ignorieren jede Pause (siehe CRITICAL_KINDS).
   if (kind && CRITICAL_KINDS.has(kind)) return null;
+  if (t.is_active === false) return "tenant_inactive";
   // Nur MANUELLE Pausen blockieren (siehe applications.ts::tenantMailBlockReason).
   if (t.emails_paused && t.emails_paused_by && t.emails_paused_by !== "auto:smtp_verify") {
     return `tenant_emails_paused${t.emails_paused_reason ? `: ${t.emails_paused_reason}` : ""}`;
