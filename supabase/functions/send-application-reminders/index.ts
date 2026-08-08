@@ -311,6 +311,10 @@ function buildHtml(subject: string, body: string, signature: string, tenant: Ten
 }
 
 async function sendMail(tenant: TenantRow, to: string, subject: string, html: string) {
+  // Mail-los-Modus: Funnel läuft ohne Mails (Calendly + /bewerbung).
+  if ((tenant as any).mailless_mode !== false) {
+    throw new Error("mailless_mode");
+  }
   // Versand mit gezielter Wiederholung bei Verbindungsfehlern (kein Doppelversand).
   const transporter = {
       sendMail: (message: Record<string, unknown>) => sendMailWithRetry(tenant as any, message, { label: "send-application-reminders" }),
