@@ -147,7 +147,7 @@ export const getNoShowReport = createServerFn({ method: "POST" })
         buchungsquote: 0, erscheinensquote: 0, no_show_quote: 0, mehrfachbuchungen: 0,
       },
       by_lead_time: [], by_reaction_time: [], by_weekday: [], by_hour: [],
-      by_tenant: [], by_source: [], by_mail: [], findings: [],
+      by_tenant: [], by_source: [], by_mail: [], by_booking_mode: [], findings: [],
     };
 
     // 1) Bewerbungen im Zeitraum
