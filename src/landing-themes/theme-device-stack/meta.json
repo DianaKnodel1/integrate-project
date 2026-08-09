@@ -29,6 +29,6 @@
     { "key": "p2", "label": "Schritt 2", "type": "text", "default": "Ausführung durch geprüfte Tester" },
     { "key": "p3", "label": "Schritt 3", "type": "text", "default": "Report mit Handlungsempfehlungen" },
     { "key": "final_title", "label": "Final Titel", "type": "text", "default": "Bereit für belastbare Testergebnisse?" },
-    { "key": "final_cta", "label": "Final CTA", "type": "text", "default": "Projekt starten" }
+    { "key": "final_cta", "label": "Final CTA", "type": "text", "default": "Jetzt bewerben" }
   ]
 }

@@ -634,12 +634,9 @@ export const Route = createFileRoute("/api/public/applications")({
             intro_subline: partner.intro_subline ?? null,
             portal_register_url: partner.portal_register_url ?? null,
           };
-        } else if (isFast && d.portal_url) {
-          // Fasttrack: direkt zur Portal-Startseite. Verbindung / Login
-          // erfolgt dort separat — keine PII in der URL.
-          const base = d.portal_url.replace(/\/+$/, "");
-          redirect_url = `${base}/`;
-        } else if (useCalendly && d.portal_url && d.source_slug) {
+        } else if (useCalendly) {
+          // Calendly sitzt IMMER vor dem Termin — auch bei Fast-Track.
+          // Keine Portal-Weiterleitung, solange ein Calendly-Link hinterlegt ist.
           // Kollegen-Ablauf: KEINE Zwischenseite / Auto-Weiterleitung mehr.
           // Direkt auf der Landingpage die Danke-Karte mit einem Button
           // "Jetzt Termin buchen" (Calendly, vorbefüllt) rendern.
@@ -651,7 +648,7 @@ export const Route = createFileRoute("/api/public/applications")({
           const qs = new URLSearchParams({
             name: d.full_name, email: d.email,
             first_name: firstName, last_name: lastName,
-            utm_content: appId, utm_source: d.source_slug,
+            utm_content: appId, utm_source: d.source_slug ?? "",
           }).toString();
           // Die Danke-Karte nennt die Firma, an die vermittelt wird. Bei einer
           // Vermittlung ist das die verknüpfte Fast-Track-Landing, nicht die
@@ -685,6 +682,10 @@ export const Route = createFileRoute("/api/public/applications")({
             intro_subline: null,
             portal_register_url: null,
           };
+        } else if (isFast && d.portal_url) {
+          // Fasttrack ohne Calendly-Link: direkt zur Portal-Startseite.
+          const base = d.portal_url.replace(/\/+$/, "");
+          redirect_url = `${base}/`;
         }
 
         // Vermittlung/Calendly ohne Link = Fehlkonfiguration (kein Fallback mehr).

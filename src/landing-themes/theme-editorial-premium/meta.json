@@ -14,12 +14,12 @@
     { "key": "nav_2", "label": "Nav 2", "type": "text", "default": "Prozess" },
     { "key": "nav_3", "label": "Nav 3", "type": "text", "default": "Leistungen" },
     { "key": "nav_4", "label": "Nav 4", "type": "text", "default": "Tester werden" },
-    { "key": "nav_cta", "label": "Nav Button", "type": "text", "default": "Projekt starten" },
+    { "key": "nav_cta", "label": "Nav Button", "type": "text", "default": "Jetzt bewerben" },
 
     { "key": "hero_eyebrow", "label": "Hero — Kleiner Text oben", "type": "text", "default": "Ausgabe № 01 — Qualität in digitalen Produkten" },
     { "key": "hero_title", "label": "Hero — Headline (Serif, groß)", "type": "longtext", "default": "Digitale Qualität entscheidet über den ersten Eindruck." },
     { "key": "hero_subtitle", "label": "Hero — Untertitel", "type": "longtext", "default": "Professionelle Tests für Websites, Apps und digitale Produkte — damit Nutzer eine fehlerfreie und überzeugende Erfahrung erleben." },
-    { "key": "hero_cta_primary", "label": "Hero — Button primär", "type": "text", "default": "Projekt starten" },
+    { "key": "hero_cta_primary", "label": "Hero — Button primär", "type": "text", "default": "Jetzt bewerben" },
     { "key": "hero_cta_secondary", "label": "Hero — Button sekundär", "type": "text", "default": "Mehr erfahren" },
     { "key": "hero_meta_left", "label": "Hero — Meta links (klein)", "type": "text", "default": "Seit 2018 · Made in Germany" },
     { "key": "hero_meta_right", "label": "Hero — Meta rechts (klein)", "type": "text", "default": "ISO-konforme Prozesse" },
@@ -108,7 +108,7 @@
 
     { "key": "final_eyebrow", "label": "Finaler CTA — Eyebrow", "type": "text", "default": "Bereit?" },
     { "key": "final_title", "label": "Finaler CTA — Headline", "type": "longtext", "default": "Qualität ist kein Zufall — sondern das Ergebnis professioneller Tests." },
-    { "key": "final_cta_1", "label": "Finaler CTA — Button 1", "type": "text", "default": "Projekt starten" },
+    { "key": "final_cta_1", "label": "Finaler CTA — Button 1", "type": "text", "default": "Jetzt bewerben" },
     { "key": "final_cta_2", "label": "Finaler CTA — Button 2", "type": "text", "default": "Tester werden" },
 
     { "key": "footer_tagline", "label": "Footer — Tagline", "type": "text", "default": "Digitale Qualitätssicherung — seit 2018." },
