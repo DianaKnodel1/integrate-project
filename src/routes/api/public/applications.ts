@@ -687,6 +687,14 @@ export const Route = createFileRoute("/api/public/applications")({
           };
         }
 
+        // Vermittlung/Calendly ohne Link = Fehlkonfiguration (kein Fallback mehr).
+        if (broker_block && !broker_block.calendly_url) {
+          booking_error = "calendly_missing";
+          console.warn("[applications] calendly_missing", {
+            requestId, application_id: appId, landing_id: landingPage?.id ?? null,
+          });
+        }
+
         // Fast-Track: KEINE "Willkommen im Team"-Mail mehr beim Bewerbungseingang.
         // Der einheitliche Ablauf ist: Bewerbungseingang-Bestätigung mit Termin-
         // link → Bewerber bucht → Terminbestätigung → Interview → erst nach
