@@ -5,10 +5,10 @@
   --qap-bg:#f5f8fd;
   --qap-panel:#ffffff;
   --qap-panel-2:#eef3fb;
-  --qap-border:rgba(255,255,255,.08);
   --qap-text:#0c1830;
   --qap-muted:#56688a;
-  --qap-glass:rgba(255,255,255,.04);
+  --qap-border:rgba(12,24,48,.10);
+  --qap-glass:rgba(255,255,255,.72);
   --qap-glow:0 0 40px color-mix(in oklab, var(--qap-accent) 30%, transparent);
   --qap-radius:16px;
   --qap-radius-lg:22px;
