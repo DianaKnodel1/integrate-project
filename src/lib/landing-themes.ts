@@ -326,10 +326,48 @@ export function themeFlow(id: string): ThemeFlow {
   return THEME_FLOW[id] ?? "both";
 }
 
-export const THEME_LIST = THEMES.map((t) => ({
+/**
+ * Anzeigenamen der Vorlagen: kurze Markennamen, klar getrennt nach Welt.
+ * Die technischen IDs bleiben unverändert, damit bestehende Landing Pages
+ * weiterlaufen — es ändert sich ausschließlich die Anzeige im Generator.
+ */
+const THEME_DISPLAY: Record<string, { name: string; description: string }> = {
+  // ---- Vermittlung (Personalagentur, leitet an Partnerfirmen weiter) ----
+  "theme-connect-people": { name: "Kontor", description: "Warm und persönlich, Creme/Terrakotta. Klassische Personalvermittlung mit Ansprechpartner-Fokus." },
+  "theme-talent-hub": { name: "Meridian", description: "Klar und ruhig, Weiß/Waldgrün. Seriöse Vermittlung mit starken Vertrauenszahlen." },
+  "theme-career-atlas": { name: "Aurum", description: "Redaktioneller Look, Sand/Burgund. Erzählt den Weg zum Partnerunternehmen in Kapiteln." },
+  "theme-job-gleiter": { name: "Lumen", description: "Freundlich und leicht, Hellblau/Marine. Niedrigschwellige Bewerbung, kurze Wege." },
+  "theme-tts-consultant": { name: "Anker", description: "Beratungsnah, Papierweiß/Aubergine. Für Vermittlung mit Beratungsanspruch." },
+  "theme-cle-beratung": { name: "Nordstern", description: "Sachlich und strukturiert, Warmgrau/Kupfer. Viel Platz für Leistungen und Ablauf." },
+  "theme-for-tel": { name: "Fährte", description: "Umfangreich und informativ, Elfenbein/Salbei. Für ausführliche Vermittlungs-Seiten." },
+  "theme-azb-replica": { name: "Weitblick", description: "Etabliert und solide, Weiß/Indigo. Klassischer Agentur-Auftritt mit vielen Sektionen." },
+  "theme-eilers-replica": { name: "Zunft", description: "Bodenständig und regional, Beige/Ziegelrot. Handwerklich-seriöse Vermittlung." },
+  "theme-mirror-site": { name: "Passage", description: "Kompakt und schnörkellos, Perlgrau/Teal. Direkter Weg von Interesse zur Bewerbung." },
+  "theme-editorial-premium": { name: "Signal", description: "Magazin-Optik, Creme/Tiefbraun. Hochwertige Vermittlung mit redaktionellem Anspruch." },
+
+  // ---- Partner-Firma (Auftraggeber-Optik) ----
+  "theme-10": { name: "Prisma", description: "Schwarz/Gold, ruhig und exklusiv. Für hochwertige Auftraggeber-Auftritte." },
+  "theme-quality-report": { name: "Achse", description: "Off-White/Petrol, redaktionell-sachlich. Testberichte und Qualität im Vordergrund." },
+  "theme-qa-grid": { name: "Raster", description: "Anthrazit/Limette, technisch und präzise. Rasterbasierter Dark-Look." },
+  "theme-qa-platform-premium": { name: "Vektor", description: "Reinweiß/Royalblau, hell und modern. Plattform-Optik mit klaren Flächen." },
+  "theme-tester-lab": { name: "Puls", description: "Graphit/Bernstein, warm-technisch. Fokus auf Menschen hinter den Tests." },
+  "theme-device-stack": { name: "Radar", description: "Stahlgrau/Grün, produktnah. Geräte- und Plattform-Testing im Mittelpunkt." },
+  "theme-quantum-tech": { name: "Zenit", description: "Nachtblau/Cyan, futuristisch. Animierter Premium-Auftritt für Tech-Auftraggeber." },
+  "theme-nebula-flux": { name: "Kern", description: "Tiefblau/Orange, kontraststark. Enterprise-Auftritt mit viel Substanz." },
+  "theme-midnight-premium": { name: "Basalt", description: "Schiefer/Koralle, dunkel und ruhig. Reduzierter Premium-Look." },
+};
+
+/** Vorlagen, die nicht mehr angeboten werden (Duplikate), aber weiter rendern. */
+const HIDDEN_THEMES = new Set<string>(["theme-tts-beratung"]);
+
+export function themeDisplayName(id: string, fallback: string): string {
+  return THEME_DISPLAY[id]?.name ?? fallback;
+}
+
+export const THEME_LIST = THEMES.filter((t) => !HIDDEN_THEMES.has(t.id)).map((t) => ({
   id: t.id,
-  name: t.name,
-  description: t.description,
+  name: THEME_DISPLAY[t.id]?.name ?? t.name,
+  description: THEME_DISPLAY[t.id]?.description ?? t.description,
   slots: t.slots,
   flow: themeFlow(t.id),
 }));
