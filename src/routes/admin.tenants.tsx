@@ -11,8 +11,6 @@ import { compressImage } from "@/lib/image-compression";
 import { useAllTenants, type Tenant } from "@/hooks/use-tenant";
 import { switchToNewPrimaryDomain } from "@/lib/tenant-domains.functions";
 import { setLandingDnsRecord } from "@/lib/cloudflare.functions";
-import { runSmtpTestServerSide } from "@/lib/smtp-test.functions";
-
 // IP des Portal-Servers (Frontend). DNS-A-Record für portal.<tenant-domain>
 // wird beim Speichern eines Tenants automatisch in Cloudflare angelegt/aktualisiert.
 const PORTAL_SERVER_IP = "190.97.167.124";
@@ -64,10 +62,6 @@ function TenantForm({ tenant, onSaved }: { tenant?: Tenant; onSaved: () => void 
     ((tenant as any)?.allowed_employment_types as string[] | undefined) ?? ["minijob", "teilzeit", "vollzeit"]
   );
   const [webidEnabled, setWebidEnabled] = useState<boolean>(!!(tenant as any)?.webid_enabled);
-  const [smtpHost, setSmtpHost] = useState((tenant as any)?.smtp_host ?? "");
-  const [smtpPort, setSmtpPort] = useState((tenant as any)?.smtp_port?.toString() ?? "587");
-  const [smtpUsername, setSmtpUsername] = useState((tenant as any)?.smtp_username ?? "");
-  const [smtpPassword, setSmtpPassword] = useState((tenant as any)?.smtp_password ?? "");
   const [replyToEmail, setReplyToEmail] = useState((tenant as any)?.reply_to_email ?? "");
   const [welcomeSubject, setWelcomeSubject] = useState((tenant as any)?.welcome_email_subject ?? "Willkommen im Team!");
   const [welcomeBody, setWelcomeBody] = useState((tenant as any)?.welcome_email_body ?? "");
@@ -76,7 +70,6 @@ function TenantForm({ tenant, onSaved }: { tenant?: Tenant; onSaved: () => void 
   const { toast } = useToast();
   const setDnsFn = useServerFn(setLandingDnsRecord);
   const leaderInitials = (leaderName || "T").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
-  const smtpConfigured = !!(smtpHost.trim() && smtpUsername.trim() && smtpPassword.trim() && senderEmail.trim());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,10 +135,6 @@ function TenantForm({ tenant, onSaved }: { tenant?: Tenant; onSaved: () => void 
       allowed_employment_types:
         allowedEmploymentTypes.length > 0 ? allowedEmploymentTypes : ["minijob", "teilzeit", "vollzeit"],
       webid_enabled: webidEnabled,
-      smtp_host: smtpHost.trim() || null,
-      smtp_port: parseInt(smtpPort) || 587,
-      smtp_username: smtpUsername.trim() || null,
-      smtp_password: smtpPassword.trim() || null,
       reply_to_email: replyToEmail.trim() || null,
       welcome_email_subject: welcomeSubject.trim() || "Willkommen im Team!",
       welcome_email_body: welcomeBody.trim() || null,
