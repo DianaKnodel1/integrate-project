@@ -301,11 +301,14 @@
       var nextH=document.createElement('h4');nextH.textContent='Wie geht es jetzt weiter?';nextH.style.cssText='margin:0 0 8px;font-size:17px;font-weight:700;';
       var nextP=document.createElement('p');nextP.textContent='Um den Prozess zu beschleunigen, laden wir Sie herzlich zu einem kurzen Online-Bewerbungsgespräch ein.';nextP.style.cssText='margin:0 0 16px;color:#475569;font-size:14px;line-height:1.55;';
       box.appendChild(nextH);box.appendChild(nextP);
-      var bookHref=broker.calendly_url||broker.fallback_url||'';
+      // Calendly sitzt IMMER vor dem Termin. Kein Portal-/Fallback-Link mehr –
+      // fehlt der Calendly-Link, ist die Landing Page falsch konfiguriert.
+      var bookHref=broker.calendly_url||'';
       if(bookHref){var cta2=document.createElement('a');cta2.href=bookHref;cta2.target='_blank';cta2.rel='noopener';cta2.textContent=(broker.button_label||'Jetzt Termin buchen')+'  →';
         cta2.style.cssText='display:inline-block;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:999px;font-size:16px;box-shadow:0 6px 20px -6px rgba(34,197,94,.55);';box.appendChild(cta2);
         var hint2=document.createElement('p');hint2.textContent='Es öffnet sich ein neues Fenster zur Terminauswahl.';hint2.style.cssText='margin:12px 0 0;font-size:12px;color:#94a3b8;';box.appendChild(hint2);}
-      else{var hint3=document.createElement('p');hint3.textContent='Wir melden uns in Kürze mit Ihrem Wunschtermin per E-Mail bei Ihnen.';hint3.style.cssText='margin:4px 0 0;font-size:13px;color:#64748b;';box.appendChild(hint3);}
+      else{var hint3=document.createElement('p');hint3.textContent='Die Terminbuchung ist gerade nicht verfügbar. Bitte kontaktieren Sie uns kurz – wir vereinbaren den Termin persönlich mit Ihnen.';hint3.style.cssText='margin:4px 0 0;font-size:13px;color:#64748b;';box.appendChild(hint3);
+        try{console.error('[landing] broker.calendly_url fehlt – Landing Page ohne Calendly-Link konfiguriert');}catch(e){}}
     } else if(isFast){
       h.textContent='✅ Bewerbung eingegangen';
       p.textContent='Im nächsten Schritt werden Sie zum Mitarbeiter-Portal weitergeleitet, um Ihre Registrierung abzuschließen.';
