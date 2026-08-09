@@ -1470,21 +1470,10 @@ document.addEventListener('submit', function(e){
               ) : (
               <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <Label className="text-xs font-semibold">📅 Terminbuchung</Label>
-                <Field label="Modus">
-                  <select
-                    className="w-full h-9 px-2 rounded border border-input bg-background text-sm"
-                    value={branding.booking_mode}
-                    onChange={(e) => setBranding((b) => ({ ...b, booking_mode: e.target.value as any }))}
-                  >
-                    <option value="calendly">Calendly (extern)</option>
-                    <option value="internal">Eigenes Buchungssystem</option>
-                  </select>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    <strong>Eigenes System</strong> benötigt einen aktiven Kalender unter <a href="/admin/vermittlung" className="underline">Vermittlung → Verfügbarkeiten</a> für diese Landing Page (oder verknüpfte Fast-Track-Page).
-                  </p>
-                </Field>
-
-                {branding.booking_mode === "calendly" && (
+                <p className="text-[10px] text-muted-foreground">
+                  Terminbuchung läuft <strong>immer über Calendly</strong> — kein internes Buchungssystem, keine Verfügbarkeiten, kein Fallback.
+                </p>
+                {true && (
                   <>
                     <Field label="Calendly-Buchungslink">
                       <Input
@@ -1503,7 +1492,7 @@ document.addEventListener('submit', function(e){
                   </>
                 )}
 
-                {branding.booking_mode === "internal" && (
+                {false && (
                   <>
                     <Field label="Buchungsfenster (Tage im Voraus)">
                       <Input
