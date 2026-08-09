@@ -599,28 +599,13 @@ export const Route = createFileRoute("/api/public/applications")({
           }
         };
 
-        // Eigenes Buchungssystem hat Vorrang: Ist für die Landing ein aktiver
-        // interner Kalender (booking_mode='internal' + availability_schedule)
-        // konfiguriert, bucht der Bewerber zuerst einen Termin. Der Interview-
-        // Link steckt dann in der Event-Beschreibung des Buchungssystems.
-        // Erst danach greift der direkte Interview-Redirect als Fallback.
-        const useInterview = bookingMode !== "internal"
-          && !d.is_test && !isBroker && !isFast && !!interviewMode
+        // Terminbuchung immer über Calendly; danach ggf. Interview-Redirect.
+        const useInterview = !d.is_test && !isBroker && !isFast && !!interviewMode
           && (interviewMode === "chat" || interviewMode === "voice" || interviewMode === "both")
           && !!d.portal_url && !!d.source_slug;
 
 
-        if (ownBookingUrl) {
-          redirect_url = ownBookingUrl;
-        } else if (bookingMode === "internal" && !d.is_test) {
-          booking_error = "internal_schedule_missing";
-          console.warn("[applications] internal_schedule_missing", {
-            requestId,
-            application_id: appId,
-            landing_id: landingPage?.id ?? null,
-            schedule_candidates: scheduleCandidateIds,
-          });
-        } else if (useInterview) {
+        if (useInterview) {
           const base = d.portal_url!.replace(/\/+$/, "");
           const qs = new URLSearchParams({
             landing: d.source_slug!,
