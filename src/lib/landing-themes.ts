@@ -244,10 +244,17 @@ function withSharedForm(t: ThemeFiles): ThemeFiles {
   const injectedHtml = t.html.includes("</body>")
     ? t.html.replace("</body>", `${tail}\n</body>`)
     : t.html + tail;
+  // Sicherung: fehlt die Einbindung der Theme-Stildatei im Template, wird die
+  // Seite komplett unformatiert ausgeliefert. Notfalls automatisch ergänzen.
+  const withStylesheet = /<link[^>]+href=["']style\.css["']/i.test(injectedHtml)
+    ? injectedHtml
+    : injectedHtml.includes("</head>")
+      ? injectedHtml.replace("</head>", `<link rel="stylesheet" href="style.css" />\n</head>`)
+      : `<link rel="stylesheet" href="style.css" />\n${injectedHtml}`;
   const injectedCss = `${t.css}\n\n/* ===== Inline Bewerbungs-Sektion ===== */\n${formCss}\n${MODAL_CSS}`;
   const baseJs = t.js.includes("application-form") ? t.js : `${t.js}\n\n${sharedFormJs}`;
   const injectedJs = `${baseJs}\n${MODAL_JS}`;
-  return { ...t, html: injectedHtml, css: injectedCss, js: injectedJs };
+  return { ...t, html: withStylesheet, css: injectedCss, js: injectedJs };
 }
 
 
