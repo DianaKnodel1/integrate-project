@@ -46,19 +46,11 @@ export interface AllowanceResult {
  * Nur Konto-Wiederherstellung (Passwort-Reset) umgeht den Schalter.
  */
 export async function isMaillessTenant(admin: any, tenantId: string | null): Promise<boolean> {
-  const envDefault = (Deno.env.get("MAILLESS_MODE") ?? "true").toLowerCase() !== "false";
-  if (!tenantId) return envDefault;
-  try {
-    const { data, error } = await admin
-      .from("tenants")
-      .select("mailless_mode")
-      .eq("id", tenantId)
-      .maybeSingle();
-    if (error || !data) return envDefault;
-    return data.mailless_mode !== false;
-  } catch {
-    return envDefault;
-  }
+  // HARTER RIEGEL: Das Portal verschickt grundsätzlich keine Mails mehr.
+  // Terminbestätigung/Erinnerungen übernimmt Calendly, alles andere läuft
+  // über /bewerbung. Weder ein Tenant-Schalter noch eine ENV-Variable kann
+  // das reaktivieren – bewusst, damit kein Altbestand wieder Mails auslöst.
+  return true;
 }
 
 /** Aktuelle Stunde in Europe/Berlin (unabhängig von der Server-Zeitzone). */
@@ -103,7 +95,9 @@ export async function checkSendAllowance(
   now: Date = new Date(),
   opts?: { bypassMailless?: boolean },
 ): Promise<AllowanceResult> {
-  if (!opts?.bypassMailless && (await isMaillessTenant(admin, tenantId))) {
+  // Kein Bypass mehr: auch "critical" und Passwort-Reset senden nichts.
+  void opts;
+  if (await isMaillessTenant(admin, tenantId)) {
     return { allowed: false, reason: "mailless_mode", count1h: 0, count24h: 0 };
   }
   const count1h = await countSince(admin, tenantId, new Date(now.getTime() - 3600_000).toISOString());

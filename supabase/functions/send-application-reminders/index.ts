@@ -365,6 +365,10 @@ function isSmtpHourlyRateLimit(errMsg: string): boolean {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  // Mail-los-Modus: Das Portal verschickt keine Bewerber-Mails mehr.
+  return json({ sent: 0, skipped: 0, reason: "mailless_mode", results: [] });
+
+  // eslint-disable-next-line no-unreachable
   try {
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? Deno.env.get("API_EXTERNAL_URL")!,
