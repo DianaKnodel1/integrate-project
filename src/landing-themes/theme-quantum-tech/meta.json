@@ -733,7 +733,7 @@
       "key": "final_cta_1",
       "label": "Final CTA — Button 1",
       "type": "text",
-      "default": "Projekt anfragen"
+      "default": "Jetzt bewerben"
     },
     {
       "key": "final_cta_2",

@@ -91,7 +91,7 @@
       "key": "cta_primary",
       "label": "Final CTA — Button primär",
       "type": "text",
-      "default": "Projekt anfragen"
+      "default": "Jetzt bewerben"
     },
     {
       "key": "cta_secondary",
@@ -253,7 +253,7 @@
       "key": "eyebrow_10",
       "label": "Abschnitt — Kleintitel",
       "type": "text",
-      "default": "Jetzt starten"
+      "default": "Jetzt bewerben"
     },
     {
       "key": "hero_badge_1",
