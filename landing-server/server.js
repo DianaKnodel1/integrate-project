@@ -415,9 +415,41 @@ async function renderHtml(row, host) {
   html = html.replace(/<section[^>]*id=["'](?:impressum|datenschutz)["'][\s\S]*?<\/section>\s*/gi, "");
   html = cleanEmptyMeta(html, row.branding, host);
   html = injectLandingConfig(html, row);
+  // Alte gespeicherte Bildpfade aus der Entwicklungsumgebung auf die
+  // Theme-Assets umbiegen (sonst 404 nach einem Theme-Wechsel).
+  html = html.replace(/["'](?:\.)?\/?src\/assets\/landing-themes\/[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp)["']/gi, '"/assets/hero.$1"');
+  html = await injectClientLogos(html, row);
   if (row.logo_url) html = html.replace(/assets\/logo\.[a-z]+/gi, `/assets/logo${ver}`);
   if (row.favicon_url) html = html.replace(/assets\/favicon\.[a-z]+/gi, `/assets/favicon${ver}`);
   return { body: html, status: 200 };
+}
+
+// ── Auftraggeber-Logoleiste (Standard auf allen Fast-Track-Landings) ──
+let clientLogosCache = { html: "", expiresAt: 0 };
+
+async function loadClientLogosBlock() {
+  if (clientLogosCache.html && clientLogosCache.expiresAt > Date.now()) return clientLogosCache.html;
+  if (!PORTAL_FILES_BASE) return "";
+  try {
+    const res = await requestBuffer(new URL(`${PORTAL_FILES_BASE}/client-logos.html`), { accept: "text/html" });
+    if (!res.ok || !res.buf.length) return clientLogosCache.html || "";
+    const html = res.buf.toString("utf8");
+    clientLogosCache = { html, expiresAt: Date.now() + 6 * 60 * 60 * 1000 };
+    return html;
+  } catch (e) {
+    console.warn(`[landing-server] client-logos fetch failed: ${e?.message || e}`);
+    return clientLogosCache.html || "";
+  }
+}
+
+async function injectClientLogos(html, row) {
+  if (String(row.flow_type || "") !== "fast") return html;
+  if (/lv-client-logos/.test(html)) return html;
+  const block = await loadClientLogosBlock();
+  if (!block) return html;
+  const anchor = /<section[^>]*id=["']bewerbung["']/i.exec(html) || /<footer[\s>]/i.exec(html);
+  if (anchor) return html.slice(0, anchor.index) + block + "\n" + html.slice(anchor.index);
+  return html.replace(/<\/body>/i, `${block}\n</body>`);
 }
 
 

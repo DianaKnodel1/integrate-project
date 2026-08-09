@@ -20,7 +20,7 @@
     { "key": "hero_status",     "label": "Hero Statustext",   "type": "text",     "default": "SYSTEM_STATUS · HIRING · v2.4" },
     { "key": "hero_title",      "label": "Hero Headline",     "type": "text",     "default": "QA-Tester:innen für Web & Mobile. Von zuhause. Ohne Bullshit." },
     { "key": "hero_sub",        "label": "Hero Subtext",      "type": "longtext", "default": "Unser QA-Ops-Team prüft die digitalen Produkte großer Marken bevor sie live gehen. Struktur, Aufmerksamkeit, klare Berichte — das ist der Job." },
-    { "key": "hero_image",      "label": "Hero Bild",         "type": "image",    "default": "/src/assets/landing-themes/qa-grid-hero.jpg" },
+    { "key": "hero_image",      "label": "Hero Bild",         "type": "image",    "default": "assets/hero.jpg" },
 
     { "key": "stat1_value",     "label": "Stat 1 Wert",       "type": "text",     "default": "€19–21" },
     { "key": "stat1_text",      "label": "Stat 1 Label",      "type": "text",     "default": "pro Stunde" },

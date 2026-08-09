@@ -20,7 +20,7 @@
     { "key": "hero_eyebrow",    "label": "Hero Eyebrow",      "type": "text",     "default": "Ausgabe 01 · Feldnotizen aus dem Homeoffice" },
     { "key": "hero_title",      "label": "Hero Headline",     "type": "text",     "default": "Sie testen. Wir dokumentieren, was Millionen erleben." },
     { "key": "hero_sub",        "label": "Hero Subtext",      "type": "longtext", "default": "Für unsere Kunden prüfen Sie Apps, Websites und Dienstleistungen aus Nutzersicht — mit einem Blick fürs Detail, den kein Algorithmus ersetzt." },
-    { "key": "hero_image",      "label": "Hero Bild",         "type": "image",    "default": "/src/assets/landing-themes/tester-lab-hero.jpg" },
+    { "key": "hero_image",      "label": "Hero Bild",         "type": "image",    "default": "assets/hero.jpg" },
     { "key": "hero_bullet1",    "label": "Hero Bullet 1",     "type": "text",     "default": "100 % Homeoffice, Deutschland-weit" },
     { "key": "hero_bullet2",    "label": "Hero Bullet 2",     "type": "text",     "default": "8–21 Uhr, Mo–So frei einteilbar" },
     { "key": "hero_bullet3",    "label": "Hero Bullet 3",     "type": "text",     "default": "Sozialversichert, kein Freelancing" },

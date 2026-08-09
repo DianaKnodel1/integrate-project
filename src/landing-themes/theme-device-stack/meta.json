@@ -8,7 +8,7 @@
     { "key": "hero_title", "label": "Hero Titel", "type": "text", "default": "Ihre App auf jedem Gerät. Getestet. Dokumentiert. Bereit." },
     { "key": "hero_subtitle", "label": "Untertitel", "type": "longtext", "default": "Wir prüfen Ihre Webseiten und Apps auf Smartphone, Tablet und Desktop — mit echten Menschen, echten Geräten und standardisierten Reports." },
     { "key": "hero_cta", "label": "Hero CTA", "type": "text", "default": "Angebot anfragen" },
-    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "/src/assets/landing-themes/device-stack-hero.jpg" },
+    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
     { "key": "kpi_1_num", "label": "KPI 1 Zahl", "type": "text", "default": "48h" },
     { "key": "kpi_1_label", "label": "KPI 1 Label", "type": "text", "default": "Turnaround" },
     { "key": "kpi_2_num", "label": "KPI 2 Zahl", "type": "text", "default": "150+" },

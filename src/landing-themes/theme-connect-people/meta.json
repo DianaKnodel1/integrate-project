@@ -8,7 +8,7 @@
     { "key": "hero_title", "label": "Hero Titel", "type": "text", "default": "Ein Job, der zu Ihrem Leben passt." },
     { "key": "hero_sub", "label": "Hero Untertitel", "type": "longtext", "default": "Testen Sie Apps und Webseiten unserer Kunden — bequem von zuhause, in Ihrem Rhythmus. 19–21 €/h, flexible Zeiten von 8 bis 21 Uhr, Festanstellung mit voller Sozialversicherung." },
     { "key": "hero_cta", "label": "Hero Button", "type": "text", "default": "Jetzt bewerben" },
-    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "/src/assets/landing-themes/connect-people-hero.jpg" },
+    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
     { "key": "hero_note", "label": "Hero Notiz", "type": "text", "default": "Bewerbung in unter 2 Minuten · Antwort innerhalb von 24 Stunden" },
     { "key": "why_title", "label": "Warum Titel", "type": "text", "default": "Warum Menschen zu uns wechseln" },
     { "key": "b1_t", "label": "Benefit 1 Titel", "type": "text", "default": "Flexibel wie Ihr Alltag" },

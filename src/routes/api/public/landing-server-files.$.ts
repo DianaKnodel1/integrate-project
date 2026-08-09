@@ -5,6 +5,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { THEMES } from "@/lib/landing-themes";
 import { THEME_ASSETS } from "@/lib/theme-assets.generated";
+import { buildClientLogosBlock } from "@/lib/client-logos-block";
 import landingServerSource from "../../../../landing-server/server.js?raw";
 import legalContentSource from "../../../../landing-server/legal-content.js?raw";
 
@@ -136,6 +137,15 @@ export const Route = createFileRoute("/api/public/landing-server-files/$")({
         }
         if (path === "themes.json") {
           return Response.json({ themes: THEMES.map((t) => t.id) });
+        }
+        // Auftraggeber-Logoleiste für den Live-Renderer (Fast-Track).
+        if (path === "client-logos.html") {
+          return new Response(buildClientLogosBlock(), {
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+              "cache-control": "public, max-age=3600",
+            },
+          });
         }
         // themes/<id>/assets.json → Liste aller Asset-Dateinamen
         const list = /^themes\/([^/]+)\/assets\.json$/.exec(path);
