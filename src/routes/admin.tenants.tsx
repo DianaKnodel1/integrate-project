@@ -595,7 +595,7 @@ function AdminTenantsPage() {
   const [switchTenant, setSwitchTenant] = useState<Tenant | undefined>();
   const { toast } = useToast();
   const setDnsFn = useServerFn(setLandingDnsRecord);
-  const { data: readiness, loading: readinessLoading } = useTenantReadiness();
+  const { data: readiness, loading: readinessLoading, reload: reloadReadiness } = useTenantReadiness();
   const [readinessTenantId, setReadinessTenantId] = useState<string | null>(null);
 
   const setupDns = async (t: Tenant) => {
