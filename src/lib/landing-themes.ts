@@ -283,9 +283,46 @@ export function getTheme(id: string): ThemeFiles | undefined {
   return THEMES.find((t) => t.id === id);
 }
 
+/**
+ * Zuordnung Theme → Landing-Welt.
+ *  "fast"   = Auftraggeber/Partnerfirma-Optik (Vorbild procepta.digital)
+ *  "broker" = Vermittlungsagentur-Optik (Vorbild top-personal.net)
+ *  "both"   = passt in beiden Modi
+ */
+export type ThemeFlow = "fast" | "broker" | "both";
+
+const THEME_FLOW: Record<string, ThemeFlow> = {
+  "theme-10": "fast",
+  "theme-quality-report": "fast",
+  "theme-qa-grid": "fast",
+  "theme-qa-platform-premium": "fast",
+  "theme-tester-lab": "fast",
+  "theme-device-stack": "fast",
+  "theme-quantum-tech": "fast",
+  "theme-nebula-flux": "fast",
+  "theme-midnight-premium": "fast",
+  "theme-connect-people": "broker",
+  "theme-talent-hub": "broker",
+  "theme-career-atlas": "broker",
+  "theme-job-gleiter": "broker",
+  "theme-tts-beratung": "broker",
+  "theme-tts-consultant": "broker",
+  "theme-cle-beratung": "broker",
+  "theme-for-tel": "broker",
+  "theme-azb-replica": "broker",
+  "theme-eilers-replica": "broker",
+  "theme-mirror-site": "broker",
+  "theme-editorial-premium": "broker",
+};
+
+export function themeFlow(id: string): ThemeFlow {
+  return THEME_FLOW[id] ?? "both";
+}
+
 export const THEME_LIST = THEMES.map((t) => ({
   id: t.id,
   name: t.name,
   description: t.description,
   slots: t.slots,
+  flow: themeFlow(t.id),
 }));
