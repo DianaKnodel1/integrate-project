@@ -50,7 +50,7 @@ const BrandingSchema = z.object({
   supabase_anon_key: z.string().max(2000).optional().or(z.literal("")).default(""),
   tenant_id: z.string().max(120).optional().or(z.literal("")).default(""),
 
-  flow_type: z.enum(["classic", "fast"]).default("classic"),
+  flow_type: z.enum(["classic", "fast", "broker"]).default("classic"),
   // Funnel-Tracking: kurzer Slug pro Landing (z.B. "kw24-fast-de").
   // Wird mit jeder Bewerbung gespeichert → Konversion pro Landing messbar.
   source_slug: z.string().max(120).default(""),
