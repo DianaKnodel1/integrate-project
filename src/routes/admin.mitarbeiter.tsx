@@ -76,13 +76,9 @@ function AdminMitarbeiterPage() {
   function stagesFor(r: typeof rows[number]): Stage[] {
     const s = (state: Stage["state"], label: string, key: string): Stage => ({ key, label, state });
     const registered: Stage["state"] = "done";
-    const email: Stage["state"] =
-      r.status === "abgelehnt" ? "failed" :
-      r.emailConfirmed ? "done" : "current";
     const perso: Stage["state"] =
       r.status === "abgelehnt" ? "failed" :
-      r.idUploaded ? "done" :
-      r.emailConfirmed ? "current" : "todo";
+      r.idUploaded ? "done" : "current";
     const vertrag: Stage["state"] =
       r.status === "abgelehnt" ? "failed" :
       r.contractSigned ? "done" :
@@ -93,7 +89,6 @@ function AdminMitarbeiterPage() {
       (r.contractSigned && r.idUploaded) ? "current" : "todo";
     return [
       s(registered, "Registriert", "reg"),
-      s(email, "E-Mail", "mail"),
       s(perso, "Perso", "id"),
       s(vertrag, "Vertrag", "contract"),
       s(aktiv, "Freigegeben", "active"),
