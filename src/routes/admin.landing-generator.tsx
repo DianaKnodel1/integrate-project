@@ -313,6 +313,11 @@ function LandingGeneratorPage() {
   const setSlot = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setSlotValues((v) => ({ ...v, [key]: e.target.value }));
 
+  // Standard-Textwelt je Modus (Vermittlung vs. Fast-Track) in die Hero-Slots setzen.
+  const applyModeCopy = (flow: string, onlyDefaults = true) => {
+    setSlotValues((v) => applyFlowCopy(themeId, flow, v, themeSlotDefaults(themeId), onlyDefaults));
+  };
+
   const set = (key: keyof Branding) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setBranding((b) => ({ ...b, [key]: e.target.value }));
 
