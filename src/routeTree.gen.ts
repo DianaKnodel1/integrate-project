@@ -16,7 +16,6 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PortalDesignsRouteImport } from './routes/portal-designs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InterviewTestRouteImport } from './routes/interview-test'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as EmployeeRouteImport } from './routes/_employee'
 import { Route as IndexRouteImport } from './routes/index'
@@ -130,11 +129,6 @@ const LoginRoute = LoginRouteImport.update({
 const InterviewTestRoute = InterviewTestRouteImport.update({
   id: '/interview-test',
   path: '/interview-test',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -547,7 +541,6 @@ const EmployeeTasksAssignmentIdWebidRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/forgot-password': typeof ForgotPasswordRoute
   '/interview-test': typeof InterviewTestRoute
   '/login': typeof LoginRoute
   '/portal-designs': typeof PortalDesignsRoute
@@ -634,7 +627,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/forgot-password': typeof ForgotPasswordRoute
   '/interview-test': typeof InterviewTestRoute
   '/login': typeof LoginRoute
   '/portal-designs': typeof PortalDesignsRoute
@@ -724,7 +716,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_employee': typeof EmployeeRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
-  '/forgot-password': typeof ForgotPasswordRoute
   '/interview-test': typeof InterviewTestRoute
   '/login': typeof LoginRoute
   '/portal-designs': typeof PortalDesignsRoute
@@ -814,7 +805,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/forgot-password'
     | '/interview-test'
     | '/login'
     | '/portal-designs'
@@ -901,7 +891,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/forgot-password'
     | '/interview-test'
     | '/login'
     | '/portal-designs'
@@ -990,7 +979,6 @@ export interface FileRouteTypes {
     | '/'
     | '/_employee'
     | '/admin'
-    | '/forgot-password'
     | '/interview-test'
     | '/login'
     | '/portal-designs'
@@ -1080,7 +1068,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EmployeeRoute: typeof EmployeeRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
-  ForgotPasswordRoute: typeof ForgotPasswordRoute
   InterviewTestRoute: typeof InterviewTestRoute
   LoginRoute: typeof LoginRoute
   PortalDesignsRoute: typeof PortalDesignsRoute
@@ -1161,13 +1148,6 @@ declare module '@tanstack/react-router' {
       path: '/interview-test'
       fullPath: '/interview-test'
       preLoaderRoute: typeof InterviewTestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1876,7 +1856,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EmployeeRoute: EmployeeRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
-  ForgotPasswordRoute: ForgotPasswordRoute,
   InterviewTestRoute: InterviewTestRoute,
   LoginRoute: LoginRoute,
   PortalDesignsRoute: PortalDesignsRoute,
@@ -1910,3 +1889,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
