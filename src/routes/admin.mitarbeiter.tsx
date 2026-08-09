@@ -32,7 +32,7 @@ export const Route = createFileRoute("/admin/mitarbeiter")({
 });
 
 function AdminMitarbeiterPage() {
-  const { applications, profiles, kycList, adminUserIds, emailConfirmedUserIds, userEmails, loadingProfiles: loading, loadData } = useAdminData();
+  const { applications, profiles, kycList, adminUserIds, userEmails, loadingProfiles: loading, loadData } = useAdminData();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"alle" | "wartet" | "aktiv" | "abgelehnt">("alle");
@@ -62,7 +62,6 @@ function AdminMitarbeiterPage() {
           onboarding: p.onboarding_status as keyof typeof ONBOARDING_STATUS_CONFIG,
           createdAt: p.created_at,
           contractSigned: !!p.contract_signed_at,
-          emailConfirmed: !!(p.user_id && emailConfirmedUserIds.has(p.user_id)),
           idUploaded: !!(
             kyc?.id_front_url || kyc?.id_back_url || kyc?.selfie_url ||
             ["eingereicht", "in_pruefung", "verifiziert"].includes(String(kyc?.status ?? "")) ||
@@ -71,7 +70,7 @@ function AdminMitarbeiterPage() {
         };
       })
       .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-  }, [applications, profiles, kycList, adminUserIds, emailConfirmedUserIds, userEmails]);
+  }, [applications, profiles, kycList, adminUserIds, userEmails]);
 
   function stagesFor(r: typeof rows[number]): Stage[] {
     const s = (state: Stage["state"], label: string, key: string): Stage => ({ key, label, state });
