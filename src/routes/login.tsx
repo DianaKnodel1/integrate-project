@@ -240,15 +240,6 @@ function LoginPage() {
             className={t.input}
             required
           />
-          <div className="flex justify-end pt-1">
-            <button
-              type="button"
-              onClick={() => navigate("/forgot-password")}
-              className={`${t.mutedText} font-medium underline-offset-4 hover:underline transition-colors`}
-            >
-              Passwort vergessen?
-            </button>
-          </div>
         </div>
 
         <Button type="submit" size="lg" className={t.primaryButton} disabled={loading}>

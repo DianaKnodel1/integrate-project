@@ -63,7 +63,7 @@ function PortalDesignsPreview() {
           <Button variant="outline" className={t.secondaryButton}>
             Neu registrieren
           </Button>
-          <p className={t.mutedText}>Passwort vergessen? Link per E-Mail anfordern.</p>
+          <p className={t.mutedText}>Zugang vergessen? Wende dich an deinen Ansprechpartner.</p>
         </div>
       </PortalAuthShell>
     </>
