@@ -358,7 +358,13 @@ const THEME_DISPLAY: Record<string, { name: string; description: string }> = {
 };
 
 /** Vorlagen, die nicht mehr angeboten werden (Duplikate), aber weiter rendern. */
-const HIDDEN_THEMES = new Set<string>(["theme-tts-beratung"]);
+// Ausgeblendet in der Auswahl — Dateien bleiben erhalten, damit bereits
+// veröffentlichte Landing Pages weiter ausgeliefert werden.
+const HIDDEN_THEMES = new Set<string>([
+  "theme-tts-beratung",
+  "theme-career-atlas", // Aurum – zu ähnlich zu bestehenden Vorlagen
+  "theme-connect-people", // Kontor – zu ähnlich zu bestehenden Vorlagen
+]);
 
 export function themeDisplayName(id: string, fallback: string): string {
   return THEME_DISPLAY[id]?.name ?? fallback;

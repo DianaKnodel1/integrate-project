@@ -8,7 +8,7 @@
     { "key": "hero_title", "label": "Hero Titel", "type": "text", "default": "Wir testen Apps und Webseiten. Sie schreiben mit." },
     { "key": "hero_sub", "label": "Hero Untertitel", "type": "longtext", "default": "Bezahltes Testing im Homeoffice — 19 bis 21 €/h, flexible Zeiten von 8 bis 21 Uhr, Festanstellung mit voller Sozialversicherung. Kein Verkauf, keine Kaltakquise." },
     { "key": "hero_cta", "label": "Hero Button", "type": "text", "default": "Jetzt bewerben" },
-    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "/src/assets/landing-themes/quality-report-hero.jpg" },
+    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
     { "key": "kpi_1", "label": "KPI 1 Wert", "type": "text", "default": "19–21€" },
     { "key": "kpi_1_lbl", "label": "KPI 1 Label", "type": "text", "default": "Stundenlohn" },
     { "key": "kpi_2", "label": "KPI 2 Wert", "type": "text", "default": "8–21" },

@@ -8,7 +8,7 @@
     { "key": "hero_title", "label": "Hero Titel", "type": "text", "default": "Ein Job, der sich Ihrem Leben anpasst — nicht umgekehrt." },
     { "key": "hero_subtitle", "label": "Hero Untertitel", "type": "longtext", "default": "Testen Sie Apps und Webseiten unserer Kunden im Homeoffice. Flexible Zeiten von 8 bis 21 Uhr, 19–21 €/h, Festanstellung mit voller Sozialversicherung." },
     { "key": "hero_cta", "label": "Hero Button", "type": "text", "default": "Jetzt bewerben" },
-    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "/src/assets/landing-themes/career-atlas-hero.jpg" },
+    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
     { "key": "stat_1_num", "label": "Stat 1 Zahl", "type": "text", "default": "19–21€" },
     { "key": "stat_1_label", "label": "Stat 1 Label", "type": "text", "default": "pro Stunde" },
     { "key": "stat_2_num", "label": "Stat 2 Zahl", "type": "text", "default": "100%" },

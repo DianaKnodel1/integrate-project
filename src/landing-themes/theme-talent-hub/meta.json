@@ -43,7 +43,7 @@
       "key": "hero_image",
       "label": "Hero Bild",
       "type": "image",
-      "default": "/src/assets/landing-themes/talent-hub-hero.jpg"
+      "default": "assets/hero.jpg"
     },
     {
       "key": "trust_1",
