@@ -122,25 +122,25 @@
       "key": "dash_url",
       "label": "Dashboard URL",
       "type": "text",
-      "default": "app.for-tel.solutions/dashboard"
+      "default": "stellen.ihre-domain.de/uebersicht"
     },
     {
       "key": "dash_metric1",
-      "label": "Dashboard Metric 1",
+      "label": "Kennzahl 1 (Offene Stellen)",
       "type": "text",
-      "default": "12.847"
+      "default": "120+"
     },
     {
       "key": "dash_metric2",
-      "label": "Dashboard Metric 2",
+      "label": "Kennzahl 2 (Vermittlungsquote)",
       "type": "text",
-      "default": "98,4%"
+      "default": "92%"
     },
     {
       "key": "dash_metric3",
-      "label": "Dashboard Metric 3",
+      "label": "Kennzahl 3 (Rückmeldung)",
       "type": "text",
-      "default": "€ 42k"
+      "default": "48 h"
     },
     {
       "key": "proj_eyebrow",
