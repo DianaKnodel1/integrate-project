@@ -1,5 +1,5 @@
 /* Career Atlas — Editorial Recruitment */
-:root{--ca-bg:#F6F1E8;--ca-ink:#1A1614;--ca-muted:#6B5F53;--ca-accent:#B4472C;--ca-line:#E4DAC9;--ca-alt:#EFE7D8;}
+:root{--ca-bg:#f4eee2;--ca-ink:#1A1614;--ca-muted:#6B5F53;--ca-accent:#7a2233;--ca-line:#e2d5c0;--ca-alt:#ece3d2;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--ca-bg);color:var(--ca-ink);line-height:1.6;-webkit-font-smoothing:antialiased}
 h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-0.02em;line-height:1.1}
@@ -41,7 +41,7 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-0.
 .ca-quote{padding:120px 32px;background:var(--ca-ink);color:var(--ca-bg);text-align:center}
 .ca-quote blockquote{max-width:800px;margin:0 auto}
 .ca-quote p{font-family:'Fraunces',serif;font-size:clamp(26px,3.5vw,42px);font-weight:400;font-style:italic;line-height:1.3;margin-bottom:24px}
-.ca-quote cite{font-style:normal;font-size:14px;color:#B4472C;letter-spacing:.05em}
+.ca-quote cite{font-style:normal;font-size:14px;color:#7a2233;letter-spacing:.05em}
 
 .ca-process{padding:100px 32px;max-width:1000px;margin:0 auto;text-align:center}
 .ca-process h2{font-size:clamp(32px,4vw,44px);margin-bottom:60px}

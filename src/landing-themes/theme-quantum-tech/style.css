@@ -3,8 +3,8 @@
    ============================================================ */
 
 :root{
-  --qt-bg: #05070d;
-  --qt-bg-2: #0a0f1c;
+  --qt-bg: #04121f;
+  --qt-bg-2: #07213a;
   --qt-surface: rgba(255,255,255,.04);
   --qt-surface-2: rgba(255,255,255,.06);
   --qt-border: rgba(255,255,255,.09);
@@ -12,9 +12,9 @@
   --qt-text: #e6edf7;
   --qt-text-dim: #8a95ab;
   --qt-accent: #22d3ee;
-  --qt-accent-2: #6366f1;
-  --qt-accent-3: #a78bfa;
-  --qt-accent-4: #14b8a6;
+  --qt-accent-2: #0ea5e9;
+  --qt-accent-3: #67e8f9;
+  --qt-accent-4: #0891b2;
   --qt-danger: #f87171;
   --qt-glow: 0 0 40px color-mix(in oklab, var(--qt-accent) 35%, transparent);
 }
@@ -166,7 +166,7 @@ ul,ol{list-style:none}
   animation:qtFloat2 7s ease-in-out infinite;
 }
 .qt-phone-notch{width:36%;height:14px;background:#000;border-radius:0 0 10px 10px;margin:0 auto 6px}
-.qt-phone-screen{background:linear-gradient(180deg,#0a0f1c,#050810);border-radius:20px;padding:12px 10px;height:calc(100% - 20px);display:flex;flex-direction:column;gap:6px}
+.qt-phone-screen{background:linear-gradient(180deg,#07213a,#050810);border-radius:20px;padding:12px 10px;height:calc(100% - 20px);display:flex;flex-direction:column;gap:6px}
 .qt-ph-header{height:14px;border-radius:5px;background:linear-gradient(90deg,var(--qt-accent),var(--qt-accent-2));opacity:.7}
 .qt-ph-row{display:flex;align-items:center;gap:6px;padding:6px 4px;border-radius:6px;background:rgba(255,255,255,.03);font-size:.55rem}
 .qt-ph-row i{width:6px;height:6px;border-radius:50%;background:var(--qt-accent)}

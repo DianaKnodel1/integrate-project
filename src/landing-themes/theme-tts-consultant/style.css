@@ -1,10 +1,10 @@
 :root{
   --bg:#eef0f4;
   --surface:#ffffff;
-  --ink:#0c1424;
+  --ink:#241826;
   --ink-2:#3a4458;
   --muted:#6b7385;
-  --primary:#2f4dff;
+  --primary:#6b2d5c;
   --primary-2:#4a66ff;
   --primary-soft:#e8ecff;
   --accent:#ff7a59;
@@ -40,7 +40,7 @@ a{color:inherit;text-decoration:none}
 .hero{padding:60px 0 40px;background:linear-gradient(180deg,#eef0f4 0%,#f5d9d0 100%)}
 .hero-title{font-size:clamp(48px,8vw,128px);font-weight:800;letter-spacing:-3px;line-height:.95;margin:30px 0 60px;color:#1a2030}
 .hero-media-wrap{position:relative}
-.hero-media{border-radius:28px;overflow:hidden;box-shadow:var(--shadow);aspect-ratio:16/9;background:#0c1424}
+.hero-media{border-radius:28px;overflow:hidden;box-shadow:var(--shadow);aspect-ratio:16/9;background:#241826}
 .hero-media img{width:100%;height:100%;object-fit:cover}
 .hero-stat-card{position:absolute;right:-10px;bottom:-40px;background:#fff;border-radius:28px;padding:32px;width:320px;max-width:80%;box-shadow:0 24px 60px rgba(20,30,60,.18)}
 .hero-stat-card .stat-value{font-size:54px;font-weight:800;color:var(--primary);letter-spacing:-2px;line-height:1}
@@ -103,14 +103,14 @@ section{padding:100px 0}
 .stat-tile p{margin:0;color:var(--muted);font-size:14px}
 
 /* CTA final */
-.cta-final{background:linear-gradient(135deg,#2f4dff,#1e2dbf);color:#fff;text-align:center}
+.cta-final{background:linear-gradient(135deg,#6b2d5c,#1e2dbf);color:#fff;text-align:center}
 .cta-final h2{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-1px;margin:0 0 14px}
 .cta-final p{margin:0 0 30px;opacity:.9;font-size:18px}
 .cta-final .btn-primary{background:#fff;color:var(--primary);box-shadow:0 14px 40px rgba(0,0,0,.2)}
 .cta-final .btn-primary:hover{background:#f0f3ff}
 
 /* Footer */
-.site-footer{background:#0c1424;color:#a8b0c5;padding:70px 0 0}
+.site-footer{background:#241826;color:#a8b0c5;padding:70px 0 0}
 .footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding-bottom:50px}
 .footer-brand .logo-text{color:#fff;font-size:24px;font-weight:800;letter-spacing:-.5px}
 .footer-brand p{margin-top:12px;max-width:280px}

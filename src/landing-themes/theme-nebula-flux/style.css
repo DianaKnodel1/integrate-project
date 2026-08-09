@@ -4,16 +4,16 @@
    ============================================================ */
 
 :root{
-  --nf-bg:#05060d;
-  --nf-bg-2:#0a0f1f;
+  --nf-bg:#061024;
+  --nf-bg-2:#0b1c38;
   --nf-panel:rgba(16,20,36,.66);
   --nf-border:rgba(148,163,255,.14);
-  --nf-fg:#e6ebff;
-  --nf-mut:#8a95b8;
-  --nf-accent:#22d3ee;
-  --nf-accent-2:#7c3aed;
-  --nf-accent-3:#14b8a6;
-  --nf-accent-4:#3b82f6;
+  --nf-fg:#eef3ff;
+  --nf-mut:#93a4c4;
+  --nf-accent:#ff7a1a;
+  --nf-accent-2:#ffb020;
+  --nf-accent-3:#ff5722;
+  --nf-accent-4:#f59e0b;
   --nf-glow:0 0 60px -10px var(--nf-accent);
   --nf-radius:18px;
   --nf-max:1240px;
@@ -95,7 +95,7 @@ section{position:relative;z-index:2;padding:120px 0}
 .nf-hdr-inner{display:flex;align-items:center;justify-content:space-between}
 .nf-brand{display:flex;align-items:center;gap:12px;font-family:"Space Grotesk",sans-serif;font-weight:700;letter-spacing:.02em}
 .nf-brand-mark{width:36px;height:36px;border-radius:10px;background:conic-gradient(from 180deg at 50% 50%,var(--nf-accent),var(--nf-accent-2),var(--nf-accent-3),var(--nf-accent));box-shadow:0 0 30px -6px var(--nf-accent);position:relative}
-.nf-brand-mark::after{content:"";position:absolute;inset:6px;border-radius:6px;background:#05060d}
+.nf-brand-mark::after{content:"";position:absolute;inset:6px;border-radius:6px;background:#061024}
 .nf-brand-name{font-size:1.05rem}
 .nf-brand-sub{display:block;font-size:.7rem;color:var(--nf-mut);letter-spacing:.16em;text-transform:uppercase;font-family:"JetBrains Mono",monospace}
 .nf-nav{display:flex;gap:28px;font-size:.92rem;color:var(--nf-mut)}

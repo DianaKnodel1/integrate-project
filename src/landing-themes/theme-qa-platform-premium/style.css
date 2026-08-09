@@ -1,13 +1,13 @@
 /* QA Platform Premium — Theme */
 :root{
-  --qap-accent:#22d3ee;
-  --qap-accent-2:#a78bfa;
-  --qap-bg:#050814;
-  --qap-panel:#0d1428;
-  --qap-panel-2:#111a35;
+  --qap-accent:#2563eb;
+  --qap-accent-2:#1e40af;
+  --qap-bg:#f5f8fd;
+  --qap-panel:#ffffff;
+  --qap-panel-2:#eef3fb;
   --qap-border:rgba(255,255,255,.08);
-  --qap-text:#e6ecff;
-  --qap-muted:#8a97b8;
+  --qap-text:#0c1830;
+  --qap-muted:#56688a;
   --qap-glass:rgba(255,255,255,.04);
   --qap-glow:0 0 40px color-mix(in oklab, var(--qap-accent) 30%, transparent);
   --qap-radius:16px;
