@@ -157,7 +157,7 @@ export const Route = createFileRoute("/admin/bewerbungen")({
 });
 
 function AdminBewerbungenPage() {
-  const { applications, profiles, allBookings, emailConfirmedUserIds, loadingApplications: loading, loadData } = useAdminData();
+  const { applications, profiles, allBookings, loadingApplications: loading, loadData } = useAdminData();
   const search = useSearch({ from: "/admin/bewerbungen" });
   const navigate = useNavigate();
   const tab = (search as any).tab ?? "alle";
