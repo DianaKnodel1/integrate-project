@@ -9,10 +9,9 @@ import {
   checkDomainsHealth,
   setPrimaryDomain,
   getAffectedRecipients,
-  setTenantEmailsPaused,
   type AffectedRecipient,
 } from "@/lib/tenant-domains.functions";
-import { CheckCircle2, XCircle, AlertCircle, RefreshCw, Loader2, Users, Star, ExternalLink, Download, MailX, MailCheck } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, RefreshCw, Loader2, Users, Star, ExternalLink, Download } from "lucide-react";
 
 export const Route = createFileRoute("/admin/domains")({
   component: AdminDomainsPage,
@@ -40,24 +39,20 @@ function AdminDomainsPage() {
   const checkFn = useServerFn(checkDomainsHealth);
   const setPrimaryFn = useServerFn(setPrimaryDomain);
   const getAffectedFn = useServerFn(getAffectedRecipients);
-  const setPausedFn = useServerFn(setTenantEmailsPaused);
 
   const [rows, setRows] = useState<DomainRow[]>([]);
-  const [pauseState, setPauseState] = useState<Record<string, { paused: boolean; at: string | null; reason: string | null; by: string | null }>>({});
   const [loading, setLoading] = useState(true);
   const [checkedAt, setCheckedAt] = useState<string | null>(null);
   const [openTenantId, setOpenTenantId] = useState<string | null>(null);
   const [affected, setAffected] = useState<Record<string, AffectedRecipient[]>>({});
   const [loadingAffected, setLoadingAffected] = useState<string | null>(null);
   const [settingPrimary, setSettingPrimary] = useState<string | null>(null);
-  const [togglingPause, setTogglingPause] = useState<string | null>(null);
 
   const runCheck = async () => {
     setLoading(true);
     try {
       const res = await checkFn({ data: {} as any });
       setRows(res.domains as DomainRow[]);
-      setPauseState((res as any).pause_state ?? {});
       setCheckedAt(res.checked_at);
     } catch (e: any) {
       toast({ title: "Health-Check fehlgeschlagen", description: e.message, variant: "destructive" });
@@ -103,35 +98,6 @@ function AdminDomainsPage() {
       } finally {
         setLoadingAffected(null);
       }
-    }
-  };
-
-  const handleTogglePause = async (tenant_id: string, currentlyPaused: boolean) => {
-    let reason: string | null = null;
-    if (!currentlyPaused) {
-      reason = window.prompt(
-        "Grund für die Pause (optional, wird im Activity-Log gespeichert):",
-        "",
-      );
-      if (reason === null) return; // Abbruch
-      reason = reason.trim() || null;
-    } else {
-      if (!window.confirm("Mail-Versand für diesen Tenant wieder AKTIVIEREN? Reminder-/Recovery-Mails gehen ab sofort wieder raus.")) return;
-    }
-    setTogglingPause(tenant_id);
-    try {
-      await setPausedFn({ data: { tenant_id, paused: !currentlyPaused, reason } });
-      toast({
-        title: currentlyPaused ? "Mail-Versand reaktiviert" : "Mail-Versand pausiert",
-        description: currentlyPaused
-          ? "Reminder/Recovery werden wieder versendet."
-          : "Es werden keine Reminder-/Recovery-Mails mehr versendet, bis du wieder aktivierst.",
-      });
-      await runCheck();
-    } catch (e: any) {
-      toast({ title: "Fehler", description: e.message, variant: "destructive" });
-    } finally {
-      setTogglingPause(null);
     }
   };
 
@@ -217,48 +183,24 @@ function AdminDomainsPage() {
       {grouped.map((t) => {
         const primary = t.domains.find((d) => d.is_primary)?.domain ?? t.domains[0]?.domain ?? "";
         const anyDown = t.domains.some((d) => d.status === "down");
-        const ps = pauseState[t.id];
-        const paused = !!ps?.paused;
         return (
-          <Card key={t.id} className={paused ? "border-amber-500/50" : anyDown ? "border-destructive/40" : ""}>
+          <Card key={t.id} className={anyDown ? "border-destructive/40" : ""}>
             <CardContent className="pt-4 pb-4 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <h2 className="text-base font-semibold flex items-center gap-2 flex-wrap">
                     {t.name}
-                    {paused && (
-                      <Badge variant="outline" className="gap-1 border-amber-500 text-amber-700 dark:text-amber-400">
-                        <MailX className="h-3 w-3" /> MAILS PAUSIERT
-                      </Badge>
-                    )}
                   </h2>
                   <p className="text-xs text-muted-foreground">
                     Aktive Versand-Domain: <code className="bg-muted px-1.5 py-0.5 rounded">{primary}</code>
                   </p>
                 </div>
-                {anyDown && !paused && (
+                {anyDown && (
                   <Badge variant="destructive" className="gap-1">
                     <AlertCircle className="h-3 w-3" /> Mindestens eine Domain down
                   </Badge>
                 )}
               </div>
-
-              {paused && (
-                <div className="rounded-lg border border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs space-y-1">
-                  <p className="font-medium text-amber-900 dark:text-amber-200">
-                    Reminder-, Recovery- und Onboarding-Mails sind für diesen Tenant gestoppt.
-                  </p>
-                  <p className="text-amber-800 dark:text-amber-300">
-                    {ps?.by === "auto:smtp_fail"
-                      ? "Automatisch pausiert: SMTP-Login mehrfach fehlgeschlagen. Wird automatisch freigegeben, sobald SMTP wieder funktioniert."
-                      : ps?.by === "auto:domain_down"
-                        ? "Alt-Pause aus dem Domain-Health-Job (wird nicht mehr gesetzt) — kann freigegeben werden."
-                        : "Manuell pausiert."}
-                    {ps?.reason && <> · Grund: {ps.reason}</>}
-                    {ps?.at && <> · Seit {new Date(ps.at).toLocaleString("de-DE")}</>}
-                  </p>
-                </div>
-              )}
 
               <div className="border rounded-lg divide-y">
                 {t.domains.map((d) => (
@@ -322,22 +264,6 @@ function AdminDomainsPage() {
                 <Button size="sm" variant="outline" onClick={() => toggleAffected(t.id)}>
                   <Users className="h-3.5 w-3.5 mr-1" />
                   {openTenantId === t.id ? "Empfänger ausblenden" : "Betroffene Empfänger anzeigen"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant={paused ? "default" : "outline"}
-                  onClick={() => handleTogglePause(t.id, paused)}
-                  disabled={togglingPause === t.id}
-                  className={paused ? "" : "text-amber-700 dark:text-amber-400 border-amber-500/50 hover:bg-amber-50 dark:hover:bg-amber-950/30"}
-                >
-                  {togglingPause === t.id ? (
-                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                  ) : paused ? (
-                    <MailCheck className="h-3.5 w-3.5 mr-1" />
-                  ) : (
-                    <MailX className="h-3.5 w-3.5 mr-1" />
-                  )}
-                  {paused ? "Mail-Versand reaktivieren" : "Mail-Versand pausieren"}
                 </Button>
                 {openTenantId === t.id && (affected[t.id]?.length ?? 0) > 0 && (
                   <Button size="sm" variant="outline" onClick={() => exportCsv(t.id, t.name, primary)}>
