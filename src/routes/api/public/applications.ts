@@ -201,8 +201,9 @@ export const Route = createFileRoute("/api/public/applications")({
         }
         // Booking-Mode pro Landing Page steuert Calendly vs. eigenes System.
         // 'calendly' → Calendly-Flow; 'internal' → eigenes Buchungssystem.
-        const bookingMode: "calendly" | "internal" =
-          (landingPage?.booking_mode as any) ?? "calendly";
+        // Terminbuchung läuft immer über Calendly — internes Buchungssystem
+        // und Verfügbarkeiten sind abgeschaltet.
+        const bookingMode: "calendly" = "calendly";
         const isBrokerFlow = d.flow_type === "broker" && !!partner && !d.is_test;
         const isBroker = isBrokerFlow && bookingMode === "calendly";
         const useCalendly = !isBroker && !!calendlyOnLanding && !d.is_test && bookingMode === "calendly";
@@ -377,40 +378,8 @@ export const Route = createFileRoute("/api/public/applications")({
           pushScheduleCandidate((existingApp as any)?.target_landing_id ?? null);
           pushScheduleCandidate((existingApp as any)?.source_landing_id ?? null);
         }
-        if (!d.is_test && !isFast && scheduleCandidateIds.length > 0 && d.portal_url) {
-          // Nur Landings mit booking_mode='internal' zählen als Kandidaten.
-          const { data: schedules } = await supabaseAdmin
-            .from("availability_schedules")
-            .select("id, landing_page_id, landing_pages!inner(booking_mode)")
-            .in("landing_page_id", scheduleCandidateIds)
-            .eq("active", true)
-            .eq("landing_pages.booking_mode", "internal");
-          const sched = scheduleCandidateIds
-            .map((id) => (schedules as any[] | null)?.find((s) => s.landing_page_id === id))
-            .find(Boolean);
-          if ((sched as any)?.id) {
-            let token: string | null = null;
-            const { data: existingApp } = await supabaseAdmin
-              .from("applications")
-              .select("magic_token, magic_token_expires_at")
-              .eq("id", appId).maybeSingle();
-            const stillValid = (existingApp as any)?.magic_token &&
-              (!((existingApp as any).magic_token_expires_at) ||
-                new Date((existingApp as any).magic_token_expires_at) > new Date());
-            if (stillValid) {
-              token = (existingApp as any).magic_token as string;
-            } else {
-              token = crypto.randomUUID().replace(/-/g, "");
-              await supabaseAdmin.from("applications").update({
-                magic_token: token,
-                magic_token_expires_at: null,
-                booking_status: "pending",
-              } as any).eq("id", appId);
-            }
-            const base = d.portal_url.replace(/\/+$/, "");
-            ownBookingUrl = `${base}/termin/buchen/${token}`;
-          }
-        }
+        // Internes Buchungssystem ist abgeschaltet: Terminbuchung läuft
+        // ausschließlich über Calendly (keine Verfügbarkeiten, kein Fallback).
 
         let redirect_url: string | null = null;
         let booking_error: string | null = null;
@@ -630,28 +599,13 @@ export const Route = createFileRoute("/api/public/applications")({
           }
         };
 
-        // Eigenes Buchungssystem hat Vorrang: Ist für die Landing ein aktiver
-        // interner Kalender (booking_mode='internal' + availability_schedule)
-        // konfiguriert, bucht der Bewerber zuerst einen Termin. Der Interview-
-        // Link steckt dann in der Event-Beschreibung des Buchungssystems.
-        // Erst danach greift der direkte Interview-Redirect als Fallback.
-        const useInterview = bookingMode !== "internal"
-          && !d.is_test && !isBroker && !isFast && !!interviewMode
+        // Terminbuchung immer über Calendly; danach ggf. Interview-Redirect.
+        const useInterview = !d.is_test && !isBroker && !isFast && !!interviewMode
           && (interviewMode === "chat" || interviewMode === "voice" || interviewMode === "both")
           && !!d.portal_url && !!d.source_slug;
 
 
-        if (ownBookingUrl) {
-          redirect_url = ownBookingUrl;
-        } else if (bookingMode === "internal" && !d.is_test) {
-          booking_error = "internal_schedule_missing";
-          console.warn("[applications] internal_schedule_missing", {
-            requestId,
-            application_id: appId,
-            landing_id: landingPage?.id ?? null,
-            schedule_candidates: scheduleCandidateIds,
-          });
-        } else if (useInterview) {
+        if (useInterview) {
           const base = d.portal_url!.replace(/\/+$/, "");
           const qs = new URLSearchParams({
             landing: d.source_slug!,
@@ -674,7 +628,7 @@ export const Route = createFileRoute("/api/public/applications")({
             partner_name: partner.name,
             partner_logo: partner.logo_url ?? null,
             calendly_url: base ? `${base}${sep}${qs}` : "",
-            fallback_url: ownBookingUrl || partner.portal_register_url || d.portal_url || null,
+            fallback_url: null,
             button_label: partner.button_label || "Jetzt Termin buchen",
             intro_headline: partner.intro_headline ?? null,
             intro_subline: partner.intro_subline ?? null,
@@ -725,12 +679,20 @@ export const Route = createFileRoute("/api/public/applications")({
               || "unserem Partnerunternehmen",
             partner_logo: targetLogo || (landingPage as any)?.logo_url || ownBranding.logo_image || null,
             calendly_url: calBase ? `${calBase}${sep}${qs}` : "",
-            fallback_url: ownBookingUrl || d.portal_url || null,
+            fallback_url: null,
             button_label: "Jetzt Termin buchen",
             intro_headline: null,
             intro_subline: null,
             portal_register_url: null,
           };
+        }
+
+        // Vermittlung/Calendly ohne Link = Fehlkonfiguration (kein Fallback mehr).
+        if (broker_block && !broker_block.calendly_url) {
+          booking_error = "calendly_missing";
+          console.warn("[applications] calendly_missing", {
+            requestId, application_id: appId, landing_id: landingPage?.id ?? null,
+          });
         }
 
         // Fast-Track: KEINE "Willkommen im Team"-Mail mehr beim Bewerbungseingang.

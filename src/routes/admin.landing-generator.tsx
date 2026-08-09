@@ -644,7 +644,7 @@ document.addEventListener('submit', function(e){
     if (branding.flow_type !== "broker" && !branding.api_endpoint) return "API-Endpoint ist für Klassisch/Fast-Track Pflicht.";
     if (!branding.landing_domain.trim()) return "Landing-Domain fehlt.";
     if (branding.flow_type === "fast" && !branding.portal_url.trim()) return "Fast-Track braucht Portal-URL.";
-    if (branding.flow_type === "broker" && branding.booking_mode === "calendly" && !branding.calendly_url.trim() && !branding.linked_fasttrack_landing_id.trim()) return 'Vermittlung braucht entweder eine Fast-Track-Firma oder einen Calendly-Link (oder wähle „Eigenes Buchungssystem").';
+    if (branding.flow_type === "broker" && !branding.calendly_url.trim() && !branding.linked_fasttrack_landing_id.trim()) return "Vermittlung braucht einen Calendly-Link (oder eine Fast-Track-Firma mit Calendly-Link).";
     if (!branding.tenant_id.trim()) return "Tenant-ID fehlt.";
     return null;
   };
@@ -699,7 +699,7 @@ document.addEventListener('submit', function(e){
         recruiter_avatar_data_url: branding.recruiter_avatar_data_url || null,
         logo_data_url: logoDataUrl,
         favicon_data_url: faviconDataUrl,
-        booking_mode: branding.booking_mode ?? "calendly",
+        booking_mode: "calendly",
         event_description: branding.event_description || null,
         booking_window_days: Number(branding.booking_window_days ?? 30),
       } as any });
@@ -773,7 +773,7 @@ document.addEventListener('submit', function(e){
         recruiter_name: row.recruiter_name ?? row.branding?.recruiter_name ?? "Sabine Schneider",
         recruiter_avatar_url: row.recruiter_avatar_url ?? row.branding?.recruiter_avatar_url ?? "",
         recruiter_avatar_data_url: "",
-        booking_mode: (row.booking_mode as any) ?? "calendly",
+        booking_mode: "calendly",
         event_description: row.event_description ?? "",
         booking_window_days: row.booking_window_days ?? 30,
       } as Branding;
@@ -1470,21 +1470,10 @@ document.addEventListener('submit', function(e){
               ) : (
               <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <Label className="text-xs font-semibold">📅 Terminbuchung</Label>
-                <Field label="Modus">
-                  <select
-                    className="w-full h-9 px-2 rounded border border-input bg-background text-sm"
-                    value={branding.booking_mode}
-                    onChange={(e) => setBranding((b) => ({ ...b, booking_mode: e.target.value as any }))}
-                  >
-                    <option value="calendly">Calendly (extern)</option>
-                    <option value="internal">Eigenes Buchungssystem</option>
-                  </select>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    <strong>Eigenes System</strong> benötigt einen aktiven Kalender unter <a href="/admin/vermittlung" className="underline">Vermittlung → Verfügbarkeiten</a> für diese Landing Page (oder verknüpfte Fast-Track-Page).
-                  </p>
-                </Field>
-
-                {branding.booking_mode === "calendly" && (
+                <p className="text-[10px] text-muted-foreground">
+                  Terminbuchung läuft <strong>immer über Calendly</strong> — kein internes Buchungssystem, keine Verfügbarkeiten, kein Fallback.
+                </p>
+                {true && (
                   <>
                     <Field label="Calendly-Buchungslink">
                       <Input
@@ -1503,7 +1492,7 @@ document.addEventListener('submit', function(e){
                   </>
                 )}
 
-                {branding.booking_mode === "internal" && (
+                {false && (
                   <>
                     <Field label="Buchungsfenster (Tage im Voraus)">
                       <Input
