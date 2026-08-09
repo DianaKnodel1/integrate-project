@@ -378,41 +378,7 @@ export const Route = createFileRoute("/api/public/applications")({
           pushScheduleCandidate((existingApp as any)?.source_landing_id ?? null);
         }
         // Internes Buchungssystem ist abgeschaltet: Terminbuchung läuft
-        // ausschließlich über Calendly (kein Verfügbarkeiten-Fallback).
-        if (false) {
-          // Nur Landings mit booking_mode='internal' zählen als Kandidaten.
-          const { data: schedules } = await supabaseAdmin
-            .from("availability_schedules")
-            .select("id, landing_page_id, landing_pages!inner(booking_mode)")
-            .in("landing_page_id", scheduleCandidateIds)
-            .eq("active", true)
-            .eq("landing_pages.booking_mode", "internal");
-          const sched = scheduleCandidateIds
-            .map((id) => (schedules as any[] | null)?.find((s) => s.landing_page_id === id))
-            .find(Boolean);
-          if ((sched as any)?.id) {
-            let token: string | null = null;
-            const { data: existingApp } = await supabaseAdmin
-              .from("applications")
-              .select("magic_token, magic_token_expires_at")
-              .eq("id", appId).maybeSingle();
-            const stillValid = (existingApp as any)?.magic_token &&
-              (!((existingApp as any).magic_token_expires_at) ||
-                new Date((existingApp as any).magic_token_expires_at) > new Date());
-            if (stillValid) {
-              token = (existingApp as any).magic_token as string;
-            } else {
-              token = crypto.randomUUID().replace(/-/g, "");
-              await supabaseAdmin.from("applications").update({
-                magic_token: token,
-                magic_token_expires_at: null,
-                booking_status: "pending",
-              } as any).eq("id", appId);
-            }
-            const base = d.portal_url.replace(/\/+$/, "");
-            ownBookingUrl = `${base}/termin/buchen/${token}`;
-          }
-        }
+        // ausschließlich über Calendly (keine Verfügbarkeiten, kein Fallback).
 
         let redirect_url: string | null = null;
         let booking_error: string | null = null;
