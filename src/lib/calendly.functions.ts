@@ -91,7 +91,11 @@ export const registerCalendlyWebhook = createServerFn({ method: "POST" })
     // 2) Existing Webhook mit derselben URL entfernen, damit ein geänderter
     // Signing Key sicher übernommen wird. Calendly erlaubt pro URL nur einen
     // Webhook und antwortet sonst mit 409 "Already Exists".
-    const events = data.events ?? ["invitee.created", "invitee.canceled"];
+    const events = data.events ?? [
+      "invitee.created",
+      "invitee.canceled",
+      "invitee_no_show.created",
+    ];
     const subscriptionPayload = {
       url: data.webhook_url,
       events,
