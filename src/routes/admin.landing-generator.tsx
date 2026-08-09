@@ -230,6 +230,7 @@ function LandingGeneratorPage() {
   const generate = useServerFn(generateLandingZip);
 
   const [themeId, setThemeId] = useState<string>(THEME_LIST[0]?.id ?? "");
+  const [showAllThemes, setShowAllThemes] = useState(false);
   const [branding, setBranding] = useState<Branding>(EMPTY);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [faviconDataUrl, setFaviconDataUrl] = useState<string | null>(null);
@@ -999,11 +1000,32 @@ document.addEventListener('submit', function(e){
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">1. Theme wählen</CardTitle>
-              <CardDescription>3 Vorlagen: Executive, klassische Beratung, Datenschutz.</CardDescription>
+              <CardDescription>
+                {branding.flow_type === "broker"
+                  ? "Vorlagen im Vermittlungs-Stil (Agentur)."
+                  : branding.flow_type === "fast"
+                    ? "Vorlagen im Fast-Track-Stil (Partnerfirma/Auftraggeber)."
+                    : "Alle Vorlagen."}
+                {" "}
+                <button
+                  type="button"
+                  className="underline underline-offset-2"
+                  onClick={() => setShowAllThemes((v) => !v)}
+                >
+                  {showAllThemes ? "Nur passende Themes" : "Alle Themes anzeigen"}
+                </button>
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-2">
-                {THEME_LIST.map((t) => (
+                {THEME_LIST.filter(
+                  (t) =>
+                    showAllThemes ||
+                    branding.flow_type === "classic" ||
+                    t.flow === "both" ||
+                    t.flow === branding.flow_type ||
+                    t.id === themeId,
+                ).map((t) => (
                   <button
                     key={t.id}
                     type="button"
@@ -1018,6 +1040,18 @@ document.addEventListener('submit', function(e){
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <span className="font-semibold text-sm truncate">{t.name}</span>
                       <div className="flex items-center gap-2 shrink-0">
+                        <span
+                          className={cn(
+                            "text-[10px] rounded px-1.5 py-0.5 font-medium",
+                            t.flow === "fast"
+                              ? "bg-primary/10 text-primary"
+                              : t.flow === "broker"
+                                ? "bg-emerald-500/10 text-emerald-600"
+                                : "bg-muted text-muted-foreground",
+                          )}
+                        >
+                          {t.flow === "fast" ? "Fast-Track" : t.flow === "broker" ? "Vermittlung" : "beides"}
+                        </span>
                         <span className="text-[10px] text-muted-foreground/70 font-mono">{t.id}</span>
                         {themeId === t.id && <CheckCircle2 className="h-4 w-4 text-primary" />}
                       </div>

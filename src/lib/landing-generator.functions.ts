@@ -50,7 +50,7 @@ const BrandingSchema = z.object({
   supabase_anon_key: z.string().max(2000).optional().or(z.literal("")).default(""),
   tenant_id: z.string().max(120).optional().or(z.literal("")).default(""),
 
-  flow_type: z.enum(["classic", "fast"]).default("classic"),
+  flow_type: z.enum(["classic", "fast", "broker"]).default("classic"),
   // Funnel-Tracking: kurzer Slug pro Landing (z.B. "kw24-fast-de").
   // Wird mit jeder Bewerbung gespeichert → Konversion pro Landing messbar.
   source_slug: z.string().max(120).default(""),
@@ -309,14 +309,28 @@ function insertBeforeAnchor(html: string, block: string): string {
 
 // Injiziert einen "So geht's weiter"-Trust-Block direkt VOR dem
 // Bewerbungsformular. Baut Vertrauen genau am Conversion-Punkt.
-function injectTrustStrip(html: string): string {
+function injectTrustStrip(html: string, flow: string = "classic"): string {
   if (/lv-trust-strip/.test(html)) return html;
+  const broker = flow === "broker";
+  const heading = broker ? "In 3 Schritten zum passenden Auftraggeber" : "In 3 Schritten zum Job";
+  const s1t = broker ? "Profil einreichen" : "Bewerbung absenden";
+  const s1d = broker
+    ? "Formular in 2 Minuten ausfüllen — ohne Anschreiben. Wir prüfen Ihr Profil kostenfrei."
+    : "Formular in 2 Minuten ausfüllen — ohne Anschreiben, ohne Lebenslauf-Pflicht.";
+  const s2t = broker ? "Persönliches Kennenlernen" : "Kennenlern-Termin";
+  const s2d = broker
+    ? "Kurzes Gespräch: Wir klären, was Sie suchen und welcher Auftraggeber dazu passt."
+    : "Sie wählen selbst einen 15-Minuten-Termin, der zu Ihnen passt — telefonisch oder per Video.";
+  const s3t = broker ? "Vorstellung beim Auftraggeber" : "Vertragsangebot";
+  const s3d = broker
+    ? "Wir stellen Sie beim passenden Unternehmen vor und begleiten Sie bis zum Vertrag."
+    : "Passt alles, erhalten Sie ein schriftliches Angebot — Festanstellung, sozialversichert.";
   const block = `
 <section class="lv-trust-strip" style="background:#f8fafc;padding:48px 24px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:1080px;margin:0 auto;">
     <div style="text-align:center;margin-bottom:32px;">
       <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#64748b;margin-bottom:8px;">So geht's weiter</div>
-      <h2 style="font-size:28px;font-weight:700;color:#0f172a;margin:0;line-height:1.2;">In 3 Schritten zum Job</h2>
+      <h2 style="font-size:28px;font-weight:700;color:#0f172a;margin:0;line-height:1.2;">${heading}</h2>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;">
       <div class="lv-step-card" style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px 24px;text-align:center;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;">
@@ -324,24 +338,24 @@ function injectTrustStrip(html: string): string {
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
         </div>
         <div style="font-size:12px;font-weight:700;color:#2563eb;letter-spacing:.1em;margin-bottom:6px;">SCHRITT 1</div>
-        <div style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:6px;">Bewerbung absenden</div>
-        <div style="font-size:14px;color:#64748b;line-height:1.6;">Formular in 2 Minuten ausfüllen — ohne Anschreiben, ohne Lebenslauf-Pflicht.</div>
+        <div style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:6px;">${s1t}</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">${s1d}</div>
       </div>
       <div class="lv-step-card" style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px 24px;text-align:center;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;">
         <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;color:#16a34a;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
         <div style="font-size:12px;font-weight:700;color:#16a34a;letter-spacing:.1em;margin-bottom:6px;">SCHRITT 2</div>
-        <div style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:6px;">Kennenlern-Termin</div>
-        <div style="font-size:14px;color:#64748b;line-height:1.6;">Sie wählen selbst einen 15-Minuten-Termin, der zu Ihnen passt — telefonisch oder per Video.</div>
+        <div style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:6px;">${s2t}</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">${s2d}</div>
       </div>
       <div class="lv-step-card" style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px 24px;text-align:center;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;">
         <div style="width:52px;height:52px;border-radius:14px;background:#fef3c7;color:#d97706;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
         <div style="font-size:12px;font-weight:700;color:#d97706;letter-spacing:.1em;margin-bottom:6px;">SCHRITT 3</div>
-        <div style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:6px;">Vertragsangebot</div>
-        <div style="font-size:14px;color:#64748b;line-height:1.6;">Passt alles, erhalten Sie ein schriftliches Angebot — Festanstellung, sozialversichert.</div>
+        <div style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:6px;">${s3t}</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">${s3d}</div>
       </div>
     </div>
   </div>
@@ -723,7 +737,7 @@ export const generateLandingZip = createServerFn({ method: "POST" })
     html = html.replace(/<section[^>]*id=["'](?:impressum|datenschutz)["'][\s\S]*?<\/section>\s*/gi, "");
 
     html = cleanEmptyMetaTags(html, cleanedBranding);
-    html = injectTrustStrip(html);
+    html = injectTrustStrip(html, cleanedBranding.flow_type);
     if (cleanedBranding.flow_type === "fast") {
       html = injectClientLogos(html, cleanedBranding.primary_color || "#2563eb");
     }
