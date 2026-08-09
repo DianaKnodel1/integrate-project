@@ -39,6 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Download, Globe, Loader2, CheckCircle2, Eye, ExternalLink, Save, Trash2, Power, Pencil, Plus, ExternalLink as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { applyFlowCopy } from "@/lib/flow-copy";
 
 export const Route = createFileRoute("/admin/landing-generator")({
   component: LandingGeneratorPage,
@@ -1190,7 +1191,7 @@ document.addEventListener('submit', function(e){
                 <div className="grid sm:grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setBranding((b) => ({ ...b, flow_type: "fast" }))}
+                    onClick={() => { setBranding((b) => ({ ...b, flow_type: "fast" })); applyModeCopy("fast"); }}
                     className={cn(
                       "text-left rounded-md border-2 p-3 transition-all text-xs",
                       branding.flow_type === "fast"
@@ -1205,7 +1206,7 @@ document.addEventListener('submit', function(e){
                   </button>
                   <button
                     type="button"
-                    onClick={() => setBranding((b) => ({ ...b, flow_type: "broker" }))}
+                    onClick={() => { setBranding((b) => ({ ...b, flow_type: "broker" })); applyModeCopy("broker"); }}
                     className={cn(
                       "text-left rounded-md border-2 p-3 transition-all text-xs",
                       branding.flow_type === "broker"
@@ -1219,6 +1220,13 @@ document.addEventListener('submit', function(e){
                     </p>
                   </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => applyModeCopy(branding.flow_type, false)}
+                  className="text-[11px] underline text-muted-foreground hover:text-foreground"
+                >
+                  Standard-Texte für diesen Modus einsetzen (überschreibt Hero-Texte)
+                </button>
               </div>
 
               {/* KI-Bewerbungsgespräch — nur Fast-Track + Klassisch. Bei Vermittlung erbt der Lead die Einstellung der verknüpften Fast-Track-Landing. */}
