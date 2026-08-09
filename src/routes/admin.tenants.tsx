@@ -595,16 +595,8 @@ function AdminTenantsPage() {
   const [switchTenant, setSwitchTenant] = useState<Tenant | undefined>();
   const { toast } = useToast();
   const setDnsFn = useServerFn(setLandingDnsRecord);
-
-  const pauseTrigger = (t: Tenant) => {
-    const by = (t as any).emails_paused_by as string | null;
-    if (!by) return "unbekannt";
-    if (by.startsWith("manual:")) return "manuell";
-    if (by === "auto:smtp_fail") return "automatisch (SMTP-Fehler)";
-    if (by === "auto:domain_down") return "veraltet (Domain-Ausfall)";
-    if (by.startsWith("auto:")) return `automatisch (${by.slice(5)})`;
-    return "manuell";
-  };
+  const { data: readiness, loading: readinessLoading } = useTenantReadiness();
+  const [readinessTenantId, setReadinessTenantId] = useState<string | null>(null);
 
   const setupDns = async (t: Tenant) => {
     const { data: fastRows } = await supabase
@@ -797,6 +789,7 @@ function AdminTenantsPage() {
                     <span className="truncate max-w-[120px]">{t.team_leader_name}</span>
                   </div>
                   <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => toggleActive(t)} className="text-xs">
                       {t.is_active ? "Deaktivieren" : "Aktivieren"}
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" title="Domain wechseln (Wizard)" onClick={() => setSwitchTenant(t)}>
