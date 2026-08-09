@@ -230,9 +230,8 @@ serve(async (req) => {
     const allowance = await guardSend({
       admin, tenantId: tenant.id ?? null, templateName: "password_reset",
       recipient: email, kind: "transactional", senderEmail,
-      // Einzige Ausnahme im Mail-los-Modus: ohne Reset-Mail kommt ein
-      // Mitarbeiter nicht mehr an sein Konto.
-      bypassMailless: true,
+      // Mail-los-Modus gilt ausnahmslos — auch Passwort-Reset-Mails werden
+      // nicht verschickt. Zugang wird bei Bedarf manuell wiederhergestellt.
       metadata: { source: "send-password-reset", tenant_name: tenant.name ?? null },
     });
     if (!allowance.allowed) {
