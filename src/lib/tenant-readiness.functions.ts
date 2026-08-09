@@ -66,10 +66,9 @@ export const getTenantReadiness = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const sb = await getSupabaseAdmin();
 
-    const [{ data: tenants }, { data: health }, { data: landings }, { data: schedules }, { data: templates }, { data: defaultTasks }] =
+    const [{ data: tenants }, { data: landings }, { data: schedules }, { data: templates }, { data: defaultTasks }] =
       await Promise.all([
         sb.from("tenants").select("*").order("name"),
-        sb.from("tenant_smtp_health").select("tenant_id,last_verify_ok,last_verify_at,last_fail_error"),
         sb
           .from("landing_pages")
           .select(
@@ -90,14 +89,10 @@ export const getTenantReadiness = createServerFn({ method: "POST" })
       }
     }
 
-    const healthById: Record<string, any> = {};
-    for (const h of health ?? []) healthById[String((h as any).tenant_id)] = h;
-
     const result: TenantReadiness[] = [];
 
     for (const t of (tenants ?? []) as any[]) {
       const checks: ReadinessCheck[] = [];
-      const h = healthById[t.id];
       const myLandings = (landings ?? []).filter((l: any) => l.tenant_id === t.id);
       const mySchedules = (schedules ?? []).filter(
         (s: any) => s.tenant_id === t.id || myLandings.some((l: any) => l.id === s.landing_page_id),
