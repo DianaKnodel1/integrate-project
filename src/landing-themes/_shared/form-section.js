@@ -75,7 +75,7 @@
     var sub=document.createElement('p');sub.style.cssText='margin:0 0 4px;color:#475569;font-size:14px;line-height:1.5;';
     sub.textContent='Wir laden Ihren Kalender …';
     var hint=document.createElement('p');hint.style.cssText='margin:0 0 6px;color:#64748b;font-size:12.5px;';
-    hint.textContent='Das Interview findet online statt – die Teilnahme erfolgt über Ihren persönlichen Zugangslink, den Sie sofort per E-Mail erhalten (inkl. Kalendereintrag). Alle Zeiten in deutscher Zeit (Europe/Berlin).';
+    hint.textContent='Das Interview findet online statt – Bestätigung, Kalendereintrag und Erinnerungen kommen automatisch von Calendly. Alle Zeiten in deutscher Zeit (Europe/Berlin).';
     var priv=document.createElement('p');priv.style.cssText='margin:0 0 14px;color:#94a3b8;font-size:11.5px;line-height:1.5;';
     var dsUrl=window.LANDING_DATENSCHUTZ_URL||'datenschutz.html';
     priv.innerHTML='Ihre Daten werden ausschließlich zur Terminvereinbarung verwendet. Details in unserer <a href="'+dsUrl+'" target="_blank" rel="noopener" style="color:#64748b;text-decoration:underline;">Datenschutzerklärung</a>.';
@@ -180,7 +180,7 @@
             var err=res.body&&res.body.error;
             if(err==='already_scheduled'){
               renderRange();
-              showError('Für diese Bewerbung ist bereits ein Termin gebucht. Bitte prüfen Sie Ihre Bestätigungs-E-Mail.');
+              showError('Für diese Bewerbung ist bereits ein Termin gebucht. Bitte prüfen Sie Ihre Calendly-Terminbestätigung.');
               return;
             }
             if(res.status===409||err==='slot_taken'){
@@ -207,16 +207,16 @@
       var when=document.createElement('p');when.style.cssText='margin:0 0 6px;font-size:16px;color:#0f172a;font-weight:600;';
       when.textContent=fmtDayLong.format(start)+' · '+fmtTime.format(start)+'–'+fmtTime.format(end)+' Uhr (deutsche Zeit)';
       var mail=document.createElement('p');mail.style.cssText='margin:6px 0 14px;color:#475569;font-size:13.5px;';
-      mail.textContent='Sie erhalten in Kürze eine Bestätigungs-E-Mail mit Ihrem persönlichen Zugangslink und einem Kalendereintrag.';
+      mail.textContent='Ihre Terminbestätigung inklusive Kalendereintrag und Erinnerungen erhalten Sie automatisch von Calendly per E-Mail und SMS.';
       wrap.appendChild(chk);wrap.appendChild(h2);wrap.appendChild(when);wrap.appendChild(mail);
 
       var next=document.createElement('div');
       next.style.cssText='margin:4px auto 0;padding:16px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;text-align:left;font-size:13.5px;line-height:1.6;color:#0f172a;max-width:560px;';
       next.innerHTML='<strong>So geht es weiter:</strong>'
-        + '<div style="margin-top:8px;">1. Bestätigungs-E-Mail öffnen und den Termin im Kalender speichern.</div>'
-        + '<div style="margin-top:4px;">2. Zur vereinbarten Zeit über den Zugangslink in der E-Mail teilnehmen – das Gespräch findet online statt, ein Telefonanruf erfolgt nicht.</div>'
+        + '<div style="margin-top:8px;">1. Terminbestätigung von Calendly öffnen und den Termin im Kalender speichern.</div>'
+        + '<div style="margin-top:4px;">2. Zur vereinbarten Zeit über den Link in der Calendly-Bestätigung teilnehmen – das Gespräch findet online statt, ein Telefonanruf erfolgt nicht.</div>'
         + '<div style="margin-top:4px;">3. Bei einer Zusage schließen Sie Ihre Registrierung direkt im Anschluss ab.</div>'
-        + '<div style="margin-top:10px;color:#475569;">Sollten Sie den Termin nicht wahrnehmen können, sagen Sie ihn bitte über den Link in der E-Mail ab – so kann jemand anderes den Platz nutzen.</div>';
+        + '<div style="margin-top:10px;color:#475569;">Sollten Sie den Termin nicht wahrnehmen können, sagen Sie ihn bitte über den Link in der Calendly-Bestätigung ab – so kann jemand anderes den Platz nutzen.</div>';
       wrap.appendChild(next);
 
       if(state.schedule && state.schedule.event_description){
@@ -350,7 +350,7 @@
     var steps=[
       ['1','Formular ausfüllen','dauert ca. 2 Minuten'],
       ['2','Termin direkt auswählen','freie Zeiten erscheinen sofort auf dieser Seite'],
-      ['3','Interview führen','online über Ihren persönlichen Zugangslink aus der Bestätigungs-E-Mail, ca. 15 Minuten'],
+      ['3','Interview führen','online über den Link aus Ihrer Calendly-Terminbestätigung, ca. 15 Minuten'],
       ['4','Bei Zusage registrieren','Sie schließen Ihre Anmeldung direkt im Anschluss ab'],
     ];
     var html='<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#2563eb;margin-bottom:10px;">SO LÄUFT ES AB</div>';
