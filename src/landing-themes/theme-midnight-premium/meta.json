@@ -17,7 +17,7 @@
     { "key": "hero_title_2", "label": "Hero Titel Zeile 2 (farblich hervorgehoben)", "type": "text", "default": "digitale Produkte," },
     { "key": "hero_title_3", "label": "Hero Titel Zeile 3", "type": "text", "default": "die bleiben." },
     { "key": "hero_subtitle", "label": "Hero Untertitel", "type": "longtext", "default": "Strategie, Design und Engineering aus einer Hand. Wir arbeiten mit ambitionierten Unternehmen, die sich sichtbar von der Masse abheben wollen." },
-    { "key": "hero_cta_primary", "label": "Hero Button primär", "type": "text", "default": "Projekt starten" },
+    { "key": "hero_cta_primary", "label": "Hero Button primär", "type": "text", "default": "Jetzt bewerben" },
     { "key": "hero_cta_secondary", "label": "Hero Button sekundär", "type": "text", "default": "Arbeiten ansehen" },
     { "key": "logo_image", "label": "Logo (Bild, optional — sonst Farbmarke)", "type": "image", "default": "" },
     { "key": "hero_image", "label": "Hero Bild (optional, Fallback: animierter Verlauf)", "type": "image", "default": "" },

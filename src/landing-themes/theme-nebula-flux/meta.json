@@ -43,7 +43,7 @@
       "key": "nav_cta",
       "label": "Nav Button",
       "type": "text",
-      "default": "Projekt starten"
+      "default": "Jetzt bewerben"
     },
     {
       "key": "hero_eyebrow",
@@ -67,7 +67,7 @@
       "key": "hero_cta_primary",
       "label": "Hero — Button primär",
       "type": "text",
-      "default": "Jetzt Projekt starten"
+      "default": "Jetzt bewerben"
     },
     {
       "key": "hero_cta_secondary",
