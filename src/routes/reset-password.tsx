@@ -95,7 +95,7 @@ function ResetPasswordPage() {
         <Card className="w-full max-w-md animate-fade-in shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
           <CardContent className="pt-8 pb-8 text-center space-y-4">
             <p className="text-sm text-muted-foreground">Ungültiger oder abgelaufener Reset-Link.</p>
-            <Button variant="outline" onClick={() => navigate("/forgot-password")}>Neuen Link anfordern</Button>
+            <Button variant="outline" onClick={() => navigate("/login")}>Zurück zum Login</Button>
           </CardContent>
         </Card>
       </div>
