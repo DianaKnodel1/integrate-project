@@ -107,44 +107,6 @@ export const getTenantReadiness = createServerFn({ method: "POST" })
         ? t.allowed_employment_types
         : ["minijob", "teilzeit", "vollzeit"];
 
-      // ---------- Versand ----------
-      const smtpComplete = Boolean(t.smtp_host && t.smtp_port && t.smtp_username && t.smtp_password && t.sender_email);
-      checks.push(
-        smtpComplete
-          ? ok({ key: "smtp_config", group: "Versand", label: "SMTP hinterlegt", detail: `${t.smtp_host}:${t.smtp_port} als ${t.sender_email}`, href: "/admin/tenants" })
-          : {
-              key: "smtp_config",
-              group: "Versand",
-              label: "SMTP hinterlegt",
-              detail: "Zugangsdaten oder Absenderadresse fehlen — es kann keine einzige Mail rausgehen.",
-              severity: "block",
-              href: "/admin/tenants",
-            },
-      );
-      checks.push(
-        h?.last_verify_ok === true
-          ? ok({ key: "smtp_test", group: "Versand", label: "SMTP-Test erfolgreich", detail: h.last_verify_at ? `Zuletzt geprüft: ${new Date(h.last_verify_at).toLocaleString("de-DE")}` : "Test war erfolgreich.", href: "/admin/tenants" })
-          : {
-              key: "smtp_test",
-              group: "Versand",
-              label: "SMTP-Test erfolgreich",
-              detail: h?.last_verify_ok === false ? `Letzter Test fehlgeschlagen: ${h.last_fail_error ?? "unbekannter Fehler"}` : "Noch nie erfolgreich geprüft — bitte „SMTP testen“ ausführen.",
-              severity: h?.last_verify_ok === false ? "block" : "warn",
-              href: "/admin/tenants",
-            },
-      );
-      checks.push(
-        t.emails_paused
-          ? {
-              key: "mails_active",
-              group: "Versand",
-              label: "Versand freigegeben",
-              detail: `Mail-Versand ist pausiert${t.emails_paused_reason ? `: ${t.emails_paused_reason}` : ""}.`,
-              severity: "block",
-              href: "/admin/tenants",
-            }
-          : ok({ key: "mails_active", group: "Versand", label: "Versand freigegeben", detail: "Keine Pause aktiv.", href: "/admin/tenants" }),
-      );
 
       // ---------- Auftritt ----------
       const published = myLandings.filter((l: any) => l.is_published);
