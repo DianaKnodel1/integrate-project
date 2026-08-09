@@ -1,5 +1,5 @@
 /* Device Stack — Dark Technical */
-:root{--ds-bg:#0A0E14;--ds-surface:#141922;--ds-line:#1F2632;--ds-ink:#E6EDF7;--ds-muted:#8B96A8;--ds-accent:#4ADE80;--ds-accent-2:#38BDF8;}
+:root{--ds-bg:#1b2026;--ds-surface:#232a33;--ds-line:#333c48;--ds-ink:#e8edf3;--ds-muted:#98a3b3;--ds-accent:#3fb974;--ds-accent-2:#7dd3a0;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--ds-bg);color:var(--ds-ink);line-height:1.6;-webkit-font-smoothing:antialiased}
 code{font-family:'JetBrains Mono',monospace}

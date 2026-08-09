@@ -1,9 +1,9 @@
 :root{
-  --th-bg:#FBF8F3;
-  --th-ink:#1C1A17;
-  --th-muted:#6B6459;
-  --th-accent:#C2410C;
-  --th-accent-2:#F97316;
+  --th-bg:#ffffff;
+  --th-ink:#12211a;
+  --th-muted:#5c6b62;
+  --th-accent:#1f6b40;
+  --th-accent-2:#2f9c5c;
   --th-card:#FFFFFF;
   --th-line:rgba(28,26,23,.08);
   --th-shadow:0 10px 30px rgba(28,26,23,.06);
@@ -63,7 +63,7 @@ img{max-width:100%;display:block}
 .th-steps p{margin:6px 0 0;font-size:15px;color:var(--th-ink);font-weight:500}
 
 /* Quote */
-.th-quote{padding:80px 0;background:linear-gradient(135deg,#1C1A17,#2D2822);color:#fff}
+.th-quote{padding:80px 0;background:linear-gradient(135deg,#12211a,#2D2822);color:#fff}
 .th-quote-inner{max-width:780px;text-align:center}
 .th-quote blockquote{font-family:'Fraunces',serif;font-size:clamp(24px,3vw,32px);line-height:1.35;margin:0 0 20px;font-weight:500}
 .th-quote cite{font-style:normal;color:rgba(255,255,255,.65);font-size:14px;letter-spacing:.04em}

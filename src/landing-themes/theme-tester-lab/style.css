@@ -1,12 +1,12 @@
 /* Tester Lab — Editorial / Magazine (warm terracotta + sand) */
 :root{
-  --tl-bg:#faf6f0;
-  --tl-paper:#fdfaf5;
-  --tl-ink:#221812;
-  --tl-mute:#6b5d54;
-  --tl-line:#e2d5c5;
-  --tl-accent:#b74e2a;
-  --tl-accent-soft:#efe1d4;
+  --tl-bg:#f1f0ee;
+  --tl-paper:#f8f7f5;
+  --tl-ink:#1e1e20;
+  --tl-mute:#66656b;
+  --tl-line:#dad8d4;
+  --tl-accent:#a8760c;
+  --tl-accent-soft:#efe6cf;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--tl-bg);color:var(--tl-ink);line-height:1.55;-webkit-font-smoothing:antialiased}

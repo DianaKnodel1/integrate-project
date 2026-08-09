@@ -1004,7 +1004,7 @@ document.addEventListener('submit', function(e){
                 {branding.flow_type === "broker"
                   ? "Vorlagen im Vermittlungs-Stil (Agentur)."
                   : branding.flow_type === "fast"
-                    ? "Vorlagen im Fast-Track-Stil (Partnerfirma/Auftraggeber)."
+                    ? "Vorlagen im Partner-Firma-Stil (Auftraggeber)."
                     : "Alle Vorlagen."}
                 {" "}
                 <button
@@ -1050,7 +1050,7 @@ document.addEventListener('submit', function(e){
                                 : "bg-muted text-muted-foreground",
                           )}
                         >
-                          {t.flow === "fast" ? "Fast-Track" : t.flow === "broker" ? "Vermittlung" : "beides"}
+                          {t.flow === "fast" ? "Partner-Firma" : t.flow === "broker" ? "Vermittlung" : "beides"}
                         </span>
                         <span className="text-[10px] text-muted-foreground/70 font-mono">{t.id}</span>
                         {themeId === t.id && <CheckCircle2 className="h-4 w-4 text-primary" />}

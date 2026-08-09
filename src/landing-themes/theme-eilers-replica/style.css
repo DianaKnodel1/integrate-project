@@ -3,10 +3,10 @@
   --bg:       #f7f5f0;
   --surface:  #faf9f6;
   --paper:    #f2f0eb;
-  --navy:     #1a2236;
+  --navy:     #2a1f1a;
   --navy-800: #1e2a3e;
   --navy-900: #131b2b;
-  --ink:      #1a2236;
+  --ink:      #2a1f1a;
   --ink-500:  #4a5568;
   --ink-400:  #718096;
   --ivory:    #f7f5f0;
@@ -219,10 +219,10 @@ em{font-style:italic;font-weight:400;color:var(--amber);}
 /* ===== LEGAL SECTIONS (Impressum / Datenschutz) ===== */
 .legal-section{padding:5rem 1.5rem;background:var(--cream,#f5f1ea);border-top:1px solid rgba(0,0,0,.06);}
 .legal-section-alt{background:#fff;}
-.legal-title{font-family:var(--font-serif,"Playfair Display",serif);font-size:2rem;margin-bottom:1.5rem;color:var(--navy-900,#0f1e3a);}
+.legal-title{font-family:var(--font-serif,"Playfair Display",serif);font-size:2rem;margin-bottom:1.5rem;color:var(--navy-900,#1d1410);}
 .legal-content{max-width:52rem;font-size:.95rem;line-height:1.75;color:rgba(15,30,58,.78);}
 .legal-content p{margin-bottom:1rem;}
-.legal-content strong{color:var(--navy-900,#0f1e3a);}
+.legal-content strong{color:var(--navy-900,#1d1410);}
 
 /* Logo-Image-Slot: zeigt Custom-Logo, sonst Wortmarke + Icon */
 .brand { max-width: 260px; }
