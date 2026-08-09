@@ -201,8 +201,9 @@ export const Route = createFileRoute("/api/public/applications")({
         }
         // Booking-Mode pro Landing Page steuert Calendly vs. eigenes System.
         // 'calendly' → Calendly-Flow; 'internal' → eigenes Buchungssystem.
-        const bookingMode: "calendly" | "internal" =
-          (landingPage?.booking_mode as any) ?? "calendly";
+        // Terminbuchung läuft immer über Calendly — internes Buchungssystem
+        // und Verfügbarkeiten sind abgeschaltet.
+        const bookingMode: "calendly" = "calendly";
         const isBrokerFlow = d.flow_type === "broker" && !!partner && !d.is_test;
         const isBroker = isBrokerFlow && bookingMode === "calendly";
         const useCalendly = !isBroker && !!calendlyOnLanding && !d.is_test && bookingMode === "calendly";
@@ -642,7 +643,7 @@ export const Route = createFileRoute("/api/public/applications")({
             partner_name: partner.name,
             partner_logo: partner.logo_url ?? null,
             calendly_url: base ? `${base}${sep}${qs}` : "",
-            fallback_url: ownBookingUrl || partner.portal_register_url || d.portal_url || null,
+            fallback_url: null,
             button_label: partner.button_label || "Jetzt Termin buchen",
             intro_headline: partner.intro_headline ?? null,
             intro_subline: partner.intro_subline ?? null,
@@ -693,7 +694,7 @@ export const Route = createFileRoute("/api/public/applications")({
               || "unserem Partnerunternehmen",
             partner_logo: targetLogo || (landingPage as any)?.logo_url || ownBranding.logo_image || null,
             calendly_url: calBase ? `${calBase}${sep}${qs}` : "",
-            fallback_url: ownBookingUrl || d.portal_url || null,
+            fallback_url: null,
             button_label: "Jetzt Termin buchen",
             intro_headline: null,
             intro_subline: null,
