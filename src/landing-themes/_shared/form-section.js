@@ -290,8 +290,9 @@
     box.appendChild(cls);box.appendChild(chk);box.appendChild(h);box.appendChild(p);
 
     if(broker){
-      h.textContent=broker.intro_headline||'Herzlichen Glückwunsch!';
-      p.textContent=broker.intro_subline||'Wir haben Ihre Bewerbung erfolgreich erhalten.';
+      // Einheitlicher Text auf ALLEN Landing Pages – nur das Design variiert.
+      h.textContent='Herzlichen Glückwunsch!';
+      p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 22px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
       var pl=document.createElement('div');pl.textContent='Wir verbinden Sie mit';pl.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
@@ -304,14 +305,14 @@
       // Calendly sitzt IMMER vor dem Termin. Kein Portal-/Fallback-Link mehr –
       // fehlt der Calendly-Link, ist die Landing Page falsch konfiguriert.
       var bookHref=broker.calendly_url||'';
-      if(bookHref){var cta2=document.createElement('a');cta2.href=bookHref;cta2.target='_blank';cta2.rel='noopener';cta2.textContent=(broker.button_label||'Jetzt Termin buchen')+'  →';
+      if(bookHref){var cta2=document.createElement('a');cta2.href=bookHref;cta2.target='_blank';cta2.rel='noopener';cta2.textContent='Jetzt Termin buchen  →';
         cta2.style.cssText='display:inline-block;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:999px;font-size:16px;box-shadow:0 6px 20px -6px rgba(34,197,94,.55);';box.appendChild(cta2);
         var hint2=document.createElement('p');hint2.textContent='Es öffnet sich ein neues Fenster zur Terminauswahl.';hint2.style.cssText='margin:12px 0 0;font-size:12px;color:#94a3b8;';box.appendChild(hint2);}
       else{var hint3=document.createElement('p');hint3.textContent='Die Terminbuchung ist gerade nicht verfügbar. Bitte kontaktieren Sie uns kurz – wir vereinbaren den Termin persönlich mit Ihnen.';hint3.style.cssText='margin:4px 0 0;font-size:13px;color:#64748b;';box.appendChild(hint3);
         try{console.error('[landing] broker.calendly_url fehlt – Landing Page ohne Calendly-Link konfiguriert');}catch(e){}}
     } else if(isFast){
-      h.textContent='Bewerbung eingegangen';
-      p.textContent='Im nächsten Schritt werden Sie zum Mitarbeiter-Portal weitergeleitet, um Ihre Registrierung abzuschließen.';
+      h.textContent='Herzlichen Glückwunsch!';
+      p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       if(redirectUrl){var gn=document.createElement('button');gn.type='button';gn.textContent='Jetzt zum Portal →';
         gn.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;border:0;padding:14px 18px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;margin-bottom:12px;';
         var ri=document.createElement('p');ri.style.cssText='margin:0 0 12px;font-size:13px;color:#64748b;';var sec=10;ri.textContent='Automatische Weiterleitung in '+sec+' Sekunden …';
@@ -320,14 +321,14 @@
       box.appendChild(spamHintBox(emailStatus));
     } else if(redirectUrl){
       // KI-Interview / sonstige Redirects
-      h.textContent='Bewerbung eingegangen';
-      p.textContent='Starten Sie direkt Ihr kurzes Vorgespräch.';
+      h.textContent='Herzlichen Glückwunsch!';
+      p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       var cta=document.createElement('a');cta.href=redirectUrl;cta.textContent='Weiter  →';
       cta.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;text-align:center;text-decoration:none;font-weight:600;padding:16px 24px;border-radius:10px;font-size:16px;margin-bottom:6px;box-sizing:border-box;';
       box.appendChild(cta);
       box.appendChild(spamHintBox(emailStatus));
     } else {
-      h.textContent='Bewerbung eingegangen';
+      h.textContent='Herzlichen Glückwunsch!';
       p.innerHTML=bookingError==='internal_schedule_missing'
         ? 'Ihre Bewerbung wurde gespeichert. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
         : 'Ihre Bewerbung wurde gespeichert. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
