@@ -595,98 +595,6 @@ function AdminTenantsPage() {
   const [switchTenant, setSwitchTenant] = useState<Tenant | undefined>();
   const { toast } = useToast();
   const setDnsFn = useServerFn(setLandingDnsRecord);
-  const [smtpHealth, setSmtpHealth] = useState<Record<string, SmtpHealthRow>>({});
-  const [testingId, setTestingId] = useState<string | null>(null);
-  const smtpTestFallback = useServerFn(runSmtpTestServerSide);
-  const { data: readiness, loading: readinessLoading, reload: reloadReadiness } = useTenantReadiness();
-  const [readinessTenantId, setReadinessTenantId] = useState<string | null>(null);
-
-  const loadHealth = async () => {
-    const { data } = await supabase
-      .from("tenant_smtp_health" as any)
-      .select("tenant_id,last_verify_ok,last_verify_at,last_fail_error,consecutive_fails");
-    if (!data) return;
-    const map: Record<string, SmtpHealthRow> = {};
-    for (const r of data as any[]) map[String(r.tenant_id)] = r as SmtpHealthRow;
-    setSmtpHealth(map);
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("tenant_smtp_health" as any)
-        .select("tenant_id,last_verify_ok,last_verify_at,last_fail_error,consecutive_fails");
-      if (cancelled || !data) return;
-      const map: Record<string, SmtpHealthRow> = {};
-      for (const r of data as any[]) map[String(r.tenant_id)] = r as SmtpHealthRow;
-      setSmtpHealth(map);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [tenants]);
-
-  const runSmtpTest = async (t: Tenant) => {
-    setTestingId(t.id);
-    try {
-      let data: any = null;
-      try {
-        const res = await supabase.functions.invoke<any>("smtp-test", { body: { tenant_id: t.id } });
-        if (res.error) throw res.error;
-        data = res.data;
-      } catch (invokeErr: any) {
-        // Ältere Deployments oder ein vorgeschalteter Proxy können bei einem
-        // abgebrochenen SMTP-Socket noch mit einem HTTP-Fehler antworten.
-        // Eine eventuell vorhandene JSON-Diagnose zuerst auslesen.
-        try {
-          const body = await invokeErr?.context?.json?.();
-          if (body && typeof body === "object") data = body;
-        } catch {
-          data = null;
-        }
-        if (!data) {
-          // Wirklich kein verwertbarer Body — zweiter Versuch über den Portal-Server.
-          data = await smtpTestFallback({ data: { tenant_id: t.id } });
-          if (data?.reachable === false) {
-            toast({
-              title: "SMTP-Test nicht abschließbar",
-              description: data?.error ?? "Die Prüfung lieferte keine Antwort.",
-              variant: "destructive",
-            });
-            return;
-          }
-        }
-      }
-      if (data?.success === false) {
-        const pausedHint = (t as any).emails_paused
-          ? " Hinweis: Die Mail-Pause blockiert den Test nicht – geprüft wird immer der echte SMTP-Server."
-          : "";
-        // Bei abgebrochener Prüfung die zuletzt vom Health-Job erfasste
-        // Ursache mitgeben – sie nennt den konkreten SMTP-Fehler.
-        const lastKnown =
-          data?.errorCode === "TIMEOUT" || data?.errorCode === "FUNCTION_UNREACHABLE"
-            ? smtpHealth[t.id]?.last_fail_error
-            : null;
-        toast({
-          title: data?.errorCode === "AUTH_ERROR" ? "SMTP-Login abgelehnt" : "SMTP-Test fehlgeschlagen",
-          description: `${data?.error ?? "Unbekannter Fehler"}${lastKnown ? ` Zuletzt erfasster Fehler: ${lastKnown}` : ""}${pausedHint}`,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: data?.auto_resumed ? "SMTP OK — Versand wieder freigegeben" : "SMTP OK",
-          description: data?.message ?? "Verbindung und Login erfolgreich.",
-        });
-      }
-    } catch (e: any) {
-      toast({ title: "SMTP-Test fehlgeschlagen", description: String(e?.message ?? e), variant: "destructive" });
-    } finally {
-      setTestingId(null);
-      await loadHealth();
-      reload();
-    }
-  };
 
   const pauseTrigger = (t: Tenant) => {
     const by = (t as any).emails_paused_by as string | null;
@@ -870,15 +778,6 @@ function AdminTenantsPage() {
                   <Badge variant={t.is_active ? "default" : "secondary"} className="text-[10px]">
                     {t.is_active ? "Aktiv" : "Inaktiv"}
                   </Badge>
-                  {(t as any).emails_paused && (
-                    <Badge
-                      variant="destructive"
-                      className="text-[10px]"
-                      title={(t as any).emails_paused_reason ?? "Mail-Versand pausiert"}
-                    >
-                      ⏸ Mails pausiert · {pauseTrigger(t)}
-                    </Badge>
-                  )}
                   <TenantReadinessBadge
                     readiness={readiness[t.id]}
                     loading={readinessLoading}
@@ -898,16 +797,6 @@ function AdminTenantsPage() {
                     <span className="truncate max-w-[120px]">{t.team_leader_name}</span>
                   </div>
                   <div className="flex gap-1">
-                    {(t as any).emails_paused ? (
-                      <Button variant="default" size="sm" onClick={() => resumeEmails(t)} className="text-xs" title={(t as any).emails_paused_reason ?? ""}>
-                        Versand fortsetzen
-                      </Button>
-                    ) : (
-                      <Button variant="outline" size="sm" onClick={() => pauseEmails(t)} className="text-xs" title="Mail-Versand für diese Domain pausieren">
-                        ⏸ Mails pausieren
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="sm" onClick={() => toggleActive(t)} className="text-xs">
                       {t.is_active ? "Deaktivieren" : "Aktivieren"}
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" title="Domain wechseln (Wizard)" onClick={() => setSwitchTenant(t)}>
