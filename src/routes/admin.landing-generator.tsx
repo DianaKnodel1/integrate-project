@@ -230,6 +230,7 @@ function LandingGeneratorPage() {
   const generate = useServerFn(generateLandingZip);
 
   const [themeId, setThemeId] = useState<string>(THEME_LIST[0]?.id ?? "");
+  const [showAllThemes, setShowAllThemes] = useState(false);
   const [branding, setBranding] = useState<Branding>(EMPTY);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [faviconDataUrl, setFaviconDataUrl] = useState<string | null>(null);
