@@ -202,8 +202,6 @@ function AdminDomainsPage() {
                 )}
               </div>
 
-              )}
-
               <div className="border rounded-lg divide-y">
                 {t.domains.map((d) => (
                   <div key={d.domain} className="flex items-center justify-between p-3 gap-3 flex-wrap">
