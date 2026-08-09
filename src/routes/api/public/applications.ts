@@ -377,7 +377,9 @@ export const Route = createFileRoute("/api/public/applications")({
           pushScheduleCandidate((existingApp as any)?.target_landing_id ?? null);
           pushScheduleCandidate((existingApp as any)?.source_landing_id ?? null);
         }
-        if (!d.is_test && !isFast && scheduleCandidateIds.length > 0 && d.portal_url) {
+        // Internes Buchungssystem ist abgeschaltet: Terminbuchung läuft
+        // ausschließlich über Calendly (kein Verfügbarkeiten-Fallback).
+        if (false) {
           // Nur Landings mit booking_mode='internal' zählen als Kandidaten.
           const { data: schedules } = await supabaseAdmin
             .from("availability_schedules")
