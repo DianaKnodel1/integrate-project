@@ -31,11 +31,6 @@ function ForgotPasswordPage() {
       <Button variant="outline" className={t.secondaryButton} onClick={() => navigate("/login")}>
         <ArrowLeft className="h-4 w-4 mr-2" /> Zurück zum Login
       </Button>
-      <p className="text-center">
-        <button onClick={() => navigate("/login")} className={`${t.mutedText} hover:underline`}>
-          ← Zurück zum Login
-        </button>
-      </p>
     </PortalAuthShell>
   );
 }
