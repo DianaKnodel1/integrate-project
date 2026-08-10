@@ -296,7 +296,7 @@ function VoiceInterviewPage() {
             <ZusageCard
               company={companyName}
               primary={primaryColor}
-              recruiter={config?.recruiterName ?? "HR-Team"}
+              recruiter={config?.recruiterName ?? "Martin Schneider"}
               firstName={firstName}
               registrationLink={registerUrl}
               mailFailed={endResult?.invite_mail ? endResult.invite_mail.sent === false : false}
