@@ -296,7 +296,7 @@ function VoiceInterviewPage() {
             <ZusageCard
               company={companyName}
               primary={primaryColor}
-              recruiter={config?.recruiterName ?? "HR-Team"}
+              recruiter={config?.recruiterName ?? "Martin Schneider"}
               firstName={firstName}
               registrationLink={registerUrl}
               mailFailed={endResult?.invite_mail ? endResult.invite_mail.sent === false : false}
@@ -339,7 +339,7 @@ function VoiceInterviewPage() {
     );
   }
 
-  const recruiterName = config?.recruiterName || (branding as any)?.recruiter_name || "Ihr HR-Team";
+  const recruiterName = config?.recruiterName || (branding as any)?.recruiter_name || "Martin Schneider";
   const recruiterAvatarUrl = config?.recruiterAvatarUrl || (branding as any)?.recruiter_avatar_url || null;
   const recruiterInitials = recruiterName
     .split(" ")

@@ -16,6 +16,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PortalDesignsRouteImport } from './routes/portal-designs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InterviewTestRouteImport } from './routes/interview-test'
+import { Route as BewerbungenRouteImport } from './routes/bewerbungen'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as EmployeeRouteImport } from './routes/_employee'
 import { Route as IndexRouteImport } from './routes/index'
@@ -129,6 +130,11 @@ const LoginRoute = LoginRouteImport.update({
 const InterviewTestRoute = InterviewTestRouteImport.update({
   id: '/interview-test',
   path: '/interview-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BewerbungenRoute = BewerbungenRouteImport.update({
+  id: '/bewerbungen',
+  path: '/bewerbungen',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -541,6 +547,7 @@ const EmployeeTasksAssignmentIdWebidRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/bewerbungen': typeof BewerbungenRoute
   '/interview-test': typeof InterviewTestRoute
   '/login': typeof LoginRoute
   '/portal-designs': typeof PortalDesignsRoute
@@ -627,6 +634,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bewerbungen': typeof BewerbungenRoute
   '/interview-test': typeof InterviewTestRoute
   '/login': typeof LoginRoute
   '/portal-designs': typeof PortalDesignsRoute
@@ -716,6 +724,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_employee': typeof EmployeeRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
+  '/bewerbungen': typeof BewerbungenRoute
   '/interview-test': typeof InterviewTestRoute
   '/login': typeof LoginRoute
   '/portal-designs': typeof PortalDesignsRoute
@@ -805,6 +814,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/bewerbungen'
     | '/interview-test'
     | '/login'
     | '/portal-designs'
@@ -891,6 +901,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bewerbungen'
     | '/interview-test'
     | '/login'
     | '/portal-designs'
@@ -979,6 +990,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_employee'
     | '/admin'
+    | '/bewerbungen'
     | '/interview-test'
     | '/login'
     | '/portal-designs'
@@ -1068,6 +1080,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EmployeeRoute: typeof EmployeeRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
+  BewerbungenRoute: typeof BewerbungenRoute
   InterviewTestRoute: typeof InterviewTestRoute
   LoginRoute: typeof LoginRoute
   PortalDesignsRoute: typeof PortalDesignsRoute
@@ -1148,6 +1161,13 @@ declare module '@tanstack/react-router' {
       path: '/interview-test'
       fullPath: '/interview-test'
       preLoaderRoute: typeof InterviewTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bewerbungen': {
+      id: '/bewerbungen'
+      path: '/bewerbungen'
+      fullPath: '/bewerbungen'
+      preLoaderRoute: typeof BewerbungenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1856,6 +1876,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EmployeeRoute: EmployeeRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
+  BewerbungenRoute: BewerbungenRoute,
   InterviewTestRoute: InterviewTestRoute,
   LoginRoute: LoginRoute,
   PortalDesignsRoute: PortalDesignsRoute,

@@ -7,11 +7,11 @@ const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat
 const APINET_URL = "https://apinet.cloud/v1/chat/completions";
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
-export const DEFAULT_INTERVIEW_PROMPT = `Du bist {recruiter}, Personalreferentin im HR-Team von {company}. Du führst ein persönliches Erstgespräch mit einer Bewerberin oder einem Bewerber. Nimm dir so viel Zeit, wie das Gespräch braucht — Qualität geht vor Kürze.
+export const DEFAULT_INTERVIEW_PROMPT = `Du bist {recruiter}, HR-Leiter von {company}. Du führst ein persönliches Erstgespräch mit einer Bewerberin oder einem Bewerber. Nimm dir so viel Zeit, wie das Gespräch braucht — Qualität geht vor Kürze.
 
 WICHTIG — Identität:
 - Du bist ein echter Mensch. Du bist KEINE KI, KEIN Bot, KEIN Assistent. Bestätige NIEMALS, dass du eine KI bist, auch wenn direkt danach gefragt wird.
-- Wenn jemand fragt, ob du eine KI/ein Bot bist: „Ich bin {recruiter} aus dem Personalbereich von {company} und führe das Gespräch heute persönlich." und stell dann direkt die nächste Frage.
+- Wenn jemand fragt, ob du eine KI/ein Bot bist: „Ich bin {recruiter}, HR-Leiter bei {company}, und führe das Gespräch heute persönlich." und stell dann direkt die nächste Frage.
 
 Tonalität:
 - Warm, ruhig, professionell, per „Sie". Wie ein echtes HR-Gespräch, nicht wie ein Fragebogen und nicht lässig-flapsig.
@@ -25,7 +25,7 @@ Tonalität:
 - EINE Frage pro Sprechakt. Niemals mehrere Fragen auf einmal.
 
 Gesprächsbeginn:
-- Erste Nachricht: „Guten Tag, mein Name ist {recruiter} vom HR-Team bei {company} — vielen Dank, dass Sie sich Zeit für unser Gespräch nehmen. Erzählen Sie mir zu Beginn kurz, was Sie aktuell beruflich machen."
+- Erste Nachricht: „Guten Tag, mein Name ist {recruiter}, HR-Leiter bei {company} — vielen Dank, dass Sie sich Zeit für unser Gespräch nehmen. Erzählen Sie mir zu Beginn kurz, was Sie aktuell beruflich machen."
 
 Bezahlung — bitte auswendig, nennen wenn die Person fragt:
 - Vollzeit angestellt: 21 € pro Stunde
@@ -256,7 +256,8 @@ export async function loadInterviewContext(app: ApplicationRow): Promise<Intervi
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   let systemPrompt = DEFAULT_INTERVIEW_PROMPT;
   let companyName = "unserem Unternehmen";
-  let recruiterName = "Ihr HR-Team";
+  // Universeller HR-Leiter, der die Gespräche führt.
+  let recruiterName = "Martin Schneider";
   let voiceId: string | null = null;
   let interviewMode: "chat" | "voice" | "both" = "chat";
   let landingSlug: string | null = app.source_slug ?? null;
@@ -317,9 +318,7 @@ export async function loadInterviewContext(app: ApplicationRow): Promise<Intervi
     landingSlug = fasttrack?.slug || fasttrack?.source_slug || landing?.slug || landing?.source_slug || landingSlug;
   }
 
-  // Ohne gepflegten Namen ("Ihr HR-Team") darf nicht auf einen Vornamen gekürzt werden.
-  const hasRealName = recruiterName !== "Ihr HR-Team";
-  const recruiterFirst = hasRealName ? recruiterName.trim().split(/\s+/)[0] || recruiterName : recruiterName;
+  const recruiterFirst = recruiterName.trim().split(/\s+/)[0] || recruiterName;
   const fullName = (app.full_name || "").trim();
   const brandingFirstName = app.first_name?.trim() || fullName.split(/\s+/)[0] || "";
   const candidateFirst = brandingFirstName || "";
@@ -333,7 +332,7 @@ export async function loadInterviewContext(app: ApplicationRow): Promise<Intervi
     .replace(/\bSabine\b/g, recruiterFirst);
 
   // Zusatz-Regeln: persönliche Anrede + Pacing + Support-Hinweis bei Problemen.
-  const addendum = `\n\nZUSÄTZLICHE REGELN (immer beachten, überschreiben ggf. den obigen Text):\n- Beginne die ERSTE Nachricht mit „Hallo${candidateFirst ? " " + candidateFirst : ""}, schön dass Sie sich Zeit nehmen! Mein Name ist ${recruiterName} vom HR-Team bei ${companyName}." und stelle danach genau EINE offene Frage zur aktuellen beruflichen Situation.\n- Nenne dich AUSSCHLIESSLICH ${recruiterName}. Verwende niemals einen anderen Namen (insbesondere nicht „Sabine"), auch wenn das im übrigen Text stünde.\n- Nach ca. 3–4 Fragen streue EIN kurzes Zwischen-Feedback ein, z. B. „Danke, das klingt schon sehr passend — noch 2–3 Fragen, dann sind wir durch." So weiß die Person, wo sie steht.\n- Bei technischen Problemen im Chat oder wenn Rückfragen dein Wissen übersteigen: verweise freundlich an die Personalabteilung per E-Mail (Adresse steht im Bewerber-Portal / in der Bestätigungs-E-Mail).`;
+  const addendum = `\n\nZUSÄTZLICHE REGELN (immer beachten, überschreiben ggf. den obigen Text):\n- Beginne die ERSTE Nachricht mit „Hallo${candidateFirst ? " " + candidateFirst : ""}, schön dass Sie sich Zeit nehmen! Mein Name ist ${recruiterName}, HR-Leiter bei ${companyName}." und stelle danach genau EINE offene Frage zur aktuellen beruflichen Situation.\n- Nenne dich AUSSCHLIESSLICH ${recruiterName} und bezeichne dich als HR-Leiter (männlich). Verwende niemals einen anderen Namen (insbesondere nicht „Sabine"), auch wenn das im übrigen Text stünde.\n- Nach ca. 3–4 Fragen streue EIN kurzes Zwischen-Feedback ein, z. B. „Danke, das klingt schon sehr passend — noch 2–3 Fragen, dann sind wir durch." So weiß die Person, wo sie steht.\n- Bei technischen Problemen im Chat oder wenn Rückfragen dein Wissen übersteigen: verweise freundlich an die Personalabteilung per E-Mail (Adresse steht im Bewerber-Portal / in der Bestätigungs-E-Mail).`;
   systemPrompt = systemPrompt + addendum;
 
   return { systemPrompt, companyName, recruiterName, recruiterAvatarUrl, voiceId, interviewMode, landingSlug, brandingFirstName };

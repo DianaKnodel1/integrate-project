@@ -592,7 +592,7 @@ function AdminEmailTemplatesPage() {
           templateName,
           placeholders: {
             sender_name: selectedTenant.sender_name || "Geschäftsführung",
-            recruiter_name: selectedTenant.sender_name || "Sabine Schneider",
+            recruiter_name: selectedTenant.sender_name || "Martin Schneider",
             partner_name: "Musterfirma GmbH",
             calendly_link: `https://${selectedTenant.domain}/termin`,
             booking_link: `https://${selectedTenant.domain}/termin`,

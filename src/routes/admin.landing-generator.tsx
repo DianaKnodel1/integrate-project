@@ -131,7 +131,7 @@ const EMPTY: Branding = {
   interview_voice_id: "XrExE9yKIg1WjnnlVkGX",
   interview_system_prompt: "",
   linked_fasttrack_landing_id: "",
-  recruiter_name: "Sabine Schneider",
+  recruiter_name: "Martin Schneider",
   recruiter_avatar_url: "",
   recruiter_avatar_data_url: "",
   booking_mode: "calendly",
@@ -678,7 +678,7 @@ document.addEventListener('submit', function(e){
           portal_theme: b.portal_theme || "clean",
 
           seo_title: b.seo_title, seo_description: b.seo_description, seo_image: b.seo_image,
-          recruiter_name: b.recruiter_name || "Sabine Schneider",
+          recruiter_name: b.recruiter_name || "Martin Schneider",
           recruiter_avatar_url: b.recruiter_avatar_url || null,
         },
         slots: slotsForOutput,
@@ -770,7 +770,7 @@ document.addEventListener('submit', function(e){
         interview_voice_id: row.interview_voice_id ?? "XrExE9yKIg1WjnnlVkGX",
         interview_system_prompt: row.interview_system_prompt ?? "",
         linked_fasttrack_landing_id: row.linked_fasttrack_landing_id ?? "",
-        recruiter_name: row.recruiter_name ?? row.branding?.recruiter_name ?? "Sabine Schneider",
+        recruiter_name: row.recruiter_name ?? row.branding?.recruiter_name ?? "Martin Schneider",
         recruiter_avatar_url: row.recruiter_avatar_url ?? row.branding?.recruiter_avatar_url ?? "",
         recruiter_avatar_data_url: "",
         booking_mode: "calendly",
@@ -1363,7 +1363,7 @@ document.addEventListener('submit', function(e){
                       <Input
                         value={branding.recruiter_name}
                         onChange={(e) => setBranding((b) => ({ ...b, recruiter_name: e.target.value }))}
-                        placeholder="z. B. Sabine Schneider"
+                        placeholder="z. B. Martin Schneider"
                       />
                     </Field>
                     <p className="text-[11px] text-muted-foreground">
