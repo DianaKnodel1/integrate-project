@@ -256,7 +256,8 @@ export async function loadInterviewContext(app: ApplicationRow): Promise<Intervi
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   let systemPrompt = DEFAULT_INTERVIEW_PROMPT;
   let companyName = "unserem Unternehmen";
-  let recruiterName = "Ihr HR-Team";
+  // Universeller HR-Leiter, der die Gespräche führt.
+  let recruiterName = "Martin Schneider";
   let voiceId: string | null = null;
   let interviewMode: "chat" | "voice" | "both" = "chat";
   let landingSlug: string | null = app.source_slug ?? null;
@@ -317,9 +318,7 @@ export async function loadInterviewContext(app: ApplicationRow): Promise<Intervi
     landingSlug = fasttrack?.slug || fasttrack?.source_slug || landing?.slug || landing?.source_slug || landingSlug;
   }
 
-  // Ohne gepflegten Namen ("Ihr HR-Team") darf nicht auf einen Vornamen gekürzt werden.
-  const hasRealName = recruiterName !== "Ihr HR-Team";
-  const recruiterFirst = hasRealName ? recruiterName.trim().split(/\s+/)[0] || recruiterName : recruiterName;
+  const recruiterFirst = recruiterName.trim().split(/\s+/)[0] || recruiterName;
   const fullName = (app.full_name || "").trim();
   const brandingFirstName = app.first_name?.trim() || fullName.split(/\s+/)[0] || "";
   const candidateFirst = brandingFirstName || "";
