@@ -339,7 +339,7 @@ function VoiceInterviewPage() {
     );
   }
 
-  const recruiterName = config?.recruiterName || (branding as any)?.recruiter_name || "Ihr HR-Team";
+  const recruiterName = config?.recruiterName || (branding as any)?.recruiter_name || "Martin Schneider";
   const recruiterAvatarUrl = config?.recruiterAvatarUrl || (branding as any)?.recruiter_avatar_url || null;
   const recruiterInitials = recruiterName
     .split(" ")

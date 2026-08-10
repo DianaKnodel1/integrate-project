@@ -21,7 +21,7 @@ const VOICES: Array<{ id: string; label: string }> = [
 
 function TtsTest() {
   const [text, setText] = useState(
-    "Hallo, hier spricht Sabine Schneider vom Personal-Team. Schön, dass Sie sich bei uns beworben haben.",
+    "Hallo, hier spricht Martin Schneider vom Personal-Team. Schön, dass Sie sich bei uns beworben haben.",
   );
   const [voice, setVoice] = useState("");
   const [loading, setLoading] = useState(false);

@@ -300,7 +300,7 @@ function InterviewPage() {
 
   const company = serverBranding?.company_name || branding?.firmenname || "uns";
   // Kein erfundener Name mehr: ohne gepflegten Recruiter zeigt der Chat das HR-Team.
-  const recruiterDisplayName = serverBranding?.recruiter_name || branding?.recruiter_name || "Ihr HR-Team";
+  const recruiterDisplayName = serverBranding?.recruiter_name || branding?.recruiter_name || "Martin Schneider";
   const primary = branding?.primary_color || "#2563eb";
   // Reihenfolge bewusst: serverseitig aufgeloeste Partner-Domain zuerst.
   // NIE window.location.origin — bei Vermittlungs-Bewerbungen waere das die
@@ -382,7 +382,7 @@ function InterviewPage() {
 
   const avatarUrl = serverBranding?.recruiter_avatar_url || branding?.recruiter_avatar_url || null;
   const recruiterName = recruiterDisplayName;
-  const initials = recruiterName === "Ihr HR-Team"
+  const initials = recruiterName === "Martin Schneider"
     ? "HR"
     : recruiterName.split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
   const status = typing ? `${recruiterName.split(" ")[0]} schreibt …` : ended ? "Gespräch beendet" : "online";

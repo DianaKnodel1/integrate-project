@@ -156,7 +156,7 @@ function BookingPage() {
         ends_at={confirmed.ends_at}
         cancel_token={confirmed.cancel_token}
         tenantName={s.tenant_name ?? "das Unternehmen"}
-        recruiterName={s.recruiter_name ?? "Ihr Ansprechpartner"}
+        recruiterName={s.recruiter_name ?? "Martin Schneider"}
         applicantEmail={s.applicant_email ?? undefined}
         applicantFirstName={s.applicant_first_name ?? undefined}
         eventDescription={s.event_description ?? undefined}
@@ -185,7 +185,7 @@ function BookingPage() {
                   Hallo{s.applicant_first_name ? ` ${s.applicant_first_name}` : ""}, wählen Sie Ihren Termin
                 </CardTitle>
                 <CardDescription className="mt-2 text-sm leading-relaxed">
-                  Bewerbungsgespräch mit {s.recruiter_name ?? "unserer Recruiterin"}
+                  Bewerbungsgespräch mit {s.recruiter_name ?? "Martin Schneider"}
                   {s.tenant_name ? ` · ${s.tenant_name}` : ""}
                 </CardDescription>
               </div>
