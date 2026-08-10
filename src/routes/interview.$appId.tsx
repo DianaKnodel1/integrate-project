@@ -382,9 +382,7 @@ function InterviewPage() {
 
   const avatarUrl = serverBranding?.recruiter_avatar_url || branding?.recruiter_avatar_url || null;
   const recruiterName = recruiterDisplayName;
-  const initials = recruiterName === "Martin Schneider"
-    ? "HR"
-    : recruiterName.split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
+  const initials = recruiterName.split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
   const status = typing ? `${recruiterName.split(" ")[0]} schreibt …` : ended ? "Gespräch beendet" : "online";
 
   return (
