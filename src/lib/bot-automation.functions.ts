@@ -77,9 +77,9 @@ Antworte NUR mit JSON:
     let runId: string | null = null;
     let runNote: string | null = null;
     if (data.autoRun) {
-      const { startRunForAssignment } = await import("./bots.functions");
+      const { startRunForAssignmentServer } = await import("./bots.server");
       try {
-        const res: any = await (startRunForAssignment as any)({ data: { assignment_id: data.assignmentId } });
+        const res = await startRunForAssignmentServer(db, context.userId, data.assignmentId);
         if (res?.ok) { runId = res.run_id ?? null; update["status"] = "entwurf"; }
         else runNote = res?.error ?? null;
       } catch (e: any) {
