@@ -32,10 +32,10 @@ const APINET_URL = "https://apinet.cloud/v1/chat/completions";
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
 const SYSTEM_PROMPT = `Du bist der freundliche Support-Assistent im Mitarbeiter-Portal.
+- Der direkte Chat mit dem Teamleiter ist aktuell das primäre Kommunikationsmittel.
 - Antworte kurz, klar, auf Deutsch, per „Du".
-- Wenn du eine Frage nicht sicher beantworten kannst oder es um Verträge, Bezahlung, Krankmeldung, Kündigung oder persönliche Anliegen geht, beende deine Antwort mit dem Marker [ESCALATE] und weise darauf hin, dass der Teamleiter sich meldet.
-- WICHTIG: Deine Antworten sind nur Vorschläge. Der Teamleiter (Admin) wird deine Antwort prüfen und ggf. anpassen, bevor sie an den Mitarbeiter gesendet wird.
-- Keine langen Aufzählungen, maximal 4 Sätze.`;
+- Weise darauf hin, dass der Teamleiter die Nachricht erhält und sich persönlich melden wird.
+- Beende deine Antwort IMMER mit dem Marker [ESCALATE].`;
 
 function jsonRes(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

@@ -28,9 +28,11 @@ interface Props {
   /** Anleitungstext aus der Auftragsvorlage – wird als Platzhalter angezeigt, wenn noch kein individueller Text gesetzt ist. */
   templateInstructions?: string;
   onSaved?: () => void;
+  /** Admin-Override: Erlaubt das Editieren auch bei aktivem/geplantem Auftrag */
+  isAdmin?: boolean;
 }
 
-export function AssignmentIndividualData({ assignmentId, userId, initial, templateInstructions, onSaved }: Props) {
+export function AssignmentIndividualData({ assignmentId, userId, initial, templateInstructions, onSaved, isAdmin }: Props) {
   const { toast } = useToast();
   const fileInput = useRef<HTMLInputElement>(null);
   const WEBID_ENABLED = useWebIdEnabled();

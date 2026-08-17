@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, CheckCircle2, XCircle, FileText, User, Calendar, Send,
-  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2,
+  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2, Sparkles as SparklesIcon,
 } from "lucide-react";
 import { TaskSmsMessages } from "@/components/TaskSmsMessages";
 import { AssignmentIndividualData } from "@/components/AssignmentIndividualData";
@@ -160,6 +160,15 @@ function AdminAssignmentDetailPage() {
     loadDetails();
   };
 
+  const updateAssignmentData = async (field: string, value: any) => {
+    if (!assignment) return;
+    const { error } = await supabase.from("task_assignments")
+      .update({ [field]: value } as any).eq("id", assignment.id);
+    if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); return; }
+    loadData();
+    loadDetails();
+  };
+
   const addFeedbackRow = (stepNum: number) => {
     setNewFeedback((prev) => [...prev, { step_number: stepNum, block_id: "", comment: "" }]);
   };
@@ -172,7 +181,7 @@ function AdminAssignmentDetailPage() {
     setNewFeedback((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const runBotAutomation = async () => {
+  const runBotAutomation = async (autoRun = false) => {
     if (!assignment) return;
     setRunningBot(true);
     try {
@@ -180,7 +189,8 @@ function AdminAssignmentDetailPage() {
         data: {
           assignmentId: assignment.id,
           userId: assignment.user_id,
-          templateId: assignment.task_template_id
+          templateId: assignment.task_template_id,
+          autoRun
         }
       });
       if (res.success) {
@@ -228,11 +238,21 @@ function AdminAssignmentDetailPage() {
           size="sm"
           variant="outline"
           className="gap-1.5 h-8 border-primary/30 hover:bg-primary/5 text-primary"
-          onClick={runBotAutomation}
+          onClick={() => runBotAutomation(false)}
           disabled={runningBot}
         >
           {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bot className="h-3.5 w-3.5" />}
           Bot Automatisierung
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 h-8 border-emerald-500/30 hover:bg-emerald-50 text-emerald-600"
+          onClick={() => runBotAutomation(true)}
+          disabled={runningBot}
+        >
+          {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <SparklesIcon className="h-3.5 w-3.5" />}
+          Vollautomatisch
         </Button>
 
       </div>
@@ -301,6 +321,7 @@ function AdminAssignmentDetailPage() {
           webid_start_url: (assignment as any).webid_start_url,
         }}
         onSaved={loadData}
+        isAdmin={true}
       />
 
       {/* WebID-Status */}

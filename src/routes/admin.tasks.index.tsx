@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmptyState } from "@/components/EmptyState";
-import { Plus, Trash2, ClipboardList, Pencil, Layers, Copy, Upload, Loader2 } from "lucide-react";
+import { Plus, Trash2, ClipboardList, Pencil, Layers, Copy, Upload, Loader2, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function AdminTasksPage() {
@@ -89,6 +89,14 @@ function AdminTasksPage() {
       if (validQ.length > 0) {
         await supabase.from("task_questions").insert(validQ.map((q, i) => ({ task_template_id: editTemplate.id, question: q, sort_order: i })));
       }
+      
+      // Auto-assign check
+      const { data: existing } = await supabase.from("task_assignments")
+        .select("user_id").eq("task_template_id", editTemplate.id).limit(1);
+      if (existing && existing.length > 0) {
+        toast({ title: "Hinweis", description: "Diese Vorlage ist bereits zugewiesen." });
+      }
+
       toast({ title: "Aufgabe aktualisiert" });
       setEditTemplate(null);
     } else {
@@ -169,8 +177,12 @@ function AdminTasksPage() {
         </div>
         <div className="flex gap-2">
           <Input placeholder="Suchen…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs h-8 text-sm" />
-          <Button size="sm" variant="outline" onClick={() => navigate("/admin/tasks/builder/new")}><Layers className="h-3.5 w-3.5 mr-1" /> Builder</Button>
-          <Button size="sm" onClick={() => { resetForm(); setShowCreate(true); }}><Plus className="h-3.5 w-3.5 mr-1" /> Schnell</Button>
+          <Button size="sm" variant="outline" onClick={() => navigate("/admin/tasks/builder/new")} className="gap-1.5">
+            <Layers className="h-3.5 w-3.5" /> Builder
+          </Button>
+          <Button size="sm" onClick={() => { resetForm(); setShowCreate(true); }} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> Schnell
+          </Button>
         </div>
       </div>
 
@@ -210,6 +222,9 @@ function AdminTasksPage() {
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => duplicateTemplate(tpl)}>
                         <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigate(`/admin/mitarbeiter`)}>
+                        <UserCheck className="h-3 w-3 mr-1" /> Zuweisen
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => deleteTemplate(tpl)}>
                         <Trash2 className="h-3 w-3" />
