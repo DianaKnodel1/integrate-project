@@ -328,10 +328,10 @@
       box.appendChild(cta);
       box.appendChild(spamHintBox(emailStatus));
     } else {
-      h.textContent='Vielen Dank!';
+      h.textContent='Vielen Dank für Ihre Bewerbung';
       p.innerHTML=bookingError==='internal_schedule_missing'
-        ? 'Ihre Bewerbung wurde gespeichert. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
-        : 'Ihre Bewerbung wurde gespeichert. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
+        ? 'Wir haben Ihre Daten erfolgreich erhalten. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
+        : 'Wir haben Ihre Daten erfolgreich erhalten. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
       if(wa){
         var c=document.createElement('div');c.style.cssText='background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:16px;text-align:left;';
         c.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#2563eb;margin-bottom:8px;">SCHNELLER KONTAKT</div><p style="margin:0 0 12px;font-size:14px;color:#475569;line-height:1.5;">Melden Sie sich bei WhatsApp unter <strong>'+fmtWa(wa)+'</strong>, um auf dem neusten Stand zu bleiben.</p><a href="https://wa.me/'+wa+'?text='+encodeURIComponent('Hallo, ich habe gerade meine Bewerbung abgeschickt.')+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:12px 16px;border-radius:8px;font-size:15px;">WhatsApp-Chat starten</a>';
