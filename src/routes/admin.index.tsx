@@ -6,16 +6,11 @@ export const Route = createFileRoute("/admin/")({
 
 import { useAdminData } from "@/contexts/AdminDataContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { AdminDashboardSkeleton } from "@/components/SkeletonLoaders";
 import {
-  ArrowRight, FileText, ShieldCheck, CalendarDays, Mail, CheckCircle2, XCircle, AlertTriangle, ClipboardList,
+  ArrowRight, FileText, ClipboardList,
 } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { computeEmailStats, type EmailLog } from "@/lib/email-stats";
 
 
 function AdminDashboardPage() {
