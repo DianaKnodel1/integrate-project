@@ -38,7 +38,6 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRevisionsRouteImport } from './routes/admin.revisions'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminRemindersRouteImport } from './routes/admin.reminders'
-import { Route as AdminRecoveryRouteImport } from './routes/admin.recovery'
 import { Route as AdminPostRouteImport } from './routes/admin.post'
 import { Route as AdminPersonenRouteImport } from './routes/admin.personen'
 import { Route as AdminPartnerCompaniesRouteImport } from './routes/admin.partner-companies'
@@ -234,11 +233,6 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
 const AdminRemindersRoute = AdminRemindersRouteImport.update({
   id: '/reminders',
   path: '/reminders',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminRecoveryRoute = AdminRecoveryRouteImport.update({
-  id: '/recovery',
-  path: '/recovery',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPostRoute = AdminPostRouteImport.update({
@@ -554,7 +548,6 @@ export interface FileRoutesByFullPath {
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
-  '/admin/recovery': typeof AdminRecoveryRoute
   '/admin/reminders': typeof AdminRemindersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/revisions': typeof AdminRevisionsRoute
@@ -636,7 +629,6 @@ export interface FileRoutesByTo {
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
-  '/admin/recovery': typeof AdminRecoveryRoute
   '/admin/reminders': typeof AdminRemindersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/revisions': typeof AdminRevisionsRoute
@@ -721,7 +713,6 @@ export interface FileRoutesById {
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
-  '/admin/recovery': typeof AdminRecoveryRoute
   '/admin/reminders': typeof AdminRemindersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/revisions': typeof AdminRevisionsRoute
@@ -806,7 +797,6 @@ export interface FileRouteTypes {
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
-    | '/admin/recovery'
     | '/admin/reminders'
     | '/admin/reviews'
     | '/admin/revisions'
@@ -888,7 +878,6 @@ export interface FileRouteTypes {
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
-    | '/admin/recovery'
     | '/admin/reminders'
     | '/admin/reviews'
     | '/admin/revisions'
@@ -972,7 +961,6 @@ export interface FileRouteTypes {
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
-    | '/admin/recovery'
     | '/admin/reminders'
     | '/admin/reviews'
     | '/admin/revisions'
@@ -1255,13 +1243,6 @@ declare module '@tanstack/react-router' {
       path: '/reminders'
       fullPath: '/admin/reminders'
       preLoaderRoute: typeof AdminRemindersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/recovery': {
-      id: '/admin/recovery'
-      path: '/recovery'
-      fullPath: '/admin/recovery'
-      preLoaderRoute: typeof AdminRecoveryRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/post': {
@@ -1710,7 +1691,6 @@ interface AdminRouteChildren {
   AdminPartnerCompaniesRoute: typeof AdminPartnerCompaniesRoute
   AdminPersonenRoute: typeof AdminPersonenRouteWithChildren
   AdminPostRoute: typeof AdminPostRoute
-  AdminRecoveryRoute: typeof AdminRecoveryRoute
   AdminRemindersRoute: typeof AdminRemindersRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminRevisionsRoute: typeof AdminRevisionsRoute
@@ -1746,7 +1726,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPartnerCompaniesRoute: AdminPartnerCompaniesRoute,
   AdminPersonenRoute: AdminPersonenRouteWithChildren,
   AdminPostRoute: AdminPostRoute,
-  AdminRecoveryRoute: AdminRecoveryRoute,
   AdminRemindersRoute: AdminRemindersRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminRevisionsRoute: AdminRevisionsRoute,
