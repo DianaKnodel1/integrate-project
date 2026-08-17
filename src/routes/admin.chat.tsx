@@ -443,23 +443,6 @@ function AdminChatPage() {
     }
   };
 
-      const res = await aiSuggestionFn({ 
-        data: { 
-          userId: selectedUserId, 
-          lastMessage: lastUserMsg?.message || "",
-          context
-        } 
-      });
-      if (res.suggestion) {
-        setNewMessage(res.suggestion);
-      }
-    } catch (e) {
-      toast({ title: "KI Fehler", description: "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
-    } finally {
-      setGeneratingAi(false);
-    }
-  };
-
   const sendMessage = async () => {
     if ((!newMessage.trim() && !pendingAttachment) || !selectedUserId || !user) return;
     setSending(true);
