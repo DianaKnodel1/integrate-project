@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { Bot, Plus, Trash2, Play, AlertTriangle, UserCheck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BotProxyPanel } from "@/components/admin/BotProxyPanel";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -220,6 +221,7 @@ function AdminBotsPage() {
         <TabsList>
           <TabsTrigger value="profiles" className="text-xs">Bot-Profile</TabsTrigger>
           <TabsTrigger value="runs" className="text-xs">Läufe</TabsTrigger>
+          <TabsTrigger value="proxies" className="text-xs">Proxys</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profiles" className="mt-4">
@@ -320,6 +322,10 @@ function AdminBotsPage() {
               </table>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="proxies" className="mt-4">
+          <BotProxyPanel />
         </TabsContent>
       </Tabs>
 
