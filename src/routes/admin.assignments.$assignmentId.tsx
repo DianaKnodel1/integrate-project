@@ -181,7 +181,7 @@ function AdminAssignmentDetailPage() {
     setNewFeedback((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const runBotAutomation = async () => {
+  const runBotAutomation = async (autoRun = false) => {
     if (!assignment) return;
     setRunningBot(true);
     try {
@@ -189,7 +189,8 @@ function AdminAssignmentDetailPage() {
         data: {
           assignmentId: assignment.id,
           userId: assignment.user_id,
-          templateId: assignment.task_template_id
+          templateId: assignment.task_template_id,
+          autoRun
         }
       });
       if (res.success) {
@@ -237,11 +238,21 @@ function AdminAssignmentDetailPage() {
           size="sm"
           variant="outline"
           className="gap-1.5 h-8 border-primary/30 hover:bg-primary/5 text-primary"
-          onClick={runBotAutomation}
+          onClick={() => runBotAutomation()}
           disabled={runningBot}
         >
           {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bot className="h-3.5 w-3.5" />}
           Bot Automatisierung
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 h-8 border-emerald-500/30 hover:bg-emerald-50 text-emerald-600"
+          onClick={() => runBotAutomation(true)}
+          disabled={runningBot}
+        >
+          {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          Vollautomatisch
         </Button>
 
       </div>
