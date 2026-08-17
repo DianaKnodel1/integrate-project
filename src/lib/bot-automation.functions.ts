@@ -5,7 +5,8 @@ export const createAssignmentAutomation = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({
     assignmentId: z.string(),
     userId: z.string(),
-    templateId: z.string()
+    templateId: z.string(),
+    autoRun: z.boolean().optional()
   }).parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -52,8 +53,10 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown):
 {
   "individual_instructions": "Detaillierte Schritt-für-Schritt Anleitung für diesen spezifischen Fall...",
   "individual_hint": "Wichtiger Hinweis zu Compliance/Sicherheit...",
-  "individual_case_number": "GENERIERTE-VORGANGS-NR-123"
-}`;
+  "individual_case_number": "GENERIERTE-VORGANGS-NR-123",
+  "status_update": "zugewiesen" 
+}
+(status_update nur wenn autoRun wahr ist)`;
 
     try {
       const { callGateway } = await import("./interview-engine.server");
@@ -71,6 +74,7 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown):
           individual_instructions: result.individual_instructions,
           individual_hint: result.individual_hint,
           individual_case_number: result.individual_case_number,
+          status: data.autoRun && result.status_update ? result.status_update : assignment.status,
           updated_at: new Date().toISOString()
         } as any)
         .eq("id", data.assignmentId);

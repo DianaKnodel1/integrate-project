@@ -72,14 +72,12 @@ const navGroups: NavGroup[] = [
 // Einstellungen liegen fest am unteren Rand – nicht in den aufklappbaren Gruppen.
 const settingsItem: NavItem = { title: "Einstellungen", url: "/admin/settings", icon: Settings, end: true };
 
-// Admin-Mitarbeiter ("rechte Hand"): NUR Aufträge zuweisen und Chat.
-const STAFF_GROUPS = ["Aufträge", "Kommunikation"];
+// Admin-Only: Vollzugriff nur für die Hauptrolle.
 const STAFF_ALLOWED_PREFIXES = [
   "/admin/tasks",
-  "/admin/assignments",
   "/admin/chat",
 ];
-const STAFF_HOME = "/admin/tasks";
+const STAFF_HOME = "/admin/chat";
 const staffNavGroups: NavGroup[] = navGroups
   .filter((g) => STAFF_GROUPS.includes(g.label))
   .map((g) => ({
@@ -230,6 +228,8 @@ export default function AdminLayout() {
     if (!loading && user && !canAccessAdmin) navigate("/dashboard");
     // Admin-Mitarbeiter: nur freigegebene Bereiche
     if (!loading && user && canAccessAdmin && !isAdmin) {
+      // Harte Sperre: Nur noch der Hauptadmin hat Vollzugriff.
+      // Falls wir Teamleiter-Mitarbeiter haben, landen sie im Chat.
       const allowed = STAFF_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
       if (!allowed) navigate(STAFF_HOME);
     }
