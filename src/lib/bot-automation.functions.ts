@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const createAssignmentAutomation = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({
@@ -9,6 +8,7 @@ export const createAssignmentAutomation = createServerFn({ method: "POST" })
     templateId: z.string()
   }).parse(data))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // 1. Fetch details to feed the "Bot"
     const [assignmentRes, profileRes, templateRes] = await Promise.all([
       supabaseAdmin.from("task_assignments").select("*").eq("id", data.assignmentId).single(),

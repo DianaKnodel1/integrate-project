@@ -417,11 +417,31 @@ function AdminChatPage() {
     if (!selectedUserId || messages.length === 0) return;
     setGeneratingAi(true);
     try {
-      const lastUserMsg = [...messages].reverse().find(m => m.sender_id === selectedUserId);
+      const conv = conversations.find(c => c.user_id === selectedUserId);
+      const teamLeaderName = conv?.tenantName || "Martin Schneider"; // Fallback to Martin Schneider or Tenant Name as hint for now
+
       const context = messages.slice(-10).map(m => ({
         role: adminIdsRef.current.has(m.sender_id) ? "assistant" : "user" as "assistant" | "user",
         content: m.message
       }));
+
+      const res = await aiSuggestionFn({
+        data: {
+          userId: selectedUserId,
+          lastMessage: messages[messages.length - 1].message,
+          context,
+          teamLeaderName
+        }
+      });
+      if (res.suggestion) {
+        setNewMessage(res.suggestion);
+      }
+    } catch (e) {
+      toast({ title: "KI Fehler", description: "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
 
       const res = await aiSuggestionFn({ 
         data: { 

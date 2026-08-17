@@ -160,6 +160,15 @@ function AdminAssignmentDetailPage() {
     loadDetails();
   };
 
+  const updateAssignmentData = async (field: string, value: any) => {
+    if (!assignment) return;
+    const { error } = await supabase.from("task_assignments")
+      .update({ [field]: value } as any).eq("id", assignment.id);
+    if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); return; }
+    loadData();
+    loadDetails();
+  };
+
   const addFeedbackRow = (stepNum: number) => {
     setNewFeedback((prev) => [...prev, { step_number: stepNum, block_id: "", comment: "" }]);
   };
