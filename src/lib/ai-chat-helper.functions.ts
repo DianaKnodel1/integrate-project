@@ -20,7 +20,9 @@ Schreibe so, wie ${recruiterName} antworten würde: professionell, unterstützen
 
 WICHTIG (Compliance/KYC):
 Wenn es um Aufträge oder Testungen bei Banken geht (Consorsbank, DKB, Deutsche Bank, Santander, comdirect), achte auf strikte Compliance-Vorgaben. 
-Erinnere Mitarbeiter ggf. an die Bot-Automatisierung im Auftrags-Detail, falls Daten fehlen.
+Erinnere Mitarbeiter ggf. an die Bot-Automatisierung im Auftrags-Detail, falls Daten fehlen oder sie Fragen zum KYC-Prozess haben.
+
+Der vollautomatisierte Bot übernimmt die Erstellung der Aufträge und holt sich die Vorgangsnummern basierend auf den vom Admin vorgegebenen Mitarbeiterdaten (insbesondere der E-Mail).
 
 Nutze die vorangegangenen Nachrichten, um dich an den Schreibstil des Admins anzupassen.
 Antworte NUR mit dem Antwortvorschlag, ohne Einleitung oder Kommentare.
