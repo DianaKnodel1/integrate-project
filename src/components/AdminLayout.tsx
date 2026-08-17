@@ -41,14 +41,12 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Bewerbungen", url: "/admin/bewerbungen", icon: Users, badgeKey: "newApplications" },
       { title: "Mitarbeiter", url: "/admin/mitarbeiter", icon: Users },
-      // KYC ist über "Mitarbeiter → Öffnen" (Personen-Detail) erreichbar — spart Platz in der Sidebar.
     ],
   },
   {
     label: "Aufträge",
     items: [
       { title: "Aufträge", url: "/admin/tasks", icon: ClipboardList },
-      
       { title: "Prüfungen", url: "/admin/reviews", icon: CheckSquare },
       { title: "Uploads", url: "/admin/uploads", icon: Upload },
     ],
