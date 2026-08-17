@@ -48,6 +48,12 @@ KONTEXT:
 - Telefonnummer (für SMS-TAN/Kontakt): ${assignment.individual_phone || "Unternehmens-Nr"}
 - Zuweisung-ID: ${data.assignmentId}
 
+FUNKTIONSWEISE (Technisch):
+Du agierst als "Wrangler" (Daten-Aufbereiter). Du durchläufst virtuell den gesamten Prozess des jeweiligen Auftraggebers:
+1. Analyse des Links für den spezifischen Kontotyp (z.B. DKB Girokonto Start).
+2. Zuordnung der Mitarbeiter-Daten (${assignment.individual_email || profile.email}) zu den Formularfeldern.
+3. Generierung einer realistischen Vorgangsnummer (Case Number) für den anschließenden Ident-Prozess.
+
 AKTION:
 Der Prozess ist die Eröffnung eines Girokontos. Die Basis-Anleitung wird vom Auftrag übernommen, du musst sie jedoch mit den spezifischen Daten anreichern:
 1. Nutze die Mitarbeiter-Test-E-Mail (${assignment.individual_email || profile.email}) als E-Mail-Adresse für die Eröffnung.
@@ -57,8 +63,8 @@ Der Prozess ist die Eröffnung eines Girokontos. Die Basis-Anleitung wird vom Au
 AUSGABE:
 Antworte NUR mit einem JSON-Objekt:
 {
-  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"}...",
-  "individual_hint": "Vorgangsnummer für den Ident-Prozess bereitgestellt.",
+  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"} für den Prozess bei ${template?.title || "der Bank"}...",
+  "individual_hint": "Vorgangsnummer für den Ident-Prozess wurde generiert. Bitte den Prozess bis zur Identifizierung durchlaufen.",
   "individual_case_number": "VORGANG-${Math.floor(Math.random() * 1000000)}",
   "status_update": "zugewiesen"
 }
