@@ -142,24 +142,8 @@ export const getCohortStats = createServerFn({ method: "POST" })
       allApps.map(a => String(a.email ?? "").toLowerCase().trim()).filter(Boolean),
     ));
 
-    // 2) Registrierungs-Mails (per Empfänger-Email matchen)
-    const mailedEmails = new Set<string>();
-    if (emails.length > 0) {
-      let mailQ = supabase
-        .from("email_send_log")
-        .select("to_email, template_name, status, tenant_id")
-        .in("template_name", ["invitation", "signup_confirmation", "ai_acceptance_invitation"])
-        .eq("status", "sent")
-        .in("to_email", emails);
-      if (data.tenant_id) mailQ = mailQ.eq("tenant_id", data.tenant_id);
-      const { data: mails } = await mailQ;
-      for (const m of (mails ?? []) as any[]) {
-        const e = String(m.to_email ?? "").toLowerCase().trim();
-        if (e) mailedEmails.add(e);
-      }
-    }
 
-    // 3) Profile (registriert + onboarded)
+    // 2) Profile (registriert + onboarded)
     type ProfRow = { email: string; onboarding: string | null };
     const profByEmail = new Map<string, ProfRow>();
     if (emails.length > 0) {
