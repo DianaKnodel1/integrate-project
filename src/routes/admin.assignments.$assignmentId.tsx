@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, CheckCircle2, XCircle, FileText, User, Calendar, Send,
-  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2,
+  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2, Sparkles as SparklesIcon,
 } from "lucide-react";
 import { TaskSmsMessages } from "@/components/TaskSmsMessages";
 import { AssignmentIndividualData } from "@/components/AssignmentIndividualData";
@@ -238,7 +238,7 @@ function AdminAssignmentDetailPage() {
           size="sm"
           variant="outline"
           className="gap-1.5 h-8 border-primary/30 hover:bg-primary/5 text-primary"
-          onClick={() => runBotAutomation()}
+          onClick={() => runBotAutomation(false)}
           disabled={runningBot}
         >
           {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bot className="h-3.5 w-3.5" />}
@@ -251,7 +251,7 @@ function AdminAssignmentDetailPage() {
           onClick={() => runBotAutomation(true)}
           disabled={runningBot}
         >
-          {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <SparklesIcon className="h-3.5 w-3.5" />}
           Vollautomatisch
         </Button>
 
