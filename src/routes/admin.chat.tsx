@@ -23,8 +23,6 @@ import { EmojiPicker } from "@/components/EmojiPicker";
 import { ChatAttachmentButton, AttachmentPreview, type ChatAttachment } from "@/components/ChatAttachmentButton";
 import { useServerFn } from "@tanstack/react-start";
 import { getAiSuggestion } from "@/lib/ai-chat-helper.functions";
-import { useServerFn } from "@tanstack/react-start";
-import { getAiSuggestion } from "@/lib/ai-chat-helper.functions";
 
 interface Conversation {
   user_id: string;
@@ -74,8 +72,6 @@ function AdminChatPage() {
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [generatingAi, setGeneratingAi] = useState(false);
-  const aiSuggestionFn = useServerFn(getAiSuggestion);
   const [generatingAi, setGeneratingAi] = useState(false);
   const aiSuggestionFn = useServerFn(getAiSuggestion);
   const [filterTab] = useState<"all" | "escalated" | "open">("all");
