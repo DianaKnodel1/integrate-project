@@ -1,46 +1,113 @@
+// KI-Antwortvorschlag für den Admin-Chat.
+// Der Schreibstil wird automatisch aus den eigenen bisherigen Nachrichten
+// erkannt – es muss nichts eingestellt oder gespeichert werden.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const getAiSuggestion = createServerFn({ method: "POST" })
-  .inputValidator((data) => z.object({ 
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({
     userId: z.string(),
-    lastMessage: z.string(),
+    lastMessage: z.string().max(4000),
     context: z.array(z.object({ role: z.string(), content: z.string() })).optional(),
-    teamLeaderName: z.string().optional()
+    teamLeaderName: z.string().optional(),
   }).parse(data))
-  .handler(async ({ data }) => {
-    // Import server-only logic inside handler
+  .handler(async ({ data, context }) => {
+    const db = context.supabase as any;
     const { callGateway } = await import("./interview-engine.server");
-    
+    const { analyzeStyle } = await import("./chat-style.server");
+
     const recruiterName = data.teamLeaderName || "Martin Schneider";
-    
-    const systemPrompt = `Du bist ein hilfreicher Teamleiter-Assistent für das Portal von ${recruiterName}. 
-Dein Ziel ist es, eine Antwort auf eine Mitarbeiteranfrage vorzubereiten.
-Schreibe so, wie ${recruiterName} antworten würde: professionell, unterstützend, klar und menschlich.
 
-WICHTIG (Privacy & Compliance):
-Erwähne NIEMALS Proxies, rotierende IP-Adressen oder die technische Automatisierung gegenüber dem Mitarbeiter. Diese Details sind nur für die interne Verwaltung bestimmt.
-Wenn es um Aufträge oder Testungen bei Banken geht (Consorsbank, DKB, Deutsche Bank, Santander, comdirect), bleibe bei den fachlichen Anweisungen.
+    // Eigene bisherige Nachrichten an genau diesen Mitarbeiter (Stilquelle).
+    const { data: own } = await db
+      .from("chat_messages")
+      .select("message, created_at")
+      .eq("sender_id", context.userId)
+      .eq("receiver_id", data.userId)
+      .order("created_at", { ascending: false })
+      .limit(30);
 
-Der Bot agiert im Hintergrund als "Wrangler": Er bereitet die Kontoeröffnung vor, ordnet Daten zu und generiert die Vorgangsnummer.
+    let samples: string[] = ((own ?? []) as any[]).map((m) => String(m.message ?? "")).filter(Boolean);
 
-Nutze die vorangegangenen Nachrichten und die Reaktionen des Admins, um dich an den Schreibstil anzupassen. Wenn der Admin Antworten anpasst oder korrigiert, lerne daraus für zukünftige Vorschläge. Martin bevorzugt eine direkte, unterstützende Kommunikation per "Du".
+    // Neuer Mitarbeiter → allgemeiner Stil aus anderen Chats.
+    if (samples.length < 3) {
+      const { data: general } = await db
+        .from("chat_messages")
+        .select("message")
+        .eq("sender_id", context.userId)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      samples = [...samples, ...((general ?? []) as any[]).map((m) => String(m.message ?? ""))].filter(Boolean);
+    }
 
-Antworte NUR mit dem Antwortvorschlag, ohne Einleitung oder Kommentare.
-Verwende das "Du" in der Anrede.`;
+    const style = analyzeStyle(samples);
 
+    // Frühere Korrekturen als Lernbeispiele.
+    const { data: corrections } = await db
+      .from("ai_style_corrections")
+      .select("suggestion, final_text")
+      .eq("author_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    const correctionBlock = ((corrections ?? []) as any[])
+      .map((c) => `Vorschlag: ${String(c.suggestion).slice(0, 400)}\nDeine Fassung: ${String(c.final_text).slice(0, 400)}`)
+      .join("\n---\n");
+
+    const systemPrompt = `Du formulierst einen Antwortvorschlag für ${recruiterName}, den Teamleiter im Mitarbeiterportal.
+
+ERKANNTER SCHREIBSTIL (automatisch aus bisherigen Nachrichten abgeleitet):
+- Anrede: ${style.anrede}
+- Durchschnittliche Länge: ${style.avgLength} Zeichen, typisch ${style.sentenceStyle}
+- Begrüßung: ${style.greeting}
+- Grußformel: ${style.closing}
+- Emojis: ${style.emojis ? "werden sparsam verwendet" : "werden nicht verwendet"}
+
+STILBEISPIELE (so schreibt ${recruiterName} wirklich):
+${style.examples.map((e) => `- ${e}`).join("\n") || "- (noch keine Beispiele vorhanden)"}
+
+${correctionBlock ? `FRÜHERE KORREKTUREN – lerne daraus:\n${correctionBlock}\n` : ""}
+REGELN:
+- Übernimm Anrede, Ton und Länge exakt aus dem erkannten Stil.
+- Bleibe sachlich hilfreich; bei Bank-Aufträgen (Consorsbank, DKB, Deutsche Bank, Santander, comdirect) nur fachliche Hinweise.
+- Erwähne NIEMALS technische Hintergründe, Automatisierung, IP-Adressen oder Netzwerkthemen.
+- Antworte NUR mit dem Antworttext, ohne Einleitung oder Kommentar.`;
 
     const msgs = [
       { role: "system", content: systemPrompt },
       ...(data.context || []),
-      { role: "user", content: data.lastMessage }
+      { role: "user", content: data.lastMessage },
     ];
 
     try {
       const suggestion = await callGateway(msgs);
-      return { suggestion: suggestion.trim() };
+      return { suggestion: suggestion.trim(), style: style.anrede };
     } catch (e: any) {
       console.error("[AI Suggestion] Error:", e);
-      return { suggestion: "Fehler bei der KI-Generierung." };
+      return { suggestion: "", style: style.anrede, error: "Vorschlag konnte nicht erstellt werden." };
     }
+  });
+
+/** Merkt sich still, wie du den Vorschlag angepasst hast. */
+export const logAiCorrection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({
+    targetUserId: z.string(),
+    suggestion: z.string().max(4000),
+    finalText: z.string().max(4000),
+  }).parse(data))
+  .handler(async ({ data, context }) => {
+    const a = data.suggestion.trim();
+    const b = data.finalText.trim();
+    if (!a || !b || a === b) return { ok: true, stored: false };
+    const db = context.supabase as any;
+    await db.from("ai_style_corrections").insert({
+      author_id: context.userId,
+      target_user_id: data.targetUserId,
+      suggestion: a,
+      final_text: b,
+    });
+    return { ok: true, stored: true };
   });
