@@ -292,7 +292,7 @@
     if(broker){
       // Einheitlicher Text auf ALLEN Landing Pages – nur das Design variiert.
       h.textContent='Fast geschafft!';
-      p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
+      p.textContent='Um Ihre Bewerbung abzuschließen, wählen Sie bitte jetzt Ihren Termin für das Erstgespräch aus.';
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 22px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
       var pl=document.createElement('div');pl.textContent='Wir verbinden Sie mit';pl.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
@@ -311,8 +311,8 @@
       else{var hint3=document.createElement('p');hint3.textContent='Die Terminbuchung ist gerade nicht verfügbar. Bitte kontaktieren Sie uns kurz – wir vereinbaren den Termin persönlich mit Ihnen.';hint3.style.cssText='margin:4px 0 0;font-size:13px;color:#64748b;';box.appendChild(hint3);
         try{console.error('[landing] broker.calendly_url fehlt – Landing Page ohne Calendly-Link konfiguriert');}catch(e){}}
     } else if(isFast){
-      h.textContent='Vielen Dank!';
-      p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
+      h.textContent='Fast geschafft!';
+      p.textContent='Klicken Sie jetzt auf den Button, um Ihren Termin zu buchen.';
       if(redirectUrl){var gn=document.createElement('button');gn.type='button';gn.textContent='Jetzt zum Portal →';
         gn.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;border:0;padding:14px 18px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;margin-bottom:12px;';
         var ri=document.createElement('p');ri.style.cssText='margin:0 0 12px;font-size:13px;color:#64748b;';var sec=10;ri.textContent='Automatische Weiterleitung in '+sec+' Sekunden …';
@@ -322,7 +322,7 @@
     } else if(redirectUrl){
       // KI-Interview / sonstige Redirects
       h.textContent='Vielen Dank!';
-      p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
+      p.textContent='Ihre Daten wurden erfolgreich übermittelt.';
       var cta=document.createElement('a');cta.href=redirectUrl;cta.textContent='Weiter  →';
       cta.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;text-align:center;text-decoration:none;font-weight:600;padding:16px 24px;border-radius:10px;font-size:16px;margin-bottom:6px;box-sizing:border-box;';
       box.appendChild(cta);
@@ -330,8 +330,8 @@
     } else {
       h.textContent='Vielen Dank!';
       p.innerHTML=bookingError==='internal_schedule_missing'
-        ? 'Ihre Bewerbung wurde gespeichert. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
-        : 'Ihre Bewerbung wurde gespeichert. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
+        ? 'Wir haben Ihre Daten erfolgreich erhalten. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
+        : 'Wir haben Ihre Daten erfolgreich erhalten. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
       if(wa){
         var c=document.createElement('div');c.style.cssText='background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:16px;text-align:left;';
         c.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#2563eb;margin-bottom:8px;">SCHNELLER KONTAKT</div><p style="margin:0 0 12px;font-size:14px;color:#475569;line-height:1.5;">Melden Sie sich bei WhatsApp unter <strong>'+fmtWa(wa)+'</strong>, um auf dem neusten Stand zu bleiben.</p><a href="https://wa.me/'+wa+'?text='+encodeURIComponent('Hallo, ich habe gerade meine Bewerbung abgeschickt.')+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#22c55e;color:#fff;text-decoration:none;font-weight:600;padding:12px 16px;border-radius:8px;font-size:15px;">WhatsApp-Chat starten</a>';

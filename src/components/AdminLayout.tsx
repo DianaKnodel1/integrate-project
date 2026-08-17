@@ -41,14 +41,12 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Bewerbungen", url: "/admin/bewerbungen", icon: Users, badgeKey: "newApplications" },
       { title: "Mitarbeiter", url: "/admin/mitarbeiter", icon: Users },
-      // KYC ist über "Mitarbeiter → Öffnen" (Personen-Detail) erreichbar — spart Platz in der Sidebar.
     ],
   },
   {
     label: "Aufträge",
     items: [
       { title: "Aufträge", url: "/admin/tasks", icon: ClipboardList },
-      
       { title: "Prüfungen", url: "/admin/reviews", icon: CheckSquare },
       { title: "Uploads", url: "/admin/uploads", icon: Upload },
     ],
@@ -73,17 +71,10 @@ const navGroups: NavGroup[] = [
 const settingsItem: NavItem = { title: "Einstellungen", url: "/admin/settings", icon: Settings, end: true };
 
 // Admin-Only: Vollzugriff nur für die Hauptrolle.
-const STAFF_ALLOWED_PREFIXES = [
-  "/admin/tasks",
-  "/admin/chat",
-];
-const STAFF_HOME = "/admin/chat";
-const staffNavGroups: NavGroup[] = navGroups
-  .filter((g) => g.label === "Kommunikation" || g.label === "Aufträge")
-  .map((g) => ({
-    ...g,
-    items: g.items.filter((i) => STAFF_ALLOWED_PREFIXES.some((p) => i.url === p || i.url.startsWith(p + "/"))),
-  }));
+// Hinweis: Mitarbeiter-Admin-Unterkonten sind deaktiviert (nur Hauptadmin erlaubt).
+const STAFF_ALLOWED_PREFIXES: string[] = [];
+const STAFF_HOME = "/admin";
+const staffNavGroups: NavGroup[] = [];
 
 function AdminSidebar() {
   const { state } = useSidebar();
@@ -226,12 +217,9 @@ export default function AdminLayout() {
   useEffect(() => {
     if (!loading && !user) navigate("/login");
     if (!loading && user && !canAccessAdmin) navigate("/dashboard");
-    // Admin-Mitarbeiter: nur freigegebene Bereiche
+    // Admin-Mitarbeiter: Deaktiviert.
     if (!loading && user && canAccessAdmin && !isAdmin) {
-      // Harte Sperre: Nur noch der Hauptadmin hat Vollzugriff.
-      // Falls wir Teamleiter-Mitarbeiter haben, landen sie im Chat.
-      const allowed = STAFF_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
-      if (!allowed) navigate(STAFF_HOME);
+      navigate("/login");
     }
   }, [user, isAdmin, canAccessAdmin, loading, pathname, navigate]);
 

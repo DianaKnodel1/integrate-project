@@ -6,114 +6,12 @@ export const Route = createFileRoute("/admin/")({
 
 import { useAdminData } from "@/contexts/AdminDataContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { AdminDashboardSkeleton } from "@/components/SkeletonLoaders";
 import {
-  ArrowRight, FileText, ShieldCheck, CalendarDays, Mail, CheckCircle2, XCircle, AlertTriangle, ClipboardList,
+  ArrowRight, FileText, ClipboardList,
 } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { computeEmailStats, type EmailLog } from "@/lib/email-stats";
 
-function EmailMonitorWidget() {
-  const [stats, setStats] = useState<{ sent: number; failed: number; pending: number; stalePending: number; total: number; successRate: number; actionRequired: boolean } | null>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Identisch zum E-Mail-Center: 7 Tage + gleiche Dedup-Logik (computeEmailStats).
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    supabase
-      .from("email_send_log")
-      .select("id, message_id, template_name, recipient_email, status, error_message, metadata, created_at, acknowledged_at")
-      .gte("created_at", since)
-      .order("created_at", { ascending: false })
-      .limit(5000)
-      .then(({ data }) => {
-        const computed = computeEmailStats((data ?? []) as EmailLog[]);
-        setStats({
-          sent: computed.sent,
-          failed: computed.failed + computed.bounced,
-          pending: computed.pending,
-          stalePending: computed.stalePending,
-          total: computed.total,
-          successRate: computed.successRate,
-          actionRequired: computed.actionRequired,
-        });
-      });
-  }, []);
-
-
-
-  if (!stats) return null;
-
-  return (
-    <Card className={stats.actionRequired ? "border-destructive/30 bg-destructive/[0.02]" : ""}>
-      <CardContent className="pt-4 pb-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${stats.actionRequired ? "bg-destructive/10" : "bg-accent/10"}`}>
-              <Mail className={`h-4 w-4 ${stats.actionRequired ? "text-destructive" : "text-accent"}`} />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-foreground">E-Mail System</p>
-              <p className="text-[10px] text-muted-foreground">Letzte 7 Tage · {stats.total} eindeutige Mails</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/admin/email-center")}>
-            E-Mail-Center <ArrowRight className="h-3 w-3" />
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-4 gap-2">
-          <div className="text-center p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40">
-            <div className="flex items-center justify-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{stats.sent}</p>
-            </div>
-            <p className="text-[10px] text-emerald-700/80 dark:text-emerald-300/80 font-medium">Gesendet</p>
-          </div>
-          <div className={`text-center p-3 rounded-lg border ${stats.pending > 0 ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/40" : "bg-muted/60 border-border"}`}>
-            <p className={`text-lg font-bold ${stats.pending > 0 ? "text-amber-700 dark:text-amber-300" : "text-foreground"}`}>{stats.pending}</p>
-            <p className={`text-[10px] font-medium ${stats.pending > 0 ? "text-amber-700/80 dark:text-amber-300/80" : "text-muted-foreground"}`}>Retry offen</p>
-          </div>
-
-          <div className={`text-center p-3 rounded-lg border ${stats.failed > 0 ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/40" : "bg-muted/60 border-border"}`}>
-            <div className="flex items-center justify-center gap-1">
-              {stats.failed > 0 ? <XCircle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" /> : null}
-              <p className={`text-lg font-bold ${stats.failed > 0 ? "text-rose-700 dark:text-rose-300" : "text-foreground"}`}>{stats.failed}</p>
-            </div>
-            <p className={`text-[10px] font-medium ${stats.failed > 0 ? "text-rose-700/80 dark:text-rose-300/80" : "text-muted-foreground"}`}>Fehler</p>
-          </div>
-          <div className={`text-center p-3 rounded-lg border ${stats.successRate >= 95 ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/40" : "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/40"}`}>
-            <p className={`text-lg font-bold ${stats.successRate >= 95 ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"}`}>{stats.successRate}%</p>
-            <p className={`text-[10px] font-medium ${stats.successRate >= 95 ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-rose-700/80 dark:text-rose-300/80"}`}>Erfolg</p>
-          </div>
-        </div>
-
-        {stats.stalePending > 0 && (
-          <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-900/50">
-            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
-              {stats.stalePending} E-Mail(s) hängen seit über 6 Stunden im Retry
-            </p>
-          </div>
-        )}
-
-        {stats.actionRequired && (
-          <div className="mt-3 flex items-center gap-2 p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-900/50">
-            <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
-            <p className="text-xs font-medium text-rose-700 dark:text-rose-300">
-              {stats.failed} E-Mail(s) fehlgeschlagen – bitte prüfen
-            </p>
-          </div>
-        )}
-
-      </CardContent>
-    </Card>
-  );
-}
 
 function AdminDashboardPage() {
   const { profiles, applications, assignments, allBookings, kycList, loading } = useAdminData();
@@ -129,12 +27,10 @@ function AdminDashboardPage() {
   const activeEmployees = profiles.filter((p) => p.status === "angenommen").length;
 
   const actionCards = [
-    { label: "Neue Bewerbungen", value: newApplications, icon: FileText, path: "/admin/personen", highlight: newApplications > 0 },
-    // "Offene Verifizierung" entfernt — KYC wird direkt in der Mitarbeiter-Detailseite geprüft.
-    { label: "Aufgaben zur Prüfung", value: pendingReviews, icon: ClipboardList, path: "/admin/reviews", highlight: pendingReviews > 0 },
-    { label: "Termine heute", value: todayBookings, icon: CalendarDays, path: "/admin/appointments", highlight: todayBookings > 0 },
-    { label: "Mitarbeiter angenommen", value: activeEmployees, icon: FileText, path: "/admin/personen", highlight: false },
-    { label: "Mitarbeiter gesamt", value: profiles.length, icon: FileText, path: "/admin/personen", highlight: false },
+    { label: "Bewerbungen", value: newApplications, icon: FileText, path: "/admin/bewerbungen", highlight: newApplications > 0 },
+    { label: "Aufgaben zur Prüfung", value: pendingReviews, icon: ClipboardList, path: "/admin/tasks", highlight: pendingReviews > 0 },
+    { label: "Mitarbeiter", value: activeEmployees, icon: FileText, path: "/admin/mitarbeiter", highlight: false },
+    { label: "Statistik", value: profiles.length, icon: FileText, path: "/admin/statistiken", highlight: false },
   ];
 
   return (
@@ -166,7 +62,7 @@ function AdminDashboardPage() {
         ))}
       </div>
 
-      <EmailMonitorWidget />
+      
     </div>
   );
 }
