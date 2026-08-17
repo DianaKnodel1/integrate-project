@@ -138,23 +138,6 @@ export const listBotRuns = createServerFn({ method: "GET" })
     return { rows: (data ?? []) as BotRunRow[] };
   });
 
-/** Erzeugt ein starkes Passwort ohne verwechselbare Zeichen. */
-function generatePassword(): string {
-  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const lower = "abcdefghijkmnopqrstuvwxyz";
-  const digit = "23456789";
-  const sym = "!@#$%&*?";
-  const all = upper + lower + digit + sym;
-  const pick = (set: string) => set[Math.floor(Math.random() * set.length)]!;
-  const chars = [pick(upper), pick(lower), pick(digit), pick(sym)];
-  for (let i = 0; i < 12; i++) chars.push(pick(all));
-  for (let i = chars.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [chars[i], chars[j]] = [chars[j]!, chars[i]!];
-  }
-  return chars.join("");
-}
-
 const EnqueueInput = z.object({
   profile_id: z.string().uuid(),
   user_id: z.string().uuid().nullable().optional(),
@@ -163,86 +146,12 @@ const EnqueueInput = z.object({
   input_data: z.record(z.string(), z.string().max(500)).optional().default({}),
 });
 
-/**
- * Wählt den am längsten unbenutzten aktiven Proxy und erzeugt eine eigene
- * Sticky-Session-Kennung. So läuft jede Kontoeröffnung über eine eigene IP.
- */
-async function allocateProxy(db: any): Promise<{ proxy_id: string | null; proxy_session: string }> {
-  const session = `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-  const { data } = await db
-    .from("bot_proxies")
-    .select("id, use_count")
-    .eq("is_active", true)
-    .order("last_used_at", { ascending: true, nullsFirst: true })
-    .limit(1);
-  const proxy = Array.isArray(data) ? data[0] : null;
-  if (!proxy) return { proxy_id: null, proxy_session: session };
-  await db
-    .from("bot_proxies")
-    .update({ last_used_at: new Date().toISOString(), use_count: (proxy.use_count ?? 0) + 1 })
-    .eq("id", proxy.id);
-  return { proxy_id: String(proxy.id), proxy_session: session };
-}
-
-/** Legt einen Lauf an (gemeinsame Logik für Queue und Auftragsstart). */
-async function createBotRun(
-  db: any,
-  createdBy: string,
-  input: { profile_id: string; user_id?: string | null; assignment_id?: string | null; vorgangsnummer?: string; input_data?: Record<string, string> },
-): Promise<{ id: string }> {
-  const { data: profile, error: pErr } = await db
-    .from("bot_profiles")
-    .select("id, tenant_id, steps, is_active, name")
-    .eq("id", input.profile_id).single();
-  if (pErr) throw new Error(pErr.message);
-  if (!profile.is_active) throw new Error("Bot-Profil ist deaktiviert");
-
-  // Mitarbeiterdaten als Eingabewerte vorbelegen.
-  let base: Record<string, string> = {};
-  if (input.user_id) {
-    const { data: prof } = await db
-      .from("profiles")
-      .select("full_name, street, house_number, postal_code, city, birth_date, phone")
-      .eq("user_id", input.user_id).maybeSingle();
-    if (prof) {
-      const parts = String(prof.full_name ?? "").trim().split(/\s+/);
-      base = {
-        first_name: parts[0] ?? "",
-        last_name: parts.slice(1).join(" "),
-        street: [prof.street, prof.house_number].filter(Boolean).join(" "),
-        zip: prof.postal_code ?? "",
-        city: prof.city ?? "",
-        birth_date: prof.birth_date ?? "",
-        phone: prof.phone ?? "",
-      };
-    }
-  }
-
-  const { data: row, error } = await db
-    .from("bot_runs")
-    .insert({
-      profile_id: profile.id,
-      tenant_id: profile.tenant_id,
-      user_id: input.user_id || null,
-      assignment_id: input.assignment_id || null,
-      vorgangsnummer: input.vorgangsnummer || null,
-      status: "queued",
-      total_steps: Array.isArray(profile.steps) ? profile.steps.length : 0,
-      input_data: { ...base, ...(input.input_data ?? {}) },
-      credentials: { password: generatePassword(), generated_at: new Date().toISOString() },
-      ...(await allocateProxy(db)),
-      created_by: createdBy,
-    })
-    .select("id").single();
-  if (error) throw new Error(error.message);
-  return { id: String(row.id) };
-}
-
 export const enqueueBotRun = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => EnqueueInput.parse(i))
   .handler(async ({ data, context }): Promise<{ id: string }> => {
     await requireAdmin(context);
+    const { createBotRun } = await import("./bots.server");
     return createBotRun(context.supabase as any, context.userId, data);
   });
 
@@ -382,72 +291,14 @@ export const deleteBotProxy = createServerFn({ method: "POST" })
 
 /* --------------------------------------------- Lauf zu einer Zuweisung */
 
-/** Findet das passende Bot-Profil anhand der Vorlage bzw. deren Titel. */
-async function resolveProfileForTemplate(db: any, templateId: string): Promise<string | null> {
-  const { data: tpl } = await db
-    .from("task_templates").select("title, bot_profile_id").eq("id", templateId).maybeSingle();
-  if (!tpl) return null;
-  if (tpl.bot_profile_id) return String(tpl.bot_profile_id);
-  const title = String(tpl.title ?? "").toLowerCase();
-  const map: [RegExp, string][] = [
-    [/dkb/, "dkb"],
-    [/deutsche\s*bank/, "deutsche_bank"],
-    [/consors/, "consorsbank"],
-    [/comdirect/, "comdirect"],
-    [/santander/, "santander"],
-  ];
-  const hit = map.find(([re]) => re.test(title));
-  if (!hit) return null;
-  const { data: prof } = await db
-    .from("bot_profiles").select("id").eq("provider_key", hit[1]).eq("is_active", true).limit(1);
-  const row = Array.isArray(prof) ? prof[0] : null;
-  return row ? String(row.id) : null;
-}
-
-/**
- * Startet für eine Zuweisung einen echten Bot-Lauf und setzt sie auf
- * "Entwurf" (= für den Mitarbeiter noch unsichtbar), bis freigegeben wird.
- */
+/** Startet für eine Zuweisung einen echten Bot-Lauf (bleibt bis Freigabe Entwurf). */
 export const startRunForAssignment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ assignment_id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }): Promise<{ ok: boolean; run_id?: string; error?: string }> => {
     await requireAdmin(context);
-    const db = context.supabase as any;
-    const { data: a, error: aErr } = await db
-      .from("task_assignments")
-      .select("id, user_id, task_template_id, individual_email, individual_phone")
-      .eq("id", data.assignment_id).single();
-    if (aErr) throw new Error(aErr.message);
-
-    const profileId = await resolveProfileForTemplate(db, String(a.task_template_id));
-    if (!profileId) return { ok: false, error: "Kein passendes Bot-Profil für diese Vorlage hinterlegt." };
-
-    // Läuft bereits ein Lauf? Dann keinen zweiten anlegen (Dublettenschutz).
-    const { data: running } = await db
-      .from("bot_runs").select("id")
-      .eq("assignment_id", a.id)
-      .in("status", ["queued", "running", "waiting_admin"]).limit(1);
-    if (Array.isArray(running) && running.length) {
-      return { ok: true, run_id: String(running[0].id) };
-    }
-
-    const extra: Record<string, string> = {};
-    if (a.individual_email) extra["email"] = String(a.individual_email);
-    if (a.individual_phone) extra["phone"] = String(a.individual_phone);
-
-    const res = await createBotRun(db, context.userId, {
-      profile_id: profileId,
-      user_id: a.user_id,
-      assignment_id: a.id,
-      input_data: extra,
-    });
-
-    await db.from("task_assignments")
-      .update({ status: "entwurf", updated_at: new Date().toISOString() })
-      .eq("id", a.id);
-
-    return { ok: true, run_id: String(res.id) };
+    const { startRunForAssignmentServer } = await import("./bots.server");
+    return startRunForAssignmentServer(context.supabase as any, context.userId, data.assignment_id);
   });
 
 /** Aktueller Bot-Lauf einer Zuweisung (für die Statusanzeige). */
