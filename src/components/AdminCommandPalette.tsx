@@ -14,12 +14,13 @@ import { Users, FileText, ClipboardList, LayoutGrid, Settings, CalendarDays, Wal
 
 const PAGES: { label: string; path: string; icon: any }[] = [
   { label: "Dashboard", path: "/admin", icon: LayoutGrid },
-  { label: "Personen", path: "/admin/personen", icon: Users },
-  { label: "Aufgaben", path: "/admin/tasks", icon: ClipboardList },
-  { label: "Termine", path: "/admin/appointments", icon: CalendarDays },
+  { label: "Bewerbungen", path: "/admin/bewerbungen", icon: Users },
+  { label: "Mitarbeiter", path: "/admin/mitarbeiter", icon: Users },
+  { label: "Aufträge", path: "/admin/tasks", icon: ClipboardList },
   { label: "Chat", path: "/admin/chat", icon: MessageCircle },
   { label: "SMS", path: "/admin/sms", icon: Phone },
   { label: "Transaktionen", path: "/admin/transactions", icon: Wallet },
+  { label: "Statistiken", path: "/admin/statistiken", icon: BarChart3 },
   { label: "Einstellungen", path: "/admin/settings", icon: Settings },
 ];
 
