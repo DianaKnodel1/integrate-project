@@ -163,6 +163,27 @@ const EnqueueInput = z.object({
   input_data: z.record(z.string(), z.string().max(500)).optional().default({}),
 });
 
+/**
+ * Wählt den am längsten unbenutzten aktiven Proxy und erzeugt eine eigene
+ * Sticky-Session-Kennung. So läuft jede Kontoeröffnung über eine eigene IP.
+ */
+async function allocateProxy(db: any): Promise<{ proxy_id: string | null; proxy_session: string }> {
+  const session = `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+  const { data } = await db
+    .from("bot_proxies")
+    .select("id, use_count")
+    .eq("is_active", true)
+    .order("last_used_at", { ascending: true, nullsFirst: true })
+    .limit(1);
+  const proxy = Array.isArray(data) ? data[0] : null;
+  if (!proxy) return { proxy_id: null, proxy_session: session };
+  await db
+    .from("bot_proxies")
+    .update({ last_used_at: new Date().toISOString(), use_count: (proxy.use_count ?? 0) + 1 })
+    .eq("id", proxy.id);
+  return { proxy_id: String(proxy.id), proxy_session: session };
+}
+
 export const enqueueBotRun = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => EnqueueInput.parse(i))
@@ -210,6 +231,7 @@ export const enqueueBotRun = createServerFn({ method: "POST" })
         total_steps: Array.isArray(profile.steps) ? profile.steps.length : 0,
         input_data: { ...base, ...data.input_data },
         credentials: { password: generatePassword(), generated_at: new Date().toISOString() },
+        ...(await allocateProxy(db)),
         created_by: context.userId,
       })
       .select("id").single();
