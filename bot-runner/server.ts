@@ -12,6 +12,8 @@ const SERVICE_ROLE_KEY = process.env.SERVICE_ROLE_KEY!;
 const POLL_MS = Number(process.env.POLL_MS ?? 5000);
 const HEADLESS = process.env.HEADLESS !== "false";
 const WORKER_NAME = process.env.WORKER_NAME ?? `runner-${process.pid}`;
+// Ohne Proxy startet standardmäßig kein Lauf (REQUIRE_PROXY=false zum Testen).
+const REQUIRE_PROXY = process.env.REQUIRE_PROXY !== "false";
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error("SUPABASE_URL und SERVICE_ROLE_KEY müssen gesetzt sein.");
@@ -34,6 +36,8 @@ interface Step {
 interface Run {
   id: string;
   profile_id: string;
+  proxy_id?: string | null;
+  proxy_session?: string | null;
   input_data: Record<string, string>;
   credentials: Record<string, string>;
   log: { at: string; msg: string }[];
@@ -124,7 +128,33 @@ async function processOne(): Promise<boolean> {
     .from("bot_profiles").select("steps").eq("id", run.profile_id).single();
   const steps = (profile?.steps ?? []) as Step[];
 
-  const browser = await chromium.launch({ headless: HEADLESS });
+  // Proxy laden – jeder Lauf geht über eine eigene IP.
+  let proxy: { server: string; username?: string; password?: string } | undefined;
+  if (run.proxy_id) {
+    const { data: p } = await db
+      .from("bot_proxies")
+      .select("kind, host, port, username, password")
+      .eq("id", run.proxy_id).maybeSingle();
+    if (p) {
+      const scheme = p.kind === "socks5" ? "socks5" : "http";
+      proxy = { server: `${scheme}://${p.host}:${p.port}` };
+      // Chromium unterstützt bei SOCKS5 keine Benutzer/Passwort-Anmeldung.
+      if (scheme === "http" && p.username) {
+        proxy.username = p.username;
+        proxy.password = p.password ?? undefined;
+      }
+    }
+  }
+  if (REQUIRE_PROXY && !proxy) {
+    await db.from("bot_runs").update({
+      status: "failed",
+      last_error: "Kein Proxy verfügbar – Lauf abgebrochen.",
+      finished_at: new Date().toISOString(),
+    }).eq("id", run.id);
+    return true;
+  }
+
+  const browser = await chromium.launch({ headless: HEADLESS, ...(proxy ? { proxy } : {}) });
   const context = await browser.newContext({
     viewport: { width: 1280, height: 900 },
     locale: "de-DE",
