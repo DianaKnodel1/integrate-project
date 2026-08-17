@@ -538,7 +538,10 @@ function AdminBewerbungenPage() {
                           {r.createdAt ? new Date(r.createdAt).toLocaleDateString("de-DE") : "—"}
                         </td>
                         <td className="px-4 py-2.5 text-right">
-                          <div className="flex items-center justify-end gap-1">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/chat?user=${r.id}`)} className="h-7 gap-1.5 text-xs text-blue-600">
+                              <MessageCircle className="h-3 w-3" /> Chat
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/personen/${r.id}`)} className="h-7 gap-1.5 text-xs">
                               Öffnen <ExternalLink className="h-3 w-3" />
                             </Button>
