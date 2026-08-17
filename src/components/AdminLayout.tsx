@@ -79,7 +79,7 @@ const STAFF_ALLOWED_PREFIXES = [
 ];
 const STAFF_HOME = "/admin/chat";
 const staffNavGroups: NavGroup[] = navGroups
-  .filter((g) => STAFF_GROUPS.includes(g.label))
+  .filter((g) => g.label === "Kommunikation" || g.label === "Aufträge")
   .map((g) => ({
     ...g,
     items: g.items.filter((i) => STAFF_ALLOWED_PREFIXES.some((p) => i.url === p || i.url.startsWith(p + "/"))),
