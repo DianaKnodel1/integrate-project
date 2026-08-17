@@ -43,7 +43,7 @@ export interface SubmissionRow {
   id: string; assignment_id: string; notes: string | null; file_urls: string[]; submitted_at: string;
 }
 export interface SubmissionAnswerRow { id: string; question_id: string; answer: string; }
-export interface TimeSlotRow { id: string; slot_date: string; start_time: string; end_time: string; max_participants: number; created_at: string; }
+
 export interface BookingRow { id: string; user_id: string; time_slot_id: string | null; assignment_id: string | null; status: string; created_at: string; booking_date: string | null; booking_time: string | null; application_id?: string | null; app_id?: string | null; scheduled_at?: string | null; admin_override?: boolean | null; }
 export interface TransactionRow { id: string; user_id: string; assignment_id: string; amount: number; status: string; created_at: string; }
 export interface ChatConversationRow { id: string; user_id: string; status: string; escalated_at: string | null; created_at: string; updated_at: string; }
@@ -54,7 +54,7 @@ interface AdminDataContextType {
   kycList: KycRow[];
   templates: TaskTemplate[];
   assignments: AssignmentRow[];
-  timeSlots: TimeSlotRow[];
+  
   allBookings: BookingRow[];
   allTransactions: TransactionRow[];
   chatConversations: ChatConversationRow[];
@@ -96,7 +96,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [kycList, setKycList] = useState<KycRow[]>([]);
   const [templates, setTemplates] = useState<TaskTemplate[]>([]);
   const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
-  const [timeSlots, setTimeSlots] = useState<TimeSlotRow[]>([]);
+  
   const [allBookings, setAllBookings] = useState<BookingRow[]>([]);
   const [allTransactions, setAllTransactions] = useState<TransactionRow[]>([]);
   const [chatConversations, setChatConversations] = useState<ChatConversationRow[]>([]);
@@ -201,9 +201,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         track("Aufgaben",
           () => fetchAll<AssignmentRow>(() => supabase.from("task_assignments").select(ASSIGNMENT_OVERVIEW_COLUMNS).order("created_at", { ascending: false })),
           setAssignments),
-        track("Terminslots",
-          () => fetchAll<TimeSlotRow>(() => supabase.from("time_slots").select("id, slot_date, start_time, end_time, max_participants, created_at").order("slot_date", { ascending: false })),
-          setTimeSlots),
         track("Transaktionen",
           () => fetchAll<TransactionRow>(() => supabase.from("user_transactions").select("id, user_id, assignment_id, amount, status, created_at").order("created_at", { ascending: false })),
           setAllTransactions),
@@ -242,7 +239,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   return (
     <AdminDataContext.Provider value={{
-      applications, profiles, kycList, templates, assignments, timeSlots, allBookings, allTransactions, chatConversations,
+      applications, profiles, kycList, templates, assignments, allBookings, allTransactions, chatConversations,
       adminUserIds, emailConfirmedUserIds, userEmails, loading, loadingApplications, loadingProfiles, loadData, setProfiles, setKycList, setAllTransactions, getProfileForUser,
     }}>
       {children}
