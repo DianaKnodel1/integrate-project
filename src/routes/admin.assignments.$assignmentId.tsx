@@ -7,7 +7,7 @@ export const Route = createFileRoute("/admin/assignments/$assignmentId")({
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
 
 import { useAdminData } from "@/contexts/AdminDataContext";
 import { useAuth } from "@/contexts/AuthContext";
