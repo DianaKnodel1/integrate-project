@@ -328,7 +328,7 @@
       box.appendChild(cta);
       box.appendChild(spamHintBox(emailStatus));
     } else {
-      h.textContent='Vielen Dank für Ihre Bewerbung';
+      h.textContent='Vielen Dank!';
       p.innerHTML=bookingError==='internal_schedule_missing'
         ? 'Wir haben Ihre Daten erfolgreich erhalten. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
         : 'Wir haben Ihre Daten erfolgreich erhalten. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
