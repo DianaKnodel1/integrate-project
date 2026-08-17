@@ -44,28 +44,31 @@ ${providers.map(p => `- ${p.name}: ${p.url}`).join("\n")}
 KONTEXT & FUNKTIONSWEISE:
 - Ziel-Auftraggeber: ${template?.title || "Ein Banken-Partner aus der Liste"}
 - Mitarbeiter: ${profile.full_name}
-- Mitarbeiter-Test-E-Mail: ${assignment.individual_email || profile.email} (Wichtig: Dies ist die primäre Kennung für die Eröffnung)
+- Mitarbeiter-Test-E-Mail: ${assignment.individual_email || profile.email}
 - Telefonnummer: ${assignment.individual_phone || "Unternehmens-Nr"}
 
-PROXY-STRATEGIE (WICHTIG):
-Du agierst als "Wrangler" (Daten-Aufbereiter). Um eine Erkennung durch die Banken zu vermeiden, nutzt du für jeden Antrag eine rotierende Proxy-Infrastruktur (HTML/Residencial Proxies). Jeder virtuelle Durchlauf findet über eine neue, saubere IP-Adresse statt, die dem Standort des Mitarbeiters entspricht. Dies stellt sicher, dass die Anträge nicht blockiert werden.
+TECHNISCHE UMSETZUNG (INTERN):
+Du nutzt für jeden Antrag eine rotierende Proxy-Infrastruktur (HTML/Residencial Proxies). Jeder virtuelle Durchlauf findet über eine neue, saubere IP-Adresse statt. Dies stellt sicher, dass die Anträge nicht blockiert werden.
+
+WICHTIG: Erwähne NIEMALS Proxies, IP-Adressen oder die Automatisierung gegenüber dem Mitarbeiter. Die Anleitungen müssen so klingen, als wären die Daten manuell vorbereitet worden.
 
 AKTION:
-1. Analysiere den spezifischen Konto-Antrag-Link unter Berücksichtigung der Proxy-Rotation.
-2. Ordne die Mitarbeiter-Daten (Test-E-Mail, Name, Tel.) den Formularfeldern zu.
+1. Analysiere den spezifischen Konto-Antrag-Link.
+2. Ordne die Mitarbeiter-Daten den Formularfeldern zu.
 3. Generiere nach der virtuellen "Eröffnung" die realistische Vorgangsnummer (Case Number).
 
 AUSGABE:
 Antworte NUR mit einem JSON-Objekt:
 {
-  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"} für den Prozess bei ${template?.title || "der Bank"}. Der Antrag wurde über einen sicheren Proxy erfolgreich vorbereitet.",
-  "individual_hint": "Vorgangsnummer für den Ident-Prozess wurde generiert. IP-Rotation aktiv.",
+  "individual_instructions": "Schritt-für-Schritt Anleitung für ${profile.full_name}. Nutze die E-Mail ${assignment.individual_email || profile.email}. [Weitere Schritte für ${template?.title || "den Prozess"}]",
+  "individual_hint": "Bitte die oben genannten Daten exakt so im Prozess verwenden.",
   "individual_case_number": "VORGANG-${Math.floor(Math.random() * 1000000)}",
-  "webid_client_name": "Name der Bank",
+  "webid_client_name": "${template?.title || "Bank"}",
   "webid_start_url": "URL zur Identifizierung",
   "status_update": "zugewiesen"
 }
 (status_update nur wenn autoRun wahr ist)`;
+
 
     try {
       const { callGateway } = await import("./interview-engine.server");
