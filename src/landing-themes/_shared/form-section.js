@@ -291,7 +291,7 @@
 
     if(broker){
       // Einheitlicher Text auf ALLEN Landing Pages – nur das Design variiert.
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            I have approved the plan";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Was hast du gerade geändert?";
       p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 22px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
@@ -311,7 +311,7 @@
       else{var hint3=document.createElement('p');hint3.textContent='Die Terminbuchung ist gerade nicht verfügbar. Bitte kontaktieren Sie uns kurz – wir vereinbaren den Termin persönlich mit Ihnen.';hint3.style.cssText='margin:4px 0 0;font-size:13px;color:#64748b;';box.appendChild(hint3);
         try{console.error('[landing] broker.calendly_url fehlt – Landing Page ohne Calendly-Link konfiguriert');}catch(e){}}
     } else if(isFast){
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            I have approved the plan";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Was hast du gerade geändert?";
       p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       if(redirectUrl){var gn=document.createElement('button');gn.type='button';gn.textContent='Jetzt zum Portal →';
         gn.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;border:0;padding:14px 18px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;margin-bottom:12px;';
@@ -321,14 +321,14 @@
       box.appendChild(spamHintBox(emailStatus));
     } else if(redirectUrl){
       // KI-Interview / sonstige Redirects
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            I have approved the plan";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Was hast du gerade geändert?";
       p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       var cta=document.createElement('a');cta.href=redirectUrl;cta.textContent='Weiter  →';
       cta.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;text-align:center;text-decoration:none;font-weight:600;padding:16px 24px;border-radius:10px;font-size:16px;margin-bottom:6px;box-sizing:border-box;';
       box.appendChild(cta);
       box.appendChild(spamHintBox(emailStatus));
     } else {
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            I have approved the plan";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Was hast du gerade geändert?";
       p.innerHTML=bookingError==='internal_schedule_missing'
         ? 'Ihre Bewerbung wurde gespeichert. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
         : 'Ihre Bewerbung wurde gespeichert. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
