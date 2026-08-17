@@ -1,103 +1,95 @@
+// Auftrags-Vorbereitung: erzeugt die Anleitung für den Mitarbeiter und legt
+// bei Bank-Aufträgen einen echten Bot-Lauf an. Vorgangsnummern werden NIE
+// erfunden – sie stammen aus dem Lauf oder werden manuell eingetragen.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const createAssignmentAutomation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({
-    assignmentId: z.string(),
-    userId: z.string(),
-    templateId: z.string(),
-    autoRun: z.boolean().optional()
+    assignmentId: z.string().uuid(),
+    userId: z.string().uuid(),
+    templateId: z.string().uuid(),
+    autoRun: z.boolean().optional(),
   }).parse(data))
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // 1. Fetch details to feed the "Bot"
+  .handler(async ({ data, context }) => {
+    const db = context.supabase as any;
+
+    const { data: isAdmin } = await db
+      .from("user_roles").select("role")
+      .eq("user_id", context.userId).eq("role", "admin").maybeSingle();
+    if (!isAdmin) return { success: false, error: "Nicht autorisiert" };
+
     const [assignmentRes, profileRes, templateRes] = await Promise.all([
-      supabaseAdmin.from("task_assignments").select("*").eq("id", data.assignmentId).single(),
-      supabaseAdmin.from("profiles").select("*").eq("user_id", data.userId).single(),
-      supabaseAdmin.from("task_templates").select("title").eq("id", data.templateId).single()
+      db.from("task_assignments").select("*").eq("id", data.assignmentId).single(),
+      db.from("profiles").select("*").eq("user_id", data.userId).single(),
+      db.from("task_templates").select("title").eq("id", data.templateId).maybeSingle(),
     ]);
 
     const assignment = assignmentRes.data as any;
     const profile = profileRes.data as any;
     const template = templateRes.data as any;
+    if (!assignment || !profile) return { success: false, error: "Daten nicht gefunden" };
 
-    if (!assignment || !profile) {
-      return { success: false, error: "Daten nicht gefunden" };
-    }
+    const email = assignment.individual_email || profile.email || "";
+    const phone = assignment.individual_phone || profile.phone || "";
+    const title = template?.title || "Auftrag";
 
-    // 2. Prepare context for the Compliance/KYC Bot
-    // Specifically targeting the 5 providers mentioned by the user
-    const providers = [
-      { name: "DKB (Girokonto Start)", url: "https://dein-antrag.dkb.de/girokonto-start/" },
-      { name: "Deutsche Bank (Aktiv Konto)", url: "https://www.deutsche-bank.de/pk/konto-und-karte/konten-im-ueberblick/konten-im-vergleich.html#vergleichen" },
-      { name: "Comdirect (Girokonto)", url: "https://www.comdirect.de/konto/girokonto.html" },
-      { name: "Consorsbank", url: "https://www.consorsbank.de/home" },
-      { name: "Santander", url: "https://www.santander.de/privatkunden/" }
-    ];
+    const prompt = `Erstelle die Auftrags-Anleitung für einen Mitarbeiter.
 
-    const prompt = `Du bist ein Compliance & KYC Automatisierungs-Bot für Martin Schneider.
-Deine Aufgabe: Simuliere/Erstelle die finalen Daten für eine Kontoeröffnung und den anschließenden Identifizierungsprozess bei einem der folgenden Auftraggeber.
+Auftrag: ${title}
+Mitarbeiter: ${profile.full_name}
+Zu verwendende E-Mail: ${email}
+Zu verwendende Telefonnummer: ${phone || "(keine hinterlegt)"}
 
-AUFTRAGGEBER-DETAILS:
-${providers.map(p => `- ${p.name}: ${p.url}`).join("\n")}
+REGELN:
+- Sprich den Mitarbeiter direkt und freundlich mit "Du" an.
+- Nenne die Schritte konkret und knapp (max. 8 Schritte).
+- Erwähne KEINE technischen Hintergründe, keine Automatisierung, keine IP- oder Netzwerkthemen.
+- Erfinde KEINE Vorgangsnummer.
 
-KONTEXT & FUNKTIONSWEISE:
-- Ziel-Auftraggeber: ${template?.title || "Ein Banken-Partner aus der Liste"}
-- Mitarbeiter: ${profile.full_name}
-- Mitarbeiter-Test-E-Mail: ${assignment.individual_email || profile.email}
-- Telefonnummer: ${assignment.individual_phone || "Unternehmens-Nr"}
+Antworte NUR mit JSON:
+{"individual_instructions":"…","individual_hint":"…","webid_client_name":"${title}"}`;
 
-TECHNISCHE UMSETZUNG (INTERN):
-Du nutzt für jeden Antrag eine rotierende Proxy-Infrastruktur (HTML/Residencial Proxies). Jeder virtuelle Durchlauf findet über eine neue, saubere IP-Adresse statt. Dies stellt sicher, dass die Anträge nicht blockiert werden.
-
-WICHTIG: Erwähne NIEMALS Proxies, IP-Adressen oder die Automatisierung gegenüber dem Mitarbeiter. Die Anleitungen müssen so klingen, als wären die Daten manuell vorbereitet worden.
-
-AKTION:
-1. Analysiere den spezifischen Konto-Antrag-Link.
-2. Ordne die Mitarbeiter-Daten den Formularfeldern zu.
-3. Generiere nach der virtuellen "Eröffnung" die realistische Vorgangsnummer (Case Number).
-
-AUSGABE:
-Antworte NUR mit einem JSON-Objekt:
-{
-  "individual_instructions": "Schritt-für-Schritt Anleitung für ${profile.full_name}. Nutze die E-Mail ${assignment.individual_email || profile.email}. [Weitere Schritte für ${template?.title || "den Prozess"}]",
-  "individual_hint": "Bitte die oben genannten Daten exakt so im Prozess verwenden.",
-  "individual_case_number": "VORGANG-${Math.floor(Math.random() * 1000000)}",
-  "webid_client_name": "${template?.title || "Bank"}",
-  "webid_start_url": "URL zur Identifizierung",
-  "status_update": "zugewiesen"
-}
-(status_update nur wenn autoRun wahr ist)`;
-
-
+    let generated: any = {};
     try {
       const { callGateway } = await import("./interview-engine.server");
-      const rawRes = await callGateway([
-        { role: "system", content: "Du bist ein präziser Compliance-Bot mit Proxy-Management. Antworte in JSON." },
-        { role: "user", content: prompt }
+      const raw = await callGateway([
+        { role: "system", content: "Du formulierst klare, freundliche Arbeitsanweisungen auf Deutsch. Antworte in JSON." },
+        { role: "user", content: prompt },
       ], { jsonMode: true });
-
-      const result = JSON.parse(rawRes);
-      
-      // 3. Update the assignment with automated data
-      const { error: updateError } = await supabaseAdmin
-        .from("task_assignments")
-        .update({
-          individual_instructions: result.individual_instructions,
-          individual_hint: result.individual_hint,
-          individual_case_number: result.individual_case_number,
-          webid_client_name: result.webid_client_name || null,
-          webid_start_url: result.webid_start_url || null,
-          status: data.autoRun && result.status_update ? result.status_update : assignment.status,
-          updated_at: new Date().toISOString()
-        } as any)
-        .eq("id", data.assignmentId);
-
-      if (updateError) throw updateError;
-
-      return { success: true, data: result };
+      generated = JSON.parse(raw);
     } catch (e: any) {
-      console.error("[Bot Automation] Error:", e);
-      return { success: false, error: e.message };
+      console.error("[Auftrags-Vorbereitung] KI-Fehler:", e?.message ?? e);
+      return { success: false, error: "Anleitung konnte nicht erstellt werden." };
     }
+
+    const update: Record<string, unknown> = {
+      individual_instructions: generated.individual_instructions ?? assignment.individual_instructions,
+      individual_hint: generated.individual_hint ?? assignment.individual_hint,
+      webid_client_name: generated.webid_client_name || assignment.webid_client_name || title,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Bank-Aufträge starten vollautomatisch einen Lauf und bleiben bis zur
+    // Freigabe im Entwurf – der Mitarbeiter sieht sie also noch nicht.
+    let runId: string | null = null;
+    let runNote: string | null = null;
+    if (data.autoRun) {
+      const { startRunForAssignment } = await import("./bots.functions");
+      try {
+        const res: any = await (startRunForAssignment as any)({ data: { assignment_id: data.assignmentId } });
+        if (res?.ok) { runId = res.run_id ?? null; update["status"] = "entwurf"; }
+        else runNote = res?.error ?? null;
+      } catch (e: any) {
+        runNote = e?.message ?? "Bot-Lauf konnte nicht gestartet werden.";
+      }
+    }
+
+    const { error: updateError } = await db
+      .from("task_assignments").update(update).eq("id", data.assignmentId);
+    if (updateError) return { success: false, error: updateError.message };
+
+    return { success: true, data: { ...generated, run_id: runId, run_note: runNote } };
   });
