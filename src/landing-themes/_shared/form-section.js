@@ -321,7 +321,7 @@
       box.appendChild(spamHintBox(emailStatus));
     } else if(redirectUrl){
       // KI-Interview / sonstige Redirects
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Nein. Ich will Wissen was du gerade gemacht hast";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Bitte erstmal planen. Was haben wir in den letzten Änderungen genau gemacht?";
       p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       var cta=document.createElement('a');cta.href=redirectUrl;cta.textContent='Weiter  →';
       cta.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;text-align:center;text-decoration:none;font-weight:600;padding:16px 24px;border-radius:10px;font-size:16px;margin-bottom:6px;box-sizing:border-box;';
