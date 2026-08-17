@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/command";
 import { useNavigate } from "@/lib/router-compat";
 import { useAdminData } from "@/contexts/AdminDataContext";
-import { Users, FileText, ClipboardList, LayoutGrid, Settings, CalendarDays, Wallet, MessageCircle, Phone } from "lucide-react";
+import { Users, FileText, ClipboardList, LayoutGrid, Settings, CalendarDays, Wallet, MessageCircle, Phone, BarChart3 } from "lucide-react";
 
 const PAGES: { label: string; path: string; icon: any }[] = [
   { label: "Dashboard", path: "/admin", icon: LayoutGrid },
