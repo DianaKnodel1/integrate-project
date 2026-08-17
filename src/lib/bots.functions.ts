@@ -184,59 +184,66 @@ async function allocateProxy(db: any): Promise<{ proxy_id: string | null; proxy_
   return { proxy_id: String(proxy.id), proxy_session: session };
 }
 
+/** Legt einen Lauf an (gemeinsame Logik für Queue und Auftragsstart). */
+async function createBotRun(
+  db: any,
+  createdBy: string,
+  input: { profile_id: string; user_id?: string | null; assignment_id?: string | null; vorgangsnummer?: string; input_data?: Record<string, string> },
+): Promise<{ id: string }> {
+  const { data: profile, error: pErr } = await db
+    .from("bot_profiles")
+    .select("id, tenant_id, steps, is_active, name")
+    .eq("id", input.profile_id).single();
+  if (pErr) throw new Error(pErr.message);
+  if (!profile.is_active) throw new Error("Bot-Profil ist deaktiviert");
+
+  // Mitarbeiterdaten als Eingabewerte vorbelegen.
+  let base: Record<string, string> = {};
+  if (input.user_id) {
+    const { data: prof } = await db
+      .from("profiles")
+      .select("full_name, street, house_number, postal_code, city, birth_date, phone")
+      .eq("user_id", input.user_id).maybeSingle();
+    if (prof) {
+      const parts = String(prof.full_name ?? "").trim().split(/\s+/);
+      base = {
+        first_name: parts[0] ?? "",
+        last_name: parts.slice(1).join(" "),
+        street: [prof.street, prof.house_number].filter(Boolean).join(" "),
+        zip: prof.postal_code ?? "",
+        city: prof.city ?? "",
+        birth_date: prof.birth_date ?? "",
+        phone: prof.phone ?? "",
+      };
+    }
+  }
+
+  const { data: row, error } = await db
+    .from("bot_runs")
+    .insert({
+      profile_id: profile.id,
+      tenant_id: profile.tenant_id,
+      user_id: input.user_id || null,
+      assignment_id: input.assignment_id || null,
+      vorgangsnummer: input.vorgangsnummer || null,
+      status: "queued",
+      total_steps: Array.isArray(profile.steps) ? profile.steps.length : 0,
+      input_data: { ...base, ...(input.input_data ?? {}) },
+      credentials: { password: generatePassword(), generated_at: new Date().toISOString() },
+      ...(await allocateProxy(db)),
+      created_by: createdBy,
+    })
+    .select("id").single();
+  if (error) throw new Error(error.message);
+  return { id: String(row.id) };
+}
+
 export const enqueueBotRun = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => EnqueueInput.parse(i))
   .handler(async ({ data, context }): Promise<{ id: string }> => {
     await requireAdmin(context);
-    const db = context.supabase as any;
-
-    const { data: profile, error: pErr } = await db
-      .from("bot_profiles")
-      .select("id, tenant_id, steps, is_active, name")
-      .eq("id", data.profile_id).single();
-    if (pErr) throw new Error(pErr.message);
-    if (!profile.is_active) throw new Error("Bot-Profil ist deaktiviert");
-
-    // Mitarbeiterdaten als Eingabewerte vorbelegen.
-    let base: Record<string, string> = {};
-    if (data.user_id) {
-      const { data: prof } = await db
-        .from("profiles")
-        .select("full_name, street, house_number, postal_code, city, birth_date, phone")
-        .eq("user_id", data.user_id).maybeSingle();
-      if (prof) {
-        const parts = String(prof.full_name ?? "").trim().split(/\s+/);
-        base = {
-          first_name: parts[0] ?? "",
-          last_name: parts.slice(1).join(" "),
-          street: [prof.street, prof.house_number].filter(Boolean).join(" "),
-          zip: prof.postal_code ?? "",
-          city: prof.city ?? "",
-          birth_date: prof.birth_date ?? "",
-          phone: prof.phone ?? "",
-        };
-      }
-    }
-
-    const { data: row, error } = await db
-      .from("bot_runs")
-      .insert({
-        profile_id: profile.id,
-        tenant_id: profile.tenant_id,
-        user_id: data.user_id || null,
-        assignment_id: data.assignment_id || null,
-        vorgangsnummer: data.vorgangsnummer || null,
-        status: "queued",
-        total_steps: Array.isArray(profile.steps) ? profile.steps.length : 0,
-        input_data: { ...base, ...data.input_data },
-        credentials: { password: generatePassword(), generated_at: new Date().toISOString() },
-        ...(await allocateProxy(db)),
-        created_by: context.userId,
-      })
-      .select("id").single();
-    if (error) throw new Error(error.message);
-    return { id: String(row.id) };
+    return createBotRun(context.supabase as any, context.userId, data);
   });
 
 /** Admin übernimmt einen wartenden Lauf (VideoIdent o. Ä.). */
@@ -429,13 +436,11 @@ export const startRunForAssignment = createServerFn({ method: "POST" })
     if (a.individual_email) extra["email"] = String(a.individual_email);
     if (a.individual_phone) extra["phone"] = String(a.individual_phone);
 
-    const res = await (enqueueBotRun as any)({
-      data: {
-        profile_id: profileId,
-        user_id: a.user_id,
-        assignment_id: a.id,
-        input_data: extra,
-      },
+    const res = await createBotRun(db, context.userId, {
+      profile_id: profileId,
+      user_id: a.user_id,
+      assignment_id: a.id,
+      input_data: extra,
     });
 
     await db.from("task_assignments")
