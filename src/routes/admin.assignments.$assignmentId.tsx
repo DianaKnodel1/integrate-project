@@ -310,6 +310,7 @@ function AdminAssignmentDetailPage() {
           webid_start_url: (assignment as any).webid_start_url,
         }}
         onSaved={loadData}
+        isAdmin={true}
       />
 
       {/* WebID-Status */}
