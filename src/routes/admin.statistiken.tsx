@@ -155,7 +155,6 @@ function StatistikenPage() {
                     <th className="text-right py-2 px-3 font-medium">No-Show</th>
                     <th className="text-right py-2 px-3 font-medium">Angenommen</th>
                     <th className="text-right py-2 px-3 font-medium">Abgelehnt</th>
-                    <th className="text-right py-2 px-3 font-medium">Reg-Mail</th>
                     <th className="text-right py-2 px-3 font-medium">Registriert</th>
                     <th className="text-right py-2 px-3 font-medium">Onboarded</th>
                   </tr>
@@ -187,9 +186,6 @@ function StatistikenPage() {
                         </td>
                         <td className="text-right py-3 px-3 tabular-nums">
                           <span className={cn("font-semibold", r.abgelehnt > 0 ? "text-rose-600 dark:text-rose-400" : "text-muted-foreground")}>{r.abgelehnt}</span>
-                        </td>
-                        <td className="text-right py-3 px-3 tabular-nums">
-                          <span className="text-sky-600 dark:text-sky-400 font-semibold">{r.reg_mail}</span>
                         </td>
                         <td className="text-right py-3 px-3 tabular-nums">
                           <span className="font-semibold">{r.registriert}</span>
@@ -303,7 +299,6 @@ function SourceBreakdown({ sources }: { sources: SourceFunnel[] }) {
                 <th className="text-right py-2 px-3 font-medium">Wahrgenommen</th>
                 <th className="text-right py-2 px-3 font-medium">Angenommen</th>
                 <th className="text-right py-2 px-3 font-medium">Registriert</th>
-                <th className="text-right py-2 px-3 font-medium">Onboarded</th>
                 <th className="text-right py-2 px-3 font-medium">E2E</th>
               </tr>
             </thead>
@@ -317,7 +312,6 @@ function SourceBreakdown({ sources }: { sources: SourceFunnel[] }) {
                     <td className="text-right py-3 px-3 tabular-nums">{s.termin_gebucht}</td>
                     <td className="text-right py-3 px-3 tabular-nums text-emerald-600 dark:text-emerald-400">{s.termin_wahrgenommen}</td>
                     <td className="text-right py-3 px-3 tabular-nums text-emerald-700 dark:text-emerald-300 font-semibold">{s.angenommen}</td>
-                    <td className="text-right py-3 px-3 tabular-nums">{s.registriert}</td>
                     <td className="text-right py-3 px-3 tabular-nums font-bold text-emerald-700 dark:text-emerald-300">{s.onboarded}</td>
                     <td className="text-right py-3 px-3 tabular-nums">
                       <span className={cn(

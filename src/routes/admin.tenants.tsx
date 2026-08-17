@@ -449,22 +449,6 @@ function TenantForm({ tenant, onSaved }: { tenant?: Tenant; onSaved: () => void 
         </div>
       </div>
 
-      <div className="space-y-3 border-t border-border pt-4">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">E-Mail Templates</p>
-        <p className="text-[10px] text-muted-foreground">{"Platzhalter: {{first_name}}, {{last_name}}, {{email}}, {{company_name}}, {{portal_link}}, {{team_leader_name}}"}</p>
-        <div>
-          <Label className="text-xs">Willkommensmail – Betreff</Label>
-          <Input value={welcomeSubject} onChange={(e) => setWelcomeSubject(e.target.value)} placeholder="Willkommen im Team!" className="mt-1" />
-        </div>
-        <div>
-          <Label className="text-xs">Willkommensmail – Text</Label>
-          <Textarea value={welcomeBody} onChange={(e) => setWelcomeBody(e.target.value)} placeholder="Hallo {{first_name}}, ..." rows={6} className="mt-1 font-mono text-xs" />
-        </div>
-        <div>
-          <Label className="text-xs">E-Mail Signatur</Label>
-          <Textarea value={emailSignature} onChange={(e) => setEmailSignature(e.target.value)} placeholder="Mit freundlichen Grüßen,&#10;Ihr Team" rows={3} className="mt-1 font-mono text-xs" />
-        </div>
-      </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Speichern…" : tenant ? "Aktualisieren" : "Hinzufügen"}
