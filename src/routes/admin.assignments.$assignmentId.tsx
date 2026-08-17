@@ -7,6 +7,8 @@ export const Route = createFileRoute("/admin/assignments/$assignmentId")({
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
+
+
 import { useAdminData } from "@/contexts/AdminDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +20,9 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, CheckCircle2, XCircle, FileText, User, Calendar, Send,
-  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2, Sparkles as SparklesIcon,
+  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2, Sparkles as SparklesIcon, Layers,
 } from "lucide-react";
+
 import { TaskSmsMessages } from "@/components/TaskSmsMessages";
 import { AssignmentIndividualData } from "@/components/AssignmentIndividualData";
 import { WEBID_STATUS_LABEL, useWebIdEnabled, type WebIdStatus } from "@/lib/webid";
@@ -82,7 +85,9 @@ function AdminAssignmentDetailPage() {
   const [questions, setQuestions] = useState<TaskQuestion[]>([]);
   const [fileUrls, setFileUrls] = useState<string[]>([]);
   const [comment, setComment] = useState("");
+  const [group, setGroup] = useState<"automatisch" | "manuell">("manuell");
   const [loading, setLoading] = useState(true);
+
   
   const [smsChannels, setSmsChannels] = useState<{ id: string; phone_number: string; label: string }[]>([]);
   const [selectedSmsChannel, setSelectedSmsChannel] = useState<string>("");
@@ -111,7 +116,9 @@ function AdminAssignmentDetailPage() {
     ]);
     setSmsChannels((chRes.data as any[]) ?? []);
     setSelectedSmsChannel((assignment as any).sms_channel_id ?? "");
+    setGroup((assignment as any).assignment_group === "automatisch" ? "automatisch" : "manuell");
     const sub = (subRes.data as unknown as SubmissionRow[])?.[0] ?? null;
+
     setSubmission(sub);
     setQuestions((qRes.data as TaskQuestion[]) ?? []);
     setTaskSteps((stepsRes.data as TaskStepRow[]) ?? []);
@@ -257,14 +264,46 @@ function AdminAssignmentDetailPage() {
 
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><User className="h-4 w-4" /> Mitarbeiter</CardTitle></CardHeader>
           <CardContent><p className="text-sm font-medium">{profile?.full_name ?? "Unbekannt"}</p></CardContent>
         </Card>
         <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Layers className="h-4 w-4" /> Zuweisungsgruppe</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={group === "automatisch" ? "default" : "outline"}
+                className="h-7 text-[10px] flex-1"
+                onClick={async () => {
+                  setGroup("automatisch");
+                  await supabase.from("task_assignments").update({ assignment_group: "automatisch" } as any).eq("id", assignment.id);
+                  toast({ title: "Gruppe: Automatisch" });
+                }}
+              >
+                Automatisch
+              </Button>
+              <Button
+                size="sm"
+                variant={group === "manuell" ? "default" : "outline"}
+                className="h-7 text-[10px] flex-1"
+                onClick={async () => {
+                  setGroup("manuell");
+                  await supabase.from("task_assignments").update({ assignment_group: "manuell" } as any).eq("id", assignment.id);
+                  toast({ title: "Gruppe: Manuell" });
+                }}
+              >
+                Manuell
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Calendar className="h-4 w-4" /> Termin</CardTitle></CardHeader>
           <CardContent className="space-y-2">
+
             {booking ? (
               <p className="text-sm">{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString("de-DE") : "–"} {booking.booking_time ?? ""}</p>
             ) : (
