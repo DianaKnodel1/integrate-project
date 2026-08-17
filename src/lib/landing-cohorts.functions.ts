@@ -12,7 +12,7 @@
 //  4) no_show             booking_status='no_show'
 //  5) angenommen          status='akzeptiert' ODER interview_recommendation='invite'
 //  6) abgelehnt           status='abgelehnt'  ODER interview_recommendation='reject'
-//  7) reg_mail            email_send_log (invitation|signup_confirmation, sent) matched email
+
 //  8) registriert         profiles existiert (email match)
 //  9) onboarded           profiles.onboarding_status='abgeschlossen'
 
@@ -33,7 +33,6 @@ export type FunnelRow = {
   no_show: number;
   angenommen: number;
   abgelehnt: number;
-  reg_mail: number;
   registriert: number;
   onboarded: number;
   conv_termin: number;          // termin_gebucht / beworben
@@ -50,7 +49,6 @@ export type FunnelTotals = {
   no_show: number;
   angenommen: number;
   abgelehnt: number;
-  reg_mail: number;
   registriert: number;
   onboarded: number;
   gesamt_conversion: number;       // onboarded / beworben
@@ -93,7 +91,7 @@ function dayKey(iso: string): string {
 const emptyRow = (date: string): FunnelRow => ({
   date,
   beworben: 0, termin_gebucht: 0, termin_wahrgenommen: 0, no_show: 0,
-  angenommen: 0, abgelehnt: 0, reg_mail: 0, registriert: 0, onboarded: 0,
+  angenommen: 0, abgelehnt: 0, registriert: 0, onboarded: 0,
   conv_termin: 0, conv_wahrgenommen: 0, conv_angenommen: 0,
   conv_registriert: 0, conv_onboarded: 0,
 });
@@ -144,24 +142,8 @@ export const getCohortStats = createServerFn({ method: "POST" })
       allApps.map(a => String(a.email ?? "").toLowerCase().trim()).filter(Boolean),
     ));
 
-    // 2) Registrierungs-Mails (per Empfänger-Email matchen)
-    const mailedEmails = new Set<string>();
-    if (emails.length > 0) {
-      let mailQ = supabase
-        .from("email_send_log")
-        .select("to_email, template_name, status, tenant_id")
-        .in("template_name", ["invitation", "signup_confirmation", "ai_acceptance_invitation"])
-        .eq("status", "sent")
-        .in("to_email", emails);
-      if (data.tenant_id) mailQ = mailQ.eq("tenant_id", data.tenant_id);
-      const { data: mails } = await mailQ;
-      for (const m of (mails ?? []) as any[]) {
-        const e = String(m.to_email ?? "").toLowerCase().trim();
-        if (e) mailedEmails.add(e);
-      }
-    }
 
-    // 3) Profile (registriert + onboarded)
+    // 2) Profile (registriert + onboarded)
     type ProfRow = { email: string; onboarding: string | null };
     const profByEmail = new Map<string, ProfRow>();
     if (emails.length > 0) {
@@ -215,7 +197,6 @@ export const getCohortStats = createServerFn({ method: "POST" })
       if (rejected) r.abgelehnt++;
 
       const email = String(a.email ?? "").toLowerCase().trim();
-      if (email && mailedEmails.has(email)) r.reg_mail++;
       const prof = email ? profByEmail.get(email) : undefined;
       if (prof) {
         r.registriert++; s.registriert++;
@@ -239,7 +220,6 @@ export const getCohortStats = createServerFn({ method: "POST" })
       no_show:             sum(rows, "no_show"),
       angenommen:          sum(rows, "angenommen"),
       abgelehnt:           sum(rows, "abgelehnt"),
-      reg_mail:            sum(rows, "reg_mail"),
       registriert:         sum(rows, "registriert"),
       onboarded:           sum(rows, "onboarded"),
     };
@@ -297,7 +277,7 @@ function round(n: number, digits = 1): number {
 function emptyTotals(): FunnelTotals & { freigegeben: number; mitarbeiter: number; avg_conversion: number } {
   return {
     beworben: 0, termin_gebucht: 0, termin_wahrgenommen: 0, no_show: 0,
-    angenommen: 0, abgelehnt: 0, reg_mail: 0, registriert: 0, onboarded: 0,
+    angenommen: 0, abgelehnt: 0, registriert: 0, onboarded: 0,
     gesamt_conversion: 0, avg_per_day: 0, avg_employees_per_day: 0,
     biggest_drop_stage: null, biggest_drop_pct: 0,
     freigegeben: 0, mitarbeiter: 0, avg_conversion: 0,

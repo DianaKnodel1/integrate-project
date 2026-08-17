@@ -58,7 +58,6 @@ function AdminSettingsPage() {
         <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="marke">Marke &amp; Domains</TabsTrigger>
           <TabsTrigger value="bewerbung">Bewerbung</TabsTrigger>
-          <TabsTrigger value="kommunikation">Kommunikation</TabsTrigger>
           <TabsTrigger value="auftraege">Aufträge</TabsTrigger>
           <TabsTrigger value="konto">Konto &amp; Team</TabsTrigger>
         </TabsList>
@@ -147,7 +146,7 @@ const SECTIONS: { value: string; hint: string; tiles: TileDef[] }[] = [
     value: "marke",
     hint: "Alles rund um Auftritt, Domains und Server.",
     tiles: [
-      { to: "/admin/tenants", title: "Domains / Tenants", desc: "Rebranding, Hero, Logo, SMTP, Unternehmensdaten", icon: Globe },
+      { to: "/admin/tenants", title: "Domains / Tenants", desc: "Rebranding, Hero, Logo, Unternehmensdaten", icon: Globe },
       { to: "/admin/landing-generator", title: "Landing Pages", desc: "Themes, WhatsApp-Button, Generator", icon: Globe },
       { to: "/admin/domains", title: "Domains (Cloudflare)", desc: "DNS, SSL, Health-Checks", icon: Globe },
       { to: "/admin/infrastructure", title: "Infrastruktur", desc: "Landing-Server, Heartbeat, Deploys", icon: Server },
@@ -157,20 +156,11 @@ const SECTIONS: { value: string; hint: string; tiles: TileDef[] }[] = [
     value: "bewerbung",
     hint: "Bewerbungsstrecke: Termine, KI-Interview, Partner.",
     tiles: [
-      { to: "/admin/verfuegbarkeit", title: "Verfügbarkeit", desc: "Buchbare Zeiten für Bewerbungstermine", icon: CalendarClock },
+      
       { to: "/admin/calendly", title: "Calendly", desc: "Webhooks, Event-Types, Signing-Keys", icon: CalendarClock },
       { to: "/admin/ai-settings", title: "KI-Assistent", desc: "An/Aus, FAQ, System-Prompt, Modell", icon: Bot },
       { to: "/admin/vermittlung", title: "Vermittlung", desc: "Broker-Flow, Übergabe an Fast-Track", icon: Handshake },
       { to: "/admin/partner-companies", title: "Fast-Track-Firmen", desc: "Partner-Unternehmen verwalten", icon: Handshake },
-    ],
-  },
-  {
-    value: "kommunikation",
-    hint: "E-Mail-Vorlagen und Versand-Werkzeuge.",
-    tiles: [
-      { to: "/admin/email-templates", title: "E-Mail-Vorlagen", desc: "Willkommen, Reset, Reminder, Signatur", icon: Mail },
-      { to: "/admin/email-center", title: "E-Mail-Center", desc: "Versand-Status, Doppelversand, Protokoll", icon: Mail },
-      { to: "/admin/recovery", title: "Domain-Wechsel", desc: "Recovery-Mails nach Domain-Umstellung", icon: AlertTriangle },
     ],
   },
   {

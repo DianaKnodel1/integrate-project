@@ -40,13 +40,6 @@ function VermittlungOverview() {
           cta="Landing anlegen"
         />
         <StatCard
-          icon={<CalendarClock className="h-5 w-5" />}
-          label="Terminverfügbarkeit"
-          value="→"
-          to="/admin/verfuegbarkeit"
-          cta="Verfügbarkeit pflegen"
-        />
-        <StatCard
           icon={<Handshake className="h-5 w-5" />}
           label="Bewerbungen"
           value="→"
@@ -104,7 +97,7 @@ function VermittlungOverview() {
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>1. Bewerber füllt das Formular auf deiner Vermittlungs-Landing aus.</p>
           <p>2. Bewerbung wird im Portal unter <Link to="/admin/bewerbungen" className="underline">Bewerbungen</Link> mit Status <code>pending</code> gespeichert.</p>
-          <p>3. Bewerber bucht direkt einen freien Termin aus deiner <Link to="/admin/verfuegbarkeit" className="underline">Verfügbarkeit</Link> (integriertes Booking, kein Calendly).</p>
+          <p>3. Bewerber bucht direkt einen freien Termin (Calendly).</p>
           <p>4. Automatische Bestätigungs-E-Mail mit Kalender-Anhang (.ics) geht raus, 30-Min-Reminder folgt.</p>
           <p>5. KI-Bewerbungsgespräch startet zum Termin über den Interview-Link; Entscheidung wird im Chat mitgeteilt.</p>
         </CardContent>
