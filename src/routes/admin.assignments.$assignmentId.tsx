@@ -28,7 +28,6 @@ import { AssignmentIndividualData } from "@/components/AssignmentIndividualData"
 import { WEBID_STATUS_LABEL, useWebIdEnabled, type WebIdStatus } from "@/lib/webid";
 import { getNextAvailableSlot } from "@/lib/slot-utils";
 import { createAssignmentAutomation } from "@/lib/bot-automation.functions";
-import { getRunForAssignment, releaseAssignment, startRunForAssignment } from "@/lib/bots.functions";
 import { AssignmentBotPanel } from "@/components/admin/AssignmentBotPanel";
 import { useServerFn } from "@tanstack/react-start";
 
