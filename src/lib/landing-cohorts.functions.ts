@@ -236,7 +236,6 @@ export const getCohortStats = createServerFn({ method: "POST" })
       no_show:             sum(rows, "no_show"),
       angenommen:          sum(rows, "angenommen"),
       abgelehnt:           sum(rows, "abgelehnt"),
-      
       registriert:         sum(rows, "registriert"),
       onboarded:           sum(rows, "onboarded"),
     };
