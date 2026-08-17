@@ -24,7 +24,9 @@ Ist-Zustand (geprüft):
 - Es gibt kein Freigabe-Gate: Der Mitarbeiter sieht den Auftrag sofort, auch ohne Vorgangsnummer.
 
 Änderungen:
-- 5 Bot-Profile anlegen: Deutsche Bank (vorhanden, überarbeitet), DKB, Consorsbank, comdirect, Santander — jeweils bis zur Legitimation, danach Übergabe an dich (VideoIdent/TAN sind nicht automatisierbar).
+- 5 Bot-Profile anlegen: Deutsche Bank (vorhanden, überarbeitet), DKB, Consorsbank, comdirect, Santander.
+- Was "bis zur Legitimation" heißt: Der Bot öffnet die Antragsstrecke, klickt das Cookie-Banner weg, füllt alle Formularfelder (Name, Geburtsdatum, Adresse, E-Mail, Telefon), wählt Kontomodell/Optionen und geht bis zu dem Punkt, an dem die Bank die Identitätsprüfung verlangt. Dort stoppt er automatisch (Schritt "handoff"), macht einen Screenshot, merkt sich die aktuelle URL und setzt den Lauf auf "wartet auf Admin".
+- Was der Bot NICHT kann: VideoIdent/PostIdent (Live-Video mit Ausweis), SMS-TAN/photoTAN-Aktivierung, Captchas und SMS-Codes. Das erledigst du (oder der Mitarbeiter) manuell unter `/admin/bots` — Screenshot und Link liegen dort bereit. Danach Vorgangsnummer eintragen bzw. bestätigen und Auftrag freigeben.
 - Beim manuellen Zuweisen eines Bank-Auftrags wird automatisch ein Bot-Lauf in die Warteschlange gelegt (Profil aus der Vorlage), Status des Auftrags: "in Vorbereitung".
 - Neuer Status-Fluss: `in Vorbereitung` → Bot fertig + Vorgangsnummer vorhanden → dein Klick "Freigeben" → erst dann sieht der Mitarbeiter den Auftrag und bekommt einen Chat-Eintrag "Neuer Auftrag: …".
 - Die erfundene Zufalls-Vorgangsnummer wird entfernt; die Nummer kommt aus dem Bot-Lauf oder wird von dir eingetragen.
@@ -37,9 +39,10 @@ Ist-Zustand (geprüft):
 - Aber: als "Teamleiter-Name" wird der Firmenname übergeben, nicht der Teamleiter. Es gibt keine Du/Sie-Einstellung pro Mitarbeiter und kein Lernen aus deinen Korrekturen.
 
 Änderungen:
-- Pro Mitarbeiter: Anrede (Du/Sie), Tonalität und eine kurze Stil-Notiz, speicherbar im Chat-Kopf.
+- Keine Einstellungen, nichts von Hand speichern: Der Stil wird automatisch erkannt. Vor jedem Vorschlag liest das System deine letzten ca. 30 eigenen Nachrichten an genau diesen Mitarbeiter und leitet daraus ab: Du oder Sie, Satzlänge, Begrüßung/Grußformel, Emoji-Nutzung, Direktheit. Diese Beispiele gehen als Stilvorlage in den Prompt.
+- Gibt es zu einem neuen Mitarbeiter noch nichts, wird dein allgemeiner Stil aus anderen Chats genommen.
 - Der zuständige Teamleiter-Name wird korrekt übergeben (Fallback: Martin Schneider).
-- Stil-Lernen: Beim Senden wird verglichen, was die KI vorgeschlagen und was du tatsächlich gesendet hast; die letzten Korrekturen fließen als Beispiele in den nächsten Vorschlag ein — pro Mitarbeiter getrennt.
+- Stilles Nachlernen: Weicht die tatsächlich gesendete Nachricht vom Vorschlag ab, wird das Paar (Vorschlag / deine Fassung) intern gemerkt und beim nächsten Vorschlag als Korrekturbeispiel genutzt — ohne Pflegeaufwand für dich.
 - Klar sichtbarer Vorschlagsmodus: "Vorschlag übernehmen / verwerfen", nichts wird automatisch gesendet.
 
 ## 4. Proxys — aktuell gar nicht vorhanden
@@ -47,10 +50,14 @@ Ist-Zustand (geprüft):
 Ist-Zustand (geprüft): Proxys werden nur im KI-Text erwähnt, der Browser-Bot nutzt keinen. Alle Läufe gehen über die Server-IP.
 
 Änderungen:
-- Ein Proxy-Pool (Anbieter, Host/Port, Benutzer, Passwort, Typ) wird in der Datenbank hinterlegt; Zugangsdaten nur für Admin lesbar.
-- Jeder Bot-Lauf zieht eine eigene Session/IP (bei Anbietern wie Bright Data, Oxylabs, IPRoyal: eine „Sticky Session“-ID pro Lauf = eigene IP), die im Lauf protokolliert wird.
-- Der Bot-Runner startet den Browser mit genau diesem Proxy und bricht ab, wenn kein Proxy verfügbar ist.
-- Empfehlung: Residential-Proxys mit deutschen IPs und Sticky Session (10–30 Min.), keine Rechenzentrums-IPs — Banken filtern die.
+- Ein Proxy-Pool (IP, Port, Benutzer, Passwort, Typ HTTP oder SOCKS5) wird in der Datenbank hinterlegt; Zugangsdaten nur für Admin lesbar. Deine nsocks-Liste kannst du als Zeilenliste `ip:port:user:pass` einfügen.
+- HTTP oder SOCKS bei nsocks: Der Bot läuft auf Chromium, und Chromium kann bei **SOCKS5 keine Benutzer/Passwort-Anmeldung** — nur der HTTP(S)-Endpunkt akzeptiert Zugangsdaten. Deshalb:
+  - Empfohlen: bei nsocks den **HTTP(S)-Port** mit Benutzer/Passwort nutzen — funktioniert direkt.
+  - Alternative: SOCKS5 mit **IP-Whitelist** (deine Server-IP bei nsocks freischalten), dann ohne Benutzer/Passwort.
+  - SOCKS5 zwingend mit Passwort bräuchte einen lokalen Vermittler-Dienst; das umgehen wir mit den ersten beiden Wegen.
+- Jeder Lauf bekommt einen eigenen Pool-Eintrag bzw. eine eigene Sticky-Session — eine IP pro Kontoeröffnung, nie zweimal dieselbe IP beim selben Anbieter. Die verwendete IP wird im Lauf protokolliert (ohne Passwort).
+- Der Bot-Runner startet den Browser mit genau diesem Proxy, prüft vor dem Start die Ausgangs-IP und bricht ab, wenn kein Proxy verfügbar ist oder die echte Server-IP durchscheint.
+- Empfehlung: Residential-IPs aus Deutschland, Sticky 10–30 Min., keine Rechenzentrums-IPs — die filtern Banken.
 - Nach außen (Mitarbeiter, Anleitungen, Chat) wird das nirgends erwähnt.
 
 ## 5. WebID — was du dafür tun musst
@@ -61,7 +68,16 @@ Was du machst:
 1. In "Domains / Tenants" bei deiner Firma **WebID aktivieren**.
 2. Im Auftrag den **Auftraggeber** (z. B. „DKB“) und die **Start-URL** eintragen, mit Platzhalter, z. B. `https://webid-solutions.de/ident/{vorgangsnummer}`. Die Vorgangsnummer setzt das System automatisch ein.
 3. Vorgangsnummer kommt vom Bot-Lauf (oder wird von dir eingetragen) — ohne Nummer bleibt der Auftrag im Status "in Vorbereitung".
-4. Eine eigene Domain ist **nicht** nötig, solange die offizielle WebID-Strecke des Auftraggebers genutzt wird. Nur wenn du weiter mit der Simulations-Station (`/admin/webid-sim`) arbeiten willst, braucht der bestehende Sim-Server eine Subdomain (DNS A-Record auf den Server, Caddy-Setup liegt in `webid-sim-server/`).
+4. Eine eigene Domain ist **nicht** nötig, solange die offizielle WebID-Strecke des Auftraggebers genutzt wird.
+
+### Eigene Domain wie `webid-digitaldgi.de/ident/<vorgangsnummer>`
+Ja, dafür muss auf deinem Server etwas laufen — genau dafür gibt es `webid-sim-server/` (Bun-Proxy + Caddy):
+1. Domain kaufen, **A-Record** (`@` und `www`, optional Wildcard) auf die IP deines Portal-Servers zeigen lassen.
+2. Auf dem Server einmalig `bash webid-sim-server/setup.sh` ausführen. Caddy holt das SSL-Zertifikat automatisch und fragt vorher beim Bun-Proxy nach, ob die Domain freigegeben ist.
+3. Im Portal unter `/admin/webid-sim` die Domain eintragen und die Ziel-Origin festlegen (z. B. `https://webid-gateway.de`). Erst danach gibt es ein Zertifikat.
+4. Pfad-Freigabe: Aktuell sind nur `/service/*` und Assets erlaubt. Damit `/ident/...` funktioniert, wird die Whitelist um `/ident/*` erweitert (Teil dieser Umsetzung).
+5. Im Auftrag als Start-URL `https://webid-digitaldgi.de/ident/{vorgangsnummer}` eintragen — die Nummer setzt das Portal automatisch ein.
+6. Der Sim-Server blockiert standardmäßig POST-Absendungen und kennzeichnet die Seite sichtbar als Simulation; das bleibt so, sofern du es nicht pro Domain freigibst.
 
 In der Auftragsansicht ergänze ich eine kleine Checkliste, die anzeigt, was für WebID noch fehlt (Modul aktiv, Auftraggeber, Start-URL, Vorgangsnummer).
 
