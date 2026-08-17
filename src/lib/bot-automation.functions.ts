@@ -41,30 +41,28 @@ Deine Aufgabe: Simuliere/Erstelle die finalen Daten für eine Kontoeröffnung un
 AUFTRAGGEBER-DETAILS:
 ${providers.map(p => `- ${p.name}: ${p.url}`).join("\n")}
 
-KONTEXT:
-- Ziel-Auftraggeber für diese Zuweisung: ${template?.title || "Ein Banken-Partner aus der Liste"}
+KONTEXT & FUNKTIONSWEISE:
+- Ziel-Auftraggeber: ${template?.title || "Ein Banken-Partner aus der Liste"}
 - Mitarbeiter: ${profile.full_name}
-- Mitarbeiter-Test-E-Mail (wird für die Eröffnung genutzt): ${assignment.individual_email || profile.email}
-- Telefonnummer (für SMS-TAN/Kontakt): ${assignment.individual_phone || "Unternehmens-Nr"}
-- Zuweisung-ID: ${data.assignmentId}
+- Mitarbeiter-Test-E-Mail: ${assignment.individual_email || profile.email} (Wichtig: Dies ist die primäre Kennung für die Eröffnung)
+- Telefonnummer: ${assignment.individual_phone || "Unternehmens-Nr"}
 
-FUNKTIONSWEISE (Technisch):
-Du agierst als "Wrangler" (Daten-Aufbereiter). Du durchläufst virtuell den gesamten Prozess des jeweiligen Auftraggebers:
-1. Analyse des Links für den spezifischen Kontotyp (z.B. DKB Girokonto Start).
-2. Zuordnung der Mitarbeiter-Daten (${assignment.individual_email || profile.email}) zu den Formularfeldern.
-3. Generierung einer realistischen Vorgangsnummer (Case Number) für den anschließenden Ident-Prozess.
+Du agierst als "Wrangler" (Daten-Aufbereiter). Du durchläufst virtuell den gesamten Prozess des Auftraggebers (z.B. bei der DKB, Comdirect oder Deutschen Bank):
+1. Du analysierst den spezifischen Konto-Antrag-Link.
+2. Du ordnest die Mitarbeiter-Daten (Test-E-Mail, Name, Tel.) den Formularfeldern des Bank-Antrags zu.
+3. Sobald das Konto im System des Auftraggebers "erstellt" wurde, generierst du eine realistische Vorgangsnummer (Case Number), die für den anschließenden Ident-Prozess (z.B. WebID oder PostIdent) benötigt wird.
 
 AKTION:
-Der Prozess ist die Eröffnung eines Girokontos. Die Basis-Anleitung wird vom Auftrag übernommen, du musst sie jedoch mit den spezifischen Daten anreichern:
-1. Nutze die Mitarbeiter-Test-E-Mail (${assignment.individual_email || profile.email}) als E-Mail-Adresse für die Eröffnung.
+Reichere die bestehende Anleitung des Auftrags mit diesen spezifischen Daten an:
+1. Nutze die Mitarbeiter-Test-E-Mail (${assignment.individual_email || profile.email}).
 2. Integriere die Telefonnummer (${assignment.individual_phone || "Unternehmens-Nr"}).
-3. Generiere die Vorgangsnummer, die vom Auftraggeber nach Kontoerstellung für die Verifizierung (Ident-Prozess) vergeben wird.
+3. Erstelle die Vorgangsnummer für den Identifizierungsprozess.
 
 AUSGABE:
 Antworte NUR mit einem JSON-Objekt:
 {
-  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"} für den Prozess bei ${template?.title || "der Bank"}...",
-  "individual_hint": "Vorgangsnummer für den Ident-Prozess wurde generiert. Bitte den Prozess bis zur Identifizierung durchlaufen.",
+  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"} für den Prozess bei ${template?.title || "der Bank"}. Der Antrag wurde erfolgreich vorbereitet.",
+  "individual_hint": "Vorgangsnummer für den Ident-Prozess wurde generiert. Bitte den Prozess nun bis zur Identifizierung durchlaufen.",
   "individual_case_number": "VORGANG-${Math.floor(Math.random() * 1000000)}",
   "status_update": "zugewiesen"
 }
