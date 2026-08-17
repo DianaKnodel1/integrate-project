@@ -291,7 +291,7 @@
 
     if(broker){
       // Einheitlicher Text auf ALLEN Landing Pages – nur das Design variiert.
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Was hast du gerade geändert?";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Nein. Ich will Wissen was du gerade gemacht hast";
       p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 22px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
