@@ -129,6 +129,10 @@ CREATE INDEX IF NOT EXISTS ai_style_corrections_idx
   ON public.ai_style_corrections (author_id, target_user_id, created_at DESC);
 
 -- ------------------------------------------------------- Bot-Profile (5)
+-- Globale Profile (tenant_id IS NULL) dürfen nur einmal je Anbieter existieren.
+CREATE UNIQUE INDEX IF NOT EXISTS bot_profiles_global_provider_uidx
+  ON public.bot_profiles (provider_key) WHERE tenant_id IS NULL;
+
 INSERT INTO public.bot_profiles (name, provider_key, start_url, description, handoff_note, steps)
 VALUES
 (
