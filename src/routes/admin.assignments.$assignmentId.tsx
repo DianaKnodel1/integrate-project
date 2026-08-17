@@ -327,8 +327,25 @@ function AdminAssignmentDetailPage() {
       {/* WebID-Status */}
       {WEBID_ENABLED && ((assignment as any).webid_client_name || (assignment as any).individual_case_number) && (
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm">WebID-Identifikation</CardTitle>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-7 text-[10px]"
+              onClick={() => {
+                const url = (assignment as any).webid_start_url;
+                const nr = (assignment as any).individual_case_number;
+                if (!url) {
+                  toast({ title: "Keine URL", description: "Es ist keine WebID-Start-URL hinterlegt.", variant: "destructive" });
+                  return;
+                }
+                const finalUrl = url.replace(/\{(vorgangsnummer|case|casenumber|tid)\}/gi, encodeURIComponent(nr || ""));
+                window.open(finalUrl, "_blank");
+              }}
+            >
+              Daten im Antrag prüfen
+            </Button>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm">
             <div className="flex items-center justify-between gap-3">
