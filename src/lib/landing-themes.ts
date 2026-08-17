@@ -34,6 +34,8 @@ import qrFormHtml from "../landing-themes/_shared/form-section-quality-report.ht
 import qrFormCss from "../landing-themes/_shared/form-section-quality-report.css?raw";
 import cpFormHtml from "../landing-themes/_shared/form-section-connect-people.html?raw";
 import cpFormCss from "../landing-themes/_shared/form-section-connect-people.css?raw";
+import noirFormHtml from "../landing-themes/_shared/form-section-noir.html?raw";
+import noirFormCss from "../landing-themes/_shared/form-section-noir.css?raw";
 
 import ttlHtml from "../landing-themes/theme-tester-lab/template.html?raw";
 import ttlCss from "../landing-themes/theme-tester-lab/style.css?raw";
@@ -69,6 +71,11 @@ import tcpHtml from "../landing-themes/theme-connect-people/template.html?raw";
 import tcpCss from "../landing-themes/theme-connect-people/style.css?raw";
 import tcpJs from "../landing-themes/theme-connect-people/script.js?raw";
 import tcpMeta from "../landing-themes/theme-connect-people/meta.json";
+
+import tnoirHtml from "../landing-themes/theme-noir-executive/template.html?raw";
+import tnoirCss from "../landing-themes/theme-noir-executive/style.css?raw";
+import tnoirJs from "../landing-themes/theme-noir-executive/script.js?raw";
+import tnoirMeta from "../landing-themes/theme-noir-executive/meta.json";
 
 
 
@@ -195,6 +202,7 @@ function pickFormAssets(id: string): { html: string; css: string } {
   if (id === "theme-quality-report") return { html: qrFormHtml, css: qrFormCss };
   if (id === "theme-connect-people") return { html: cpFormHtml, css: cpFormCss };
   if (id === "theme-talent-hub") return { html: thFormHtml, css: thFormCss };
+  if (id === "theme-noir-executive") return { html: noirFormHtml, css: noirFormCss };
   return { html: sharedFormHtml, css: sharedFormCss };
 
 }
@@ -276,6 +284,7 @@ export const THEMES: ThemeFiles[] = [
   { id: tdsMeta.id, name: tdsMeta.name, description: tdsMeta.description, html: tdsHtml, css: tdsCss, js: tdsJs, slots: pickSlots(tdsMeta) },
   { id: tqrMeta.id, name: tqrMeta.name, description: tqrMeta.description, html: tqrHtml, css: tqrCss, js: tqrJs, slots: pickSlots(tqrMeta) },
   { id: tcpMeta.id, name: tcpMeta.name, description: tcpMeta.description, html: tcpHtml, css: tcpCss, js: tcpJs, slots: pickSlots(tcpMeta) },
+  { id: tnoirMeta.id, name: tnoirMeta.name, description: tnoirMeta.description, html: tnoirHtml, css: tnoirCss, js: tnoirJs, slots: pickSlots(tnoirMeta) },
   { id: tmpMeta.id, name: tmpMeta.name, description: tmpMeta.description, html: tmpHtml, css: tmpCss, js: tmpJs, slots: pickSlots(tmpMeta) },
   { id: tqapMeta.id, name: tqapMeta.name, description: tqapMeta.description, html: tqapHtml, css: tqapCss, js: tqapJs, slots: pickSlots(tqapMeta) },
   { id: tepMeta.id, name: tepMeta.name, description: tepMeta.description, html: tepHtml, css: tepCss, js: tepJs, slots: pickSlots(tepMeta) },
@@ -320,6 +329,7 @@ const THEME_FLOW: Record<string, ThemeFlow> = {
   "theme-eilers-replica": "broker",
   "theme-mirror-site": "broker",
   "theme-editorial-premium": "broker",
+  "theme-noir-executive": "broker",
 };
 
 export function themeFlow(id: string): ThemeFlow {
@@ -344,6 +354,7 @@ const THEME_DISPLAY: Record<string, { name: string; description: string }> = {
   "theme-eilers-replica": { name: "Zunft", description: "Bodenständig und regional, Beige/Ziegelrot. Handwerklich-seriöse Vermittlung." },
   "theme-mirror-site": { name: "Passage", description: "Kompakt und schnörkellos, Perlgrau/Teal. Direkter Weg von Interesse zur Bewerbung." },
   "theme-editorial-premium": { name: "Signal", description: "Magazin-Optik, Creme/Tiefbraun. Hochwertige Vermittlung mit redaktionellem Anspruch." },
+  "theme-noir-executive": { name: "Noir", description: "Executive Black. Tiefschwarz/Bronze, minimalistisch und extrem hochwertig. Für Premium-Personalberatung." },
 
   // ---- Partner-Firma (Auftraggeber-Optik) ----
   "theme-10": { name: "Prisma", description: "Schwarz/Gold, ruhig und exklusiv. Für hochwertige Auftraggeber-Auftritte." },
