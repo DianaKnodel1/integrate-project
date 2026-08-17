@@ -311,7 +311,7 @@
       else{var hint3=document.createElement('p');hint3.textContent='Die Terminbuchung ist gerade nicht verfügbar. Bitte kontaktieren Sie uns kurz – wir vereinbaren den Termin persönlich mit Ihnen.';hint3.style.cssText='margin:4px 0 0;font-size:13px;color:#64748b;';box.appendChild(hint3);
         try{console.error('[landing] broker.calendly_url fehlt – Landing Page ohne Calendly-Link konfiguriert');}catch(e){}}
     } else if(isFast){
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Nein. Ich will Wissen was du gerade gemacht hast";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Bitte erstmal planen. Was haben wir in den letzten Änderungen genau gemacht?";
       p.textContent='Wir haben Ihre Bewerbung erfolgreich erhalten.';
       if(redirectUrl){var gn=document.createElement('button');gn.type='button';gn.textContent='Jetzt zum Portal →';
         gn.style.cssText='display:block;width:100%;background:#0f172a;color:#fff;border:0;padding:14px 18px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;margin-bottom:12px;';
