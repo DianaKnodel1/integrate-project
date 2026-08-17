@@ -26,24 +26,26 @@ export const createAssignmentAutomation = createServerFn({ method: "POST" })
     }
 
     // 2. Prepare context for the Compliance/KYC Bot
-    // Sources: Consorsbank, DKB, Deutsche Bank, Santander, comdirect
-    const sources = [
-      "https://www.consorsbank.de/home",
-      "https://www.dkb.de/",
-      "https://www.deutsche-bank.de/pk.html",
-      "https://www.santander.de/privatkunden/",
-      "https://www.comdirect.de/cms/index.html?CIF_Check=true"
+    // Specifically targeting the 5 providers mentioned by the user
+    const providers = [
+      { name: "DKB (Girokonto Start)", url: "https://dein-antrag.dkb.de/girokonto-start/" },
+      { name: "Deutsche Bank (Aktiv Konto)", url: "https://www.deutsche-bank.de/pk/konto-und-karte/konten-im-ueberblick/konten-im-vergleich.html#vergleichen" },
+      { name: "Comdirect (Girokonto)", url: "https://www.comdirect.de/konto/girokonto.html" },
+      { name: "Consorsbank", url: "https://www.consorsbank.de/home" },
+      { name: "Santander", url: "https://www.santander.de/privatkunden/" }
     ];
 
     const prompt = `Du bist ein Compliance & KYC Automatisierungs-Bot für Martin Schneider.
-Deine Aufgabe: Erstelle die finalen Daten für eine Kontoeröffnung und den anschließenden Identifizierungsprozess.
+Deine Aufgabe: Simuliere/Erstelle die finalen Daten für eine Kontoeröffnung und den anschließenden Identifizierungsprozess bei einem der folgenden Auftraggeber.
+
+AUFTRAGGEBER-DETAILS:
+${providers.map(p => `- ${p.name}: ${p.url}`).join("\n")}
 
 KONTEXT:
-- Auftraggeber: ${sources.join(", ")}
-- Aufgabe (mit Basis-Anleitung): ${template?.title || "KYC Prüfung"}
+- Ziel-Auftraggeber für diese Zuweisung: ${template?.title || "Ein Banken-Partner aus der Liste"}
 - Mitarbeiter: ${profile.full_name}
-- Mitarbeiter-Test-E-Mail: ${assignment.individual_email || profile.email}
-- Telefonnummer (Mitarbeiter oder Unternehmen): ${assignment.individual_phone || "Unternehmens-Nr"}
+- Mitarbeiter-Test-E-Mail (wird für die Eröffnung genutzt): ${assignment.individual_email || profile.email}
+- Telefonnummer (für SMS-TAN/Kontakt): ${assignment.individual_phone || "Unternehmens-Nr"}
 - Zuweisung-ID: ${data.assignmentId}
 
 AKTION:
