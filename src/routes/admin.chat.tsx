@@ -430,7 +430,9 @@ function AdminChatPage() {
           context
         } 
       });
-      setNewMessage(res.suggestion);
+      if (res.suggestion) {
+        setNewMessage(res.suggestion);
+      }
     } catch (e) {
       toast({ title: "KI Fehler", description: "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
     } finally {
