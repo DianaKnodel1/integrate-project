@@ -291,8 +291,8 @@
 
     if(broker){
       // Einheitlicher Text auf ALLEN Landing Pages – nur das Design variiert.
-      h.textContent='Vielen Dank für Ihre Bewerbung';
-      p.textContent='Wir haben Ihre Daten erfolgreich erhalten.';
+      h.textContent='Fast geschafft!';
+      p.textContent='Um Ihre Bewerbung abzuschließen, wählen Sie bitte jetzt Ihren Termin für das Erstgespräch aus.';
       var pc=document.createElement('div');pc.style.cssText='background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin:0 0 22px;';
       if(broker.partner_logo){var lg=document.createElement('img');lg.src=broker.partner_logo;lg.alt=broker.partner_name||'';lg.style.cssText='max-height:36px;margin:0 auto 10px;display:block;';pc.appendChild(lg);}
       var pl=document.createElement('div');pl.textContent='Wir verbinden Sie mit';pl.style.cssText='font-size:13px;color:#475569;margin-bottom:6px;';
