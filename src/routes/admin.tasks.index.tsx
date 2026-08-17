@@ -89,6 +89,14 @@ function AdminTasksPage() {
       if (validQ.length > 0) {
         await supabase.from("task_questions").insert(validQ.map((q, i) => ({ task_template_id: editTemplate.id, question: q, sort_order: i })));
       }
+      
+      // Auto-assign check
+      const { data: existing } = await supabase.from("task_assignments")
+        .select("user_id").eq("task_template_id", editTemplate.id).limit(1);
+      if (existing && existing.length > 0) {
+        toast({ title: "Hinweis", description: "Diese Vorlage ist bereits zugewiesen." });
+      }
+
       toast({ title: "Aufgabe aktualisiert" });
       setEditTemplate(null);
     } else {
