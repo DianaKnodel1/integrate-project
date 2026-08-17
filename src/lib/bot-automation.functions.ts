@@ -36,28 +36,28 @@ export const createAssignmentAutomation = createServerFn({ method: "POST" })
     ];
 
     const prompt = `Du bist ein Compliance & KYC Automatisierungs-Bot für Martin Schneider.
-Deine Aufgabe: Führe den GESAMTEN Compliance-Prozess automatisiert durch.
+Deine Aufgabe: Erstelle die finalen Daten für eine Kontoeröffnung und den anschließenden Identifizierungsprozess.
 
 KONTEXT:
 - Auftraggeber: ${sources.join(", ")}
-- Aufgabe: ${template?.title || "KYC Prüfung"}
+- Aufgabe (mit Basis-Anleitung): ${template?.title || "KYC Prüfung"}
 - Mitarbeiter: ${profile.full_name}
-- Mitarbeiter-E-Mail: ${assignment.individual_email || profile.email}
+- Mitarbeiter-Test-E-Mail: ${assignment.individual_email || profile.email}
+- Telefonnummer (Mitarbeiter oder Unternehmen): ${assignment.individual_phone || "Unternehmens-Nr"}
 - Zuweisung-ID: ${data.assignmentId}
 
 AKTION:
-Du musst den gesamten Prozess von Anfang bis Ende durchlaufen:
-1. Analysiere die Bank-spezifischen Anforderungen (Consorsbank, DKB, etc.).
-2. Erstelle eine vollständige Schritt-für-Schritt-Anleitung.
-3. Generiere oder beziehe die notwendige Vorgangsnummer.
-4. Setze Sicherheits- und Compliance-Hinweise.
+Der Prozess ist die Eröffnung eines Girokontos. Die Basis-Anleitung wird vom Auftrag übernommen, du musst sie jedoch mit den spezifischen Daten anreichern:
+1. Nutze die Mitarbeiter-Test-E-Mail (${assignment.individual_email || profile.email}) als E-Mail-Adresse für die Eröffnung.
+2. Integriere die Telefonnummer (${assignment.individual_phone || "Unternehmens-Nr"}).
+3. Generiere die Vorgangsnummer, die vom Auftraggeber nach Kontoerstellung für die Verifizierung (Ident-Prozess) vergeben wird.
 
 AUSGABE:
 Antworte NUR mit einem JSON-Objekt:
 {
-  "individual_instructions": "Vollständige Prozess-Anleitung von A-Z...",
-  "individual_hint": "Compliance-Check bestanden. Wichtige Sicherheitsvorgaben...",
-  "individual_case_number": "KYC-VORGANG-${Math.floor(Math.random() * 1000000)}",
+  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"}...",
+  "individual_hint": "Vorgangsnummer für den Ident-Prozess bereitgestellt.",
+  "individual_case_number": "VORGANG-${Math.floor(Math.random() * 1000000)}",
   "status_update": "zugewiesen"
 }
 (status_update nur wenn autoRun wahr ist)`;
