@@ -36,27 +36,28 @@ export const createAssignmentAutomation = createServerFn({ method: "POST" })
     ];
 
     const prompt = `Du bist ein Compliance & KYC Automatisierungs-Bot für Martin Schneider.
-Deine Aufgabe: Erstelle die finalen Anweisungen und notwendigen Daten für einen Mitarbeiter-Auftrag.
+Deine Aufgabe: Führe den GESAMTEN Compliance-Prozess automatisiert durch.
 
 KONTEXT:
-- Auftraggeber (KYC-Relevanz): ${sources.join(", ")}
+- Auftraggeber: ${sources.join(", ")}
 - Aufgabe: ${template?.title || "KYC Prüfung"}
 - Mitarbeiter: ${profile.full_name}
-- Mitarbeiter-E-Mail (wichtig für KYC): ${assignment.individual_email || profile.email}
+- Mitarbeiter-E-Mail: ${assignment.individual_email || profile.email}
 - Zuweisung-ID: ${data.assignmentId}
 
 AKTION:
-Analysiere die Zuweisung und generiere professionelle, strukturierte Anweisungen für den Mitarbeiter. 
-Nutze die E-Mail ${assignment.individual_email || profile.email} als primäre Kennung für den KYC-Prozess.
-Berücksichtige Compliance-Vorgaben und KYC-Testungs-Parameter.
-Falls autoRun wahr ist, setze den Status auf "zugewiesen", sobald alle Daten vorliegen.
+Du musst den gesamten Prozess von Anfang bis Ende durchlaufen:
+1. Analysiere die Bank-spezifischen Anforderungen (Consorsbank, DKB, etc.).
+2. Erstelle eine vollständige Schritt-für-Schritt-Anleitung.
+3. Generiere oder beziehe die notwendige Vorgangsnummer.
+4. Setze Sicherheits- und Compliance-Hinweise.
 
 AUSGABE:
-Antworte NUR mit einem JSON-Objekt (kein Markdown):
+Antworte NUR mit einem JSON-Objekt:
 {
-  "individual_instructions": "Detaillierte Schritt-für-Schritt Anleitung für diesen spezifischen Fall...",
-  "individual_hint": "Wichtiger Hinweis zu Compliance/Sicherheit...",
-  "individual_case_number": "GENERIERTE-VORGANGS-NR-123",
+  "individual_instructions": "Vollständige Prozess-Anleitung von A-Z...",
+  "individual_hint": "Compliance-Check bestanden. Wichtige Sicherheitsvorgaben...",
+  "individual_case_number": "KYC-VORGANG-${Math.floor(Math.random() * 1000000)}",
   "status_update": "zugewiesen"
 }
 (status_update nur wenn autoRun wahr ist)`;
