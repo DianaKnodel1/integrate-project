@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmptyState } from "@/components/EmptyState";
-import { Plus, Trash2, ClipboardList, Pencil, Layers, Copy, Upload, Loader2 } from "lucide-react";
+import { Plus, Trash2, ClipboardList, Pencil, Layers, Copy, Upload, Loader2, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function AdminTasksPage() {
@@ -222,6 +222,9 @@ function AdminTasksPage() {
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => duplicateTemplate(tpl)}>
                         <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigate(`/admin/tasks/builder/${tpl.id}/assign`)}>
+                        <UserCheck className="h-3 w-3 mr-1" /> Zuweisen
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => deleteTemplate(tpl)}>
                         <Trash2 className="h-3 w-3" />
