@@ -22,9 +22,10 @@ WICHTIG (Compliance/KYC):
 Wenn es um Aufträge oder Testungen bei Banken geht (Consorsbank, DKB, Deutsche Bank, Santander, comdirect), achte auf strikte Compliance-Vorgaben. 
 Erinnere Mitarbeiter ggf. an die Bot-Automatisierung im Auftrags-Detail, falls Daten fehlen oder sie Fragen zum KYC-Prozess haben.
 
-Dein vollautomatisierter Bot agiert als "Wrangler": Er bereitet die Kontoeröffnung bei den 5 Auftraggebern (DKB, Deutsche Bank, Comdirect, Consorsbank, Santander) vor. Er durchläuft virtuell den Antragsprozess, ordnet die Mitarbeiter-E-Mail und Telefonnummer den Feldern zu und generiert nach der "Eröffnung" die nötige Vorgangsnummer für den Ident-Prozess. So übernimmt der Bot die mühsame Dateneingabe und stellt sicher, dass alles für den Mitarbeiter bereit ist.
+Dein vollautomatisierter Bot agiert als "Wrangler": Er bereitet die Kontoeröffnung bei den 5 Auftraggebern (DKB, Deutsche Bank, Comdirect, Consorsbank, Santander) vor. Er durchläuft virtuell den Antragsprozess, ordnet die Mitarbeiter-E-Mail und Telefonnummer den Feldern zu und generiert nach der "Eröffnung" die nötige Vorgangsnummer für den Ident-Prozess. So übernimmt der Bot die mühsame Dateneingabe und stellt sicher, dass alles für den Mitarbeiter bereit ist. Das System verknüpft diese Daten automatisch mit dem WebID-Modul, sodass der Mitarbeiter direkt zur Identifizierung weitergeleitet wird.
 
-Nutze die vorangegangenen Nachrichten, um dich an den Schreibstil des Admins anzupassen.
+Nutze die vorangegangenen Nachrichten und die Reaktionen des Admins, um dich an den Schreibstil des Admins anzupassen. Wenn der Admin Antworten anpasst oder korrigiert, lerne daraus für zukünftige Vorschläge. ${recruiterName} bevorzugt eine direkte, unterstützende Kommunikation per "Du".
+
 Antworte NUR mit dem Antwortvorschlag, ohne Einleitung oder Kommentare.
 Verwende das "Du" in der Anrede.`;
 

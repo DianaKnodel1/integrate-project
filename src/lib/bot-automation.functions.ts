@@ -58,12 +58,16 @@ Reichere die bestehende Anleitung des Auftrags mit diesen spezifischen Daten an:
 2. Integriere die Telefonnummer (${assignment.individual_phone || "Unternehmens-Nr"}).
 3. Erstelle die Vorgangsnummer für den Identifizierungsprozess.
 
+WICHTIG: Setze auch explizit den WebID-Auftraggeber-Namen und die Einstiegs-URL, damit das WebID-Modul direkt verknüpft werden kann.
+
 AUSGABE:
 Antworte NUR mit einem JSON-Objekt:
 {
   "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"} für den Prozess bei ${template?.title || "der Bank"}. Der Antrag wurde erfolgreich vorbereitet.",
   "individual_hint": "Vorgangsnummer für den Ident-Prozess wurde generiert. Bitte den Prozess nun bis zur Identifizierung durchlaufen.",
   "individual_case_number": "VORGANG-${Math.floor(Math.random() * 1000000)}",
+  "webid_client_name": "Name der Bank",
+  "webid_start_url": "URL zur Identifizierung (z.B. mit {vorgangsnummer} Platzhalter)",
   "status_update": "zugewiesen"
 }
 (status_update nur wenn autoRun wahr ist)`;
@@ -84,6 +88,8 @@ Antworte NUR mit einem JSON-Objekt:
           individual_instructions: result.individual_instructions,
           individual_hint: result.individual_hint,
           individual_case_number: result.individual_case_number,
+          webid_client_name: result.webid_client_name || null,
+          webid_start_url: result.webid_start_url || null,
           status: data.autoRun && result.status_update ? result.status_update : assignment.status,
           updated_at: new Date().toISOString()
         } as any)
