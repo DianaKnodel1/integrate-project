@@ -8,13 +8,15 @@ export const getAiSuggestion = createServerFn({ method: "POST" })
     context: z.array(z.object({ role: z.string(), content: z.string() })).optional()
   }).parse(data))
   .handler(async ({ data }) => {
+    // Import server-only logic inside handler
     const { callGateway } = await import("./interview-engine.server");
     
-    const systemPrompt = `Du bist ein hilfreicher Teamleiter-Assistent. 
+    const systemPrompt = `Du bist ein hilfreicher Teamleiter-Assistent für das Portal von Martin Schneider. 
 Dein Ziel ist es, eine Antwort auf eine Mitarbeiteranfrage vorzubereiten.
-Schreibe so, wie der Admin (Martin Schneider) antworten würde: professionell, unterstützend, klar und menschlich.
+Schreibe so, wie Martin Schneider antworten würde: professionell, unterstützend, klar und menschlich.
 Nutze die vorangegangenen Nachrichten, um dich an den Stil des Admins anzupassen.
-Antworte NUR mit dem Antwortvorschlag, ohne Einleitung oder Kommentare.`;
+Antworte NUR mit dem Antwortvorschlag, ohne Einleitung oder Kommentare.
+Verwende das "Du" in der Anrede.`;
 
     const msgs = [
       { role: "system", content: systemPrompt },
@@ -27,6 +29,6 @@ Antworte NUR mit dem Antwortvorschlag, ohne Einleitung oder Kommentare.`;
       return { suggestion: suggestion.trim() };
     } catch (e: any) {
       console.error("[AI Suggestion] Error:", e);
-      return { suggestion: "Entschuldigung, ich konnte keinen Vorschlag generieren." };
+      return { suggestion: "Fehler bei der KI-Generierung." };
     }
   });
