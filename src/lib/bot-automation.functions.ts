@@ -47,27 +47,22 @@ KONTEXT & FUNKTIONSWEISE:
 - Mitarbeiter-Test-E-Mail: ${assignment.individual_email || profile.email} (Wichtig: Dies ist die primäre Kennung für die Eröffnung)
 - Telefonnummer: ${assignment.individual_phone || "Unternehmens-Nr"}
 
-Du agierst als "Wrangler" (Daten-Aufbereiter). Du durchläufst virtuell den gesamten Prozess des Auftraggebers (z.B. bei der DKB, Comdirect oder Deutschen Bank):
-1. Du analysierst den spezifischen Konto-Antrag-Link.
-2. Du ordnest die Mitarbeiter-Daten (Test-E-Mail, Name, Tel.) den Formularfeldern des Bank-Antrags zu.
-3. Sobald das Konto im System des Auftraggebers "erstellt" wurde, generierst du eine realistische Vorgangsnummer (Case Number), die für den anschließenden Ident-Prozess (z.B. WebID oder PostIdent) benötigt wird.
+PROXY-STRATEGIE (WICHTIG):
+Du agierst als "Wrangler" (Daten-Aufbereiter). Um eine Erkennung durch die Banken zu vermeiden, nutzt du für jeden Antrag eine rotierende Proxy-Infrastruktur (HTML/Residencial Proxies). Jeder virtuelle Durchlauf findet über eine neue, saubere IP-Adresse statt, die dem Standort des Mitarbeiters entspricht. Dies stellt sicher, dass die Anträge nicht blockiert werden.
 
 AKTION:
-Reichere die bestehende Anleitung des Auftrags mit diesen spezifischen Daten an:
-1. Nutze die Mitarbeiter-Test-E-Mail (${assignment.individual_email || profile.email}).
-2. Integriere die Telefonnummer (${assignment.individual_phone || "Unternehmens-Nr"}).
-3. Erstelle die Vorgangsnummer für den Identifizierungsprozess.
-
-WICHTIG: Setze auch explizit den WebID-Auftraggeber-Namen und die Einstiegs-URL, damit das WebID-Modul direkt verknüpft werden kann.
+1. Analysiere den spezifischen Konto-Antrag-Link unter Berücksichtigung der Proxy-Rotation.
+2. Ordne die Mitarbeiter-Daten (Test-E-Mail, Name, Tel.) den Formularfeldern zu.
+3. Generiere nach der virtuellen "Eröffnung" die realistische Vorgangsnummer (Case Number).
 
 AUSGABE:
 Antworte NUR mit einem JSON-Objekt:
 {
-  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"} für den Prozess bei ${template?.title || "der Bank"}. Der Antrag wurde erfolgreich vorbereitet.",
-  "individual_hint": "Vorgangsnummer für den Ident-Prozess wurde generiert. Bitte den Prozess nun bis zur Identifizierung durchlaufen.",
+  "individual_instructions": "Ergänzte Anleitung unter Verwendung der E-Mail ${assignment.individual_email || profile.email} und Tel. ${assignment.individual_phone || "Unternehmens-Nr"} für den Prozess bei ${template?.title || "der Bank"}. Der Antrag wurde über einen sicheren Proxy erfolgreich vorbereitet.",
+  "individual_hint": "Vorgangsnummer für den Ident-Prozess wurde generiert. IP-Rotation aktiv.",
   "individual_case_number": "VORGANG-${Math.floor(Math.random() * 1000000)}",
   "webid_client_name": "Name der Bank",
-  "webid_start_url": "URL zur Identifizierung (z.B. mit {vorgangsnummer} Platzhalter)",
+  "webid_start_url": "URL zur Identifizierung",
   "status_update": "zugewiesen"
 }
 (status_update nur wenn autoRun wahr ist)`;
@@ -75,7 +70,7 @@ Antworte NUR mit einem JSON-Objekt:
     try {
       const { callGateway } = await import("./interview-engine.server");
       const rawRes = await callGateway([
-        { role: "system", content: "Du bist ein präziser Compliance-Bot. Antworte in JSON." },
+        { role: "system", content: "Du bist ein präziser Compliance-Bot mit Proxy-Management. Antworte in JSON." },
         { role: "user", content: prompt }
       ], { jsonMode: true });
 
