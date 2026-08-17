@@ -180,7 +180,6 @@ function AdminMitarbeiterPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <CreateEmployeeButton onCreated={loadData} />
           <PurgeButton />
           <div className="relative w-72">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />

@@ -61,8 +61,8 @@ function EmailMonitorWidget() {
               <p className="text-[10px] text-muted-foreground">Letzte 7 Tage · {stats.total} eindeutige Mails</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/admin/email-center")}>
-            E-Mail-Center <ArrowRight className="h-3 w-3" />
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate("/admin/bewerbungen")}>
+            Bewerbungen <ArrowRight className="h-3 w-3" />
           </Button>
         </div>
 
@@ -132,7 +132,7 @@ function AdminDashboardPage() {
     { label: "Neue Bewerbungen", value: newApplications, icon: FileText, path: "/admin/personen", highlight: newApplications > 0 },
     // "Offene Verifizierung" entfernt — KYC wird direkt in der Mitarbeiter-Detailseite geprüft.
     { label: "Aufgaben zur Prüfung", value: pendingReviews, icon: ClipboardList, path: "/admin/reviews", highlight: pendingReviews > 0 },
-    { label: "Termine heute", value: todayBookings, icon: CalendarDays, path: "/admin/appointments", highlight: todayBookings > 0 },
+    { label: "Termine heute", value: todayBookings, icon: CalendarDays, path: "/admin/bewerbungen", highlight: todayBookings > 0 },
     { label: "Mitarbeiter angenommen", value: activeEmployees, icon: FileText, path: "/admin/personen", highlight: false },
     { label: "Mitarbeiter gesamt", value: profiles.length, icon: FileText, path: "/admin/personen", highlight: false },
   ];
