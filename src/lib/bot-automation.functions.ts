@@ -56,7 +56,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown):
   "individual_hint": "Wichtiger Hinweis zu Compliance/Sicherheit...",
   "individual_case_number": "GENERIERTE-VORGANGS-NR-123",
   "status_update": "zugewiesen"
-}`;
+}
+(status_update nur wenn autoRun wahr ist)`;
 
     try {
       const { callGateway } = await import("./interview-engine.server");
