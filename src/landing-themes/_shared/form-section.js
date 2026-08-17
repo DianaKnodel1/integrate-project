@@ -328,7 +328,7 @@
       box.appendChild(cta);
       box.appendChild(spamHintBox(emailStatus));
     } else {
-      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            I have approved the plan";
+      h.textContent="'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Was hast du gerade geändert?";
       p.innerHTML=bookingError==='internal_schedule_missing'
         ? 'Ihre Bewerbung wurde gespeichert. Die Terminwahl ist aktuell nicht verfügbar. Wir senden Ihnen den Termin-Link per E-Mail oder melden uns direkt bei Ihnen.'
         : 'Ihre Bewerbung wurde gespeichert. Wir melden uns zeitnah per E-Mail oder Telefon bei Ihnen.';
