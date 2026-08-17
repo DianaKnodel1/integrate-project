@@ -12,7 +12,7 @@
 //  4) no_show             booking_status='no_show'
 //  5) angenommen          status='akzeptiert' ODER interview_recommendation='invite'
 //  6) abgelehnt           status='abgelehnt'  ODER interview_recommendation='reject'
-//  7) reg_mail            email_send_log (invitation|signup_confirmation, sent) matched email
+
 //  8) registriert         profiles existiert (email match)
 //  9) onboarded           profiles.onboarding_status='abgeschlossen'
 
@@ -239,7 +239,7 @@ export const getCohortStats = createServerFn({ method: "POST" })
       no_show:             sum(rows, "no_show"),
       angenommen:          sum(rows, "angenommen"),
       abgelehnt:           sum(rows, "abgelehnt"),
-      reg_mail:            sum(rows, "reg_mail"),
+      
       registriert:         sum(rows, "registriert"),
       onboarded:           sum(rows, "onboarded"),
     };

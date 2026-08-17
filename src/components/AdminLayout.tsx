@@ -48,7 +48,7 @@ const navGroups: NavGroup[] = [
     label: "Aufträge",
     items: [
       { title: "Aufträge", url: "/admin/tasks", icon: ClipboardList },
-      { title: "Mitarbeiter-Termine", url: "/admin/appointments", icon: CalendarDays },
+      
       { title: "Prüfungen", url: "/admin/reviews", icon: CheckSquare },
       { title: "Uploads", url: "/admin/uploads", icon: Upload },
     ],
