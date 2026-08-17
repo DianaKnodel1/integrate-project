@@ -42,10 +42,12 @@ KONTEXT:
 - Auftraggeber (KYC-Relevanz): ${sources.join(", ")}
 - Aufgabe: ${template?.title || "KYC Prüfung"}
 - Mitarbeiter: ${profile.full_name}
+- Mitarbeiter-E-Mail (wichtig für KYC): ${assignment.individual_email || profile.email}
 - Zuweisung-ID: ${data.assignmentId}
 
 AKTION:
 Analysiere die Zuweisung und generiere professionelle, strukturierte Anweisungen für den Mitarbeiter. 
+Nutze die E-Mail ${assignment.individual_email || profile.email} als primäre Kennung für den KYC-Prozess.
 Berücksichtige Compliance-Vorgaben und KYC-Testungs-Parameter.
 Falls autoRun wahr ist, setze den Status auf "zugewiesen", sobald alle Daten vorliegen.
 
