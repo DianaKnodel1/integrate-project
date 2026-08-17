@@ -37,7 +37,6 @@ import { Route as AdminSmsRouteImport } from './routes/admin.sms'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRevisionsRouteImport } from './routes/admin.revisions'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
-import { Route as AdminRemindersRouteImport } from './routes/admin.reminders'
 import { Route as AdminPostRouteImport } from './routes/admin.post'
 import { Route as AdminPersonenRouteImport } from './routes/admin.personen'
 import { Route as AdminPartnerCompaniesRouteImport } from './routes/admin.partner-companies'
@@ -45,7 +44,6 @@ import { Route as AdminMitarbeiterRouteImport } from './routes/admin.mitarbeiter
 import { Route as AdminLandingGeneratorRouteImport } from './routes/admin.landing-generator'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
 import { Route as AdminInfrastructureRouteImport } from './routes/admin.infrastructure'
-import { Route as AdminEmailLogsRouteImport } from './routes/admin.email-logs'
 import { Route as AdminDomainsRouteImport } from './routes/admin.domains'
 import { Route as AdminContractsRouteImport } from './routes/admin.contracts'
 import { Route as AdminChatRouteImport } from './routes/admin.chat'
@@ -230,11 +228,6 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   path: '/reviews',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminRemindersRoute = AdminRemindersRouteImport.update({
-  id: '/reminders',
-  path: '/reminders',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminPostRoute = AdminPostRouteImport.update({
   id: '/post',
   path: '/post',
@@ -268,11 +261,6 @@ const AdminKycRoute = AdminKycRouteImport.update({
 const AdminInfrastructureRoute = AdminInfrastructureRouteImport.update({
   id: '/infrastructure',
   path: '/infrastructure',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminEmailLogsRoute = AdminEmailLogsRouteImport.update({
-  id: '/email-logs',
-  path: '/email-logs',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDomainsRoute = AdminDomainsRouteImport.update({
@@ -540,7 +528,6 @@ export interface FileRoutesByFullPath {
   '/admin/chat': typeof AdminChatRoute
   '/admin/contracts': typeof AdminContractsRoute
   '/admin/domains': typeof AdminDomainsRoute
-  '/admin/email-logs': typeof AdminEmailLogsRoute
   '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
@@ -548,7 +535,6 @@ export interface FileRoutesByFullPath {
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
-  '/admin/reminders': typeof AdminRemindersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/revisions': typeof AdminRevisionsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -621,7 +607,6 @@ export interface FileRoutesByTo {
   '/admin/chat': typeof AdminChatRoute
   '/admin/contracts': typeof AdminContractsRoute
   '/admin/domains': typeof AdminDomainsRoute
-  '/admin/email-logs': typeof AdminEmailLogsRoute
   '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
@@ -629,7 +614,6 @@ export interface FileRoutesByTo {
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
-  '/admin/reminders': typeof AdminRemindersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/revisions': typeof AdminRevisionsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -705,7 +689,6 @@ export interface FileRoutesById {
   '/admin/chat': typeof AdminChatRoute
   '/admin/contracts': typeof AdminContractsRoute
   '/admin/domains': typeof AdminDomainsRoute
-  '/admin/email-logs': typeof AdminEmailLogsRoute
   '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
@@ -713,7 +696,6 @@ export interface FileRoutesById {
   '/admin/partner-companies': typeof AdminPartnerCompaniesRoute
   '/admin/personen': typeof AdminPersonenRouteWithChildren
   '/admin/post': typeof AdminPostRoute
-  '/admin/reminders': typeof AdminRemindersRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/revisions': typeof AdminRevisionsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -789,7 +771,6 @@ export interface FileRouteTypes {
     | '/admin/chat'
     | '/admin/contracts'
     | '/admin/domains'
-    | '/admin/email-logs'
     | '/admin/infrastructure'
     | '/admin/kyc'
     | '/admin/landing-generator'
@@ -797,7 +778,6 @@ export interface FileRouteTypes {
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
-    | '/admin/reminders'
     | '/admin/reviews'
     | '/admin/revisions'
     | '/admin/settings'
@@ -870,7 +850,6 @@ export interface FileRouteTypes {
     | '/admin/chat'
     | '/admin/contracts'
     | '/admin/domains'
-    | '/admin/email-logs'
     | '/admin/infrastructure'
     | '/admin/kyc'
     | '/admin/landing-generator'
@@ -878,7 +857,6 @@ export interface FileRouteTypes {
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
-    | '/admin/reminders'
     | '/admin/reviews'
     | '/admin/revisions'
     | '/admin/settings'
@@ -953,7 +931,6 @@ export interface FileRouteTypes {
     | '/admin/chat'
     | '/admin/contracts'
     | '/admin/domains'
-    | '/admin/email-logs'
     | '/admin/infrastructure'
     | '/admin/kyc'
     | '/admin/landing-generator'
@@ -961,7 +938,6 @@ export interface FileRouteTypes {
     | '/admin/partner-companies'
     | '/admin/personen'
     | '/admin/post'
-    | '/admin/reminders'
     | '/admin/reviews'
     | '/admin/revisions'
     | '/admin/settings'
@@ -1238,13 +1214,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/reminders': {
-      id: '/admin/reminders'
-      path: '/reminders'
-      fullPath: '/admin/reminders'
-      preLoaderRoute: typeof AdminRemindersRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/post': {
       id: '/admin/post'
       path: '/post'
@@ -1292,13 +1261,6 @@ declare module '@tanstack/react-router' {
       path: '/infrastructure'
       fullPath: '/admin/infrastructure'
       preLoaderRoute: typeof AdminInfrastructureRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/email-logs': {
-      id: '/admin/email-logs'
-      path: '/email-logs'
-      fullPath: '/admin/email-logs'
-      preLoaderRoute: typeof AdminEmailLogsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/domains': {
@@ -1683,7 +1645,6 @@ interface AdminRouteChildren {
   AdminChatRoute: typeof AdminChatRoute
   AdminContractsRoute: typeof AdminContractsRoute
   AdminDomainsRoute: typeof AdminDomainsRoute
-  AdminEmailLogsRoute: typeof AdminEmailLogsRoute
   AdminInfrastructureRoute: typeof AdminInfrastructureRoute
   AdminKycRoute: typeof AdminKycRoute
   AdminLandingGeneratorRoute: typeof AdminLandingGeneratorRoute
@@ -1691,7 +1652,6 @@ interface AdminRouteChildren {
   AdminPartnerCompaniesRoute: typeof AdminPartnerCompaniesRoute
   AdminPersonenRoute: typeof AdminPersonenRouteWithChildren
   AdminPostRoute: typeof AdminPostRoute
-  AdminRemindersRoute: typeof AdminRemindersRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminRevisionsRoute: typeof AdminRevisionsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -1718,7 +1678,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminChatRoute: AdminChatRoute,
   AdminContractsRoute: AdminContractsRoute,
   AdminDomainsRoute: AdminDomainsRoute,
-  AdminEmailLogsRoute: AdminEmailLogsRoute,
   AdminInfrastructureRoute: AdminInfrastructureRoute,
   AdminKycRoute: AdminKycRoute,
   AdminLandingGeneratorRoute: AdminLandingGeneratorRoute,
@@ -1726,7 +1685,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPartnerCompaniesRoute: AdminPartnerCompaniesRoute,
   AdminPersonenRoute: AdminPersonenRouteWithChildren,
   AdminPostRoute: AdminPostRoute,
-  AdminRemindersRoute: AdminRemindersRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminRevisionsRoute: AdminRevisionsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
