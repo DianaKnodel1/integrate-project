@@ -91,8 +91,7 @@ export function StaffAccountsCard() {
           <UserCog className="h-4 w-4" /> Admin-Mitarbeiter
         </CardTitle>
         <CardDescription>
-          Zusatzkonten mit Zugriff auf Aufträge (zuweisen, prüfen) und alle Chats — ohne Einstellungen,
-          Bewerbungen, Tenants oder Finanzen.
+          Zusatzkonto mit Zugriff auf Aufträge (zuweisen, prüfen) und alle Chats.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -134,28 +133,6 @@ export function StaffAccountsCard() {
           )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 max-w-3xl">
-          <div className="space-y-2">
-            <Label>Name</Label>
-            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Max Mustermann" />
-          </div>
-          <div className="space-y-2">
-            <Label>E-Mail</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@unternehmen.de" />
-          </div>
-          <div className="space-y-2">
-            <Label>Passwort</Label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mind. 8 Zeichen" />
-          </div>
-        </div>
-        <Button
-          onClick={create}
-          disabled={saving || !fullName.trim() || !email.trim() || password.length < 8}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          {saving ? "Wird angelegt…" : "Admin-Mitarbeiter anlegen"}
-        </Button>
       </CardContent>
     </Card>
   );

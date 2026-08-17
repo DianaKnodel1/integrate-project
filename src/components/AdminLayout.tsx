@@ -45,12 +45,6 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "Vermittlung",
-    items: [
-      { title: "Bewerbungstermine", url: "/admin/bewerbungstermine", icon: CalendarDays },
-    ],
-  },
-  {
     label: "Aufträge",
     items: [
       { title: "Aufträge", url: "/admin/tasks", icon: ClipboardList },

@@ -215,11 +215,10 @@ function StatistikenPage() {
         </CardHeader>
         <CardContent className="text-xs text-muted-foreground space-y-1.5">
           <p><strong className="text-foreground">Beworben:</strong> Neue Bewerbungen am Tag (ohne Test, nur Vermittlung/Fast-Track).</p>
-          <p><strong className="text-foreground">Termin gebucht:</strong> Calendly-Termin wurde gesetzt (booking_status = scheduled oder completed).</p>
-          <p><strong className="text-foreground">Wahrgenommen:</strong> Termin tatsächlich gehalten — booking_status = completed oder Interview wurde abgeschlossen.</p>
-          <p><strong className="text-foreground">No-Show:</strong> Termin gebucht, aber nicht erschienen (booking_status = no_show).</p>
-          <p><strong className="text-foreground">Angenommen / Abgelehnt:</strong> Finale Bewertung nach Interview (status oder Interview-Empfehlung).</p>
-          <p><strong className="text-foreground">Reg-Mail:</strong> Registrierungs-/Einladungs-Mail an die Bewerber-Adresse versendet.</p>
+          <p><strong className="text-foreground">Termin gebucht:</strong> Calendly-Termin wurde gesetzt.</p>
+          <p><strong className="text-foreground">Wahrgenommen:</strong> Termin tatsächlich gehalten — Calendly-Status = completed oder Interview wurde abgeschlossen.</p>
+          <p><strong className="text-foreground">No-Show:</strong> Termin gebucht, aber nicht erschienen.</p>
+          <p><strong className="text-foreground">Angenommen / Abgelehnt:</strong> Finale Bewertung nach Interview.</p>
           <p><strong className="text-foreground">Registriert:</strong> Bewerber hat ein Profil angelegt.</p>
           <p><strong className="text-foreground">Onboarded:</strong> Onboarding-Status = abgeschlossen — ab hier ist die Person Mitarbeiter:in.</p>
         </CardContent>

@@ -28,7 +28,6 @@ import { Route as BewerbungVerbindenRouteImport } from './routes/bewerbung.verbi
 import { Route as AuthConfirmedRouteImport } from './routes/auth.confirmed'
 import { Route as AdminWebidSimRouteImport } from './routes/admin.webid-sim'
 import { Route as AdminVermittlungRouteImport } from './routes/admin.vermittlung'
-import { Route as AdminVerfuegbarkeitRouteImport } from './routes/admin.verfuegbarkeit'
 import { Route as AdminUploadsRouteImport } from './routes/admin.uploads'
 import { Route as AdminTransactionsRouteImport } from './routes/admin.transactions'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
@@ -47,17 +46,13 @@ import { Route as AdminMitarbeiterRouteImport } from './routes/admin.mitarbeiter
 import { Route as AdminLandingGeneratorRouteImport } from './routes/admin.landing-generator'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
 import { Route as AdminInfrastructureRouteImport } from './routes/admin.infrastructure'
-import { Route as AdminEmailTemplatesRouteImport } from './routes/admin.email-templates'
 import { Route as AdminEmailLogsRouteImport } from './routes/admin.email-logs'
-import { Route as AdminEmailCenterRouteImport } from './routes/admin.email-center'
 import { Route as AdminDomainsRouteImport } from './routes/admin.domains'
 import { Route as AdminContractsRouteImport } from './routes/admin.contracts'
 import { Route as AdminChatRouteImport } from './routes/admin.chat'
 import { Route as AdminCalendlyRouteImport } from './routes/admin.calendly'
 import { Route as AdminBotsRouteImport } from './routes/admin.bots'
-import { Route as AdminBewerbungstermineRouteImport } from './routes/admin.bewerbungstermine'
 import { Route as AdminBewerbungenRouteImport } from './routes/admin.bewerbungen'
-import { Route as AdminAppointmentsRouteImport } from './routes/admin.appointments'
 import { Route as AdminAiSettingsRouteImport } from './routes/admin.ai-settings'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as EmployeeVerificationRouteImport } from './routes/_employee/verification'
@@ -191,11 +186,6 @@ const AdminVermittlungRoute = AdminVermittlungRouteImport.update({
   path: '/vermittlung',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminVerfuegbarkeitRoute = AdminVerfuegbarkeitRouteImport.update({
-  id: '/verfuegbarkeit',
-  path: '/verfuegbarkeit',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminUploadsRoute = AdminUploadsRouteImport.update({
   id: '/uploads',
   path: '/uploads',
@@ -286,19 +276,9 @@ const AdminInfrastructureRoute = AdminInfrastructureRouteImport.update({
   path: '/infrastructure',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminEmailTemplatesRoute = AdminEmailTemplatesRouteImport.update({
-  id: '/email-templates',
-  path: '/email-templates',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminEmailLogsRoute = AdminEmailLogsRouteImport.update({
   id: '/email-logs',
   path: '/email-logs',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminEmailCenterRoute = AdminEmailCenterRouteImport.update({
-  id: '/email-center',
-  path: '/email-center',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDomainsRoute = AdminDomainsRouteImport.update({
@@ -326,19 +306,9 @@ const AdminBotsRoute = AdminBotsRouteImport.update({
   path: '/bots',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminBewerbungstermineRoute = AdminBewerbungstermineRouteImport.update({
-  id: '/bewerbungstermine',
-  path: '/bewerbungstermine',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminBewerbungenRoute = AdminBewerbungenRouteImport.update({
   id: '/bewerbungen',
   path: '/bewerbungen',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminAppointmentsRoute = AdminAppointmentsRouteImport.update({
-  id: '/appointments',
-  path: '/appointments',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAiSettingsRoute = AdminAiSettingsRouteImport.update({
@@ -570,17 +540,13 @@ export interface FileRoutesByFullPath {
   '/verification': typeof EmployeeVerificationRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
-  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/bewerbungen': typeof AdminBewerbungenRoute
-  '/admin/bewerbungstermine': typeof AdminBewerbungstermineRoute
   '/admin/bots': typeof AdminBotsRoute
   '/admin/calendly': typeof AdminCalendlyRoute
   '/admin/chat': typeof AdminChatRoute
   '/admin/contracts': typeof AdminContractsRoute
   '/admin/domains': typeof AdminDomainsRoute
-  '/admin/email-center': typeof AdminEmailCenterRoute
   '/admin/email-logs': typeof AdminEmailLogsRoute
-  '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
@@ -599,7 +565,6 @@ export interface FileRoutesByFullPath {
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/uploads': typeof AdminUploadsRoute
-  '/admin/verfuegbarkeit': typeof AdminVerfuegbarkeitRoute
   '/admin/vermittlung': typeof AdminVermittlungRoute
   '/admin/webid-sim': typeof AdminWebidSimRoute
   '/auth/confirmed': typeof AuthConfirmedRoute
@@ -657,17 +622,13 @@ export interface FileRoutesByTo {
   '/verification': typeof EmployeeVerificationRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
-  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/bewerbungen': typeof AdminBewerbungenRoute
-  '/admin/bewerbungstermine': typeof AdminBewerbungstermineRoute
   '/admin/bots': typeof AdminBotsRoute
   '/admin/calendly': typeof AdminCalendlyRoute
   '/admin/chat': typeof AdminChatRoute
   '/admin/contracts': typeof AdminContractsRoute
   '/admin/domains': typeof AdminDomainsRoute
-  '/admin/email-center': typeof AdminEmailCenterRoute
   '/admin/email-logs': typeof AdminEmailLogsRoute
-  '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
@@ -686,7 +647,6 @@ export interface FileRoutesByTo {
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/uploads': typeof AdminUploadsRoute
-  '/admin/verfuegbarkeit': typeof AdminVerfuegbarkeitRoute
   '/admin/vermittlung': typeof AdminVermittlungRoute
   '/admin/webid-sim': typeof AdminWebidSimRoute
   '/auth/confirmed': typeof AuthConfirmedRoute
@@ -747,17 +707,13 @@ export interface FileRoutesById {
   '/_employee/verification': typeof EmployeeVerificationRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
-  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/bewerbungen': typeof AdminBewerbungenRoute
-  '/admin/bewerbungstermine': typeof AdminBewerbungstermineRoute
   '/admin/bots': typeof AdminBotsRoute
   '/admin/calendly': typeof AdminCalendlyRoute
   '/admin/chat': typeof AdminChatRoute
   '/admin/contracts': typeof AdminContractsRoute
   '/admin/domains': typeof AdminDomainsRoute
-  '/admin/email-center': typeof AdminEmailCenterRoute
   '/admin/email-logs': typeof AdminEmailLogsRoute
-  '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/infrastructure': typeof AdminInfrastructureRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/landing-generator': typeof AdminLandingGeneratorRoute
@@ -776,7 +732,6 @@ export interface FileRoutesById {
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/uploads': typeof AdminUploadsRoute
-  '/admin/verfuegbarkeit': typeof AdminVerfuegbarkeitRoute
   '/admin/vermittlung': typeof AdminVermittlungRoute
   '/admin/webid-sim': typeof AdminWebidSimRoute
   '/auth/confirmed': typeof AuthConfirmedRoute
@@ -837,17 +792,13 @@ export interface FileRouteTypes {
     | '/verification'
     | '/admin/activity'
     | '/admin/ai-settings'
-    | '/admin/appointments'
     | '/admin/bewerbungen'
-    | '/admin/bewerbungstermine'
     | '/admin/bots'
     | '/admin/calendly'
     | '/admin/chat'
     | '/admin/contracts'
     | '/admin/domains'
-    | '/admin/email-center'
     | '/admin/email-logs'
-    | '/admin/email-templates'
     | '/admin/infrastructure'
     | '/admin/kyc'
     | '/admin/landing-generator'
@@ -866,7 +817,6 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/admin/transactions'
     | '/admin/uploads'
-    | '/admin/verfuegbarkeit'
     | '/admin/vermittlung'
     | '/admin/webid-sim'
     | '/auth/confirmed'
@@ -924,17 +874,13 @@ export interface FileRouteTypes {
     | '/verification'
     | '/admin/activity'
     | '/admin/ai-settings'
-    | '/admin/appointments'
     | '/admin/bewerbungen'
-    | '/admin/bewerbungstermine'
     | '/admin/bots'
     | '/admin/calendly'
     | '/admin/chat'
     | '/admin/contracts'
     | '/admin/domains'
-    | '/admin/email-center'
     | '/admin/email-logs'
-    | '/admin/email-templates'
     | '/admin/infrastructure'
     | '/admin/kyc'
     | '/admin/landing-generator'
@@ -953,7 +899,6 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/admin/transactions'
     | '/admin/uploads'
-    | '/admin/verfuegbarkeit'
     | '/admin/vermittlung'
     | '/admin/webid-sim'
     | '/auth/confirmed'
@@ -1013,17 +958,13 @@ export interface FileRouteTypes {
     | '/_employee/verification'
     | '/admin/activity'
     | '/admin/ai-settings'
-    | '/admin/appointments'
     | '/admin/bewerbungen'
-    | '/admin/bewerbungstermine'
     | '/admin/bots'
     | '/admin/calendly'
     | '/admin/chat'
     | '/admin/contracts'
     | '/admin/domains'
-    | '/admin/email-center'
     | '/admin/email-logs'
-    | '/admin/email-templates'
     | '/admin/infrastructure'
     | '/admin/kyc'
     | '/admin/landing-generator'
@@ -1042,7 +983,6 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/admin/transactions'
     | '/admin/uploads'
-    | '/admin/verfuegbarkeit'
     | '/admin/vermittlung'
     | '/admin/webid-sim'
     | '/auth/confirmed'
@@ -1247,13 +1187,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVermittlungRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/verfuegbarkeit': {
-      id: '/admin/verfuegbarkeit'
-      path: '/verfuegbarkeit'
-      fullPath: '/admin/verfuegbarkeit'
-      preLoaderRoute: typeof AdminVerfuegbarkeitRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/uploads': {
       id: '/admin/uploads'
       path: '/uploads'
@@ -1380,25 +1313,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInfrastructureRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/email-templates': {
-      id: '/admin/email-templates'
-      path: '/email-templates'
-      fullPath: '/admin/email-templates'
-      preLoaderRoute: typeof AdminEmailTemplatesRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/email-logs': {
       id: '/admin/email-logs'
       path: '/email-logs'
       fullPath: '/admin/email-logs'
       preLoaderRoute: typeof AdminEmailLogsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/email-center': {
-      id: '/admin/email-center'
-      path: '/email-center'
-      fullPath: '/admin/email-center'
-      preLoaderRoute: typeof AdminEmailCenterRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/domains': {
@@ -1436,25 +1355,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBotsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/bewerbungstermine': {
-      id: '/admin/bewerbungstermine'
-      path: '/bewerbungstermine'
-      fullPath: '/admin/bewerbungstermine'
-      preLoaderRoute: typeof AdminBewerbungstermineRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/bewerbungen': {
       id: '/admin/bewerbungen'
       path: '/bewerbungen'
       fullPath: '/admin/bewerbungen'
       preLoaderRoute: typeof AdminBewerbungenRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/appointments': {
-      id: '/admin/appointments'
-      path: '/appointments'
-      fullPath: '/admin/appointments'
-      preLoaderRoute: typeof AdminAppointmentsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/ai-settings': {
@@ -1791,17 +1696,13 @@ const AdminPersonenRouteWithChildren = AdminPersonenRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
   AdminAiSettingsRoute: typeof AdminAiSettingsRoute
-  AdminAppointmentsRoute: typeof AdminAppointmentsRoute
   AdminBewerbungenRoute: typeof AdminBewerbungenRoute
-  AdminBewerbungstermineRoute: typeof AdminBewerbungstermineRoute
   AdminBotsRoute: typeof AdminBotsRoute
   AdminCalendlyRoute: typeof AdminCalendlyRoute
   AdminChatRoute: typeof AdminChatRoute
   AdminContractsRoute: typeof AdminContractsRoute
   AdminDomainsRoute: typeof AdminDomainsRoute
-  AdminEmailCenterRoute: typeof AdminEmailCenterRoute
   AdminEmailLogsRoute: typeof AdminEmailLogsRoute
-  AdminEmailTemplatesRoute: typeof AdminEmailTemplatesRoute
   AdminInfrastructureRoute: typeof AdminInfrastructureRoute
   AdminKycRoute: typeof AdminKycRoute
   AdminLandingGeneratorRoute: typeof AdminLandingGeneratorRoute
@@ -1820,7 +1721,6 @@ interface AdminRouteChildren {
   AdminTenantsRoute: typeof AdminTenantsRoute
   AdminTransactionsRoute: typeof AdminTransactionsRoute
   AdminUploadsRoute: typeof AdminUploadsRoute
-  AdminVerfuegbarkeitRoute: typeof AdminVerfuegbarkeitRoute
   AdminVermittlungRoute: typeof AdminVermittlungRoute
   AdminWebidSimRoute: typeof AdminWebidSimRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1832,17 +1732,13 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
   AdminAiSettingsRoute: AdminAiSettingsRoute,
-  AdminAppointmentsRoute: AdminAppointmentsRoute,
   AdminBewerbungenRoute: AdminBewerbungenRoute,
-  AdminBewerbungstermineRoute: AdminBewerbungstermineRoute,
   AdminBotsRoute: AdminBotsRoute,
   AdminCalendlyRoute: AdminCalendlyRoute,
   AdminChatRoute: AdminChatRoute,
   AdminContractsRoute: AdminContractsRoute,
   AdminDomainsRoute: AdminDomainsRoute,
-  AdminEmailCenterRoute: AdminEmailCenterRoute,
   AdminEmailLogsRoute: AdminEmailLogsRoute,
-  AdminEmailTemplatesRoute: AdminEmailTemplatesRoute,
   AdminInfrastructureRoute: AdminInfrastructureRoute,
   AdminKycRoute: AdminKycRoute,
   AdminLandingGeneratorRoute: AdminLandingGeneratorRoute,
@@ -1861,7 +1757,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminTenantsRoute: AdminTenantsRoute,
   AdminTransactionsRoute: AdminTransactionsRoute,
   AdminUploadsRoute: AdminUploadsRoute,
-  AdminVerfuegbarkeitRoute: AdminVerfuegbarkeitRoute,
   AdminVermittlungRoute: AdminVermittlungRoute,
   AdminWebidSimRoute: AdminWebidSimRoute,
   AdminIndexRoute: AdminIndexRoute,
