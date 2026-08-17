@@ -47,6 +47,7 @@ KONTEXT:
 AKTION:
 Analysiere die Zuweisung und generiere professionelle, strukturierte Anweisungen für den Mitarbeiter. 
 Berücksichtige Compliance-Vorgaben und KYC-Testungs-Parameter.
+Falls autoRun wahr ist, setze den Status auf "zugewiesen", sobald alle Daten vorliegen.
 
 AUSGABE:
 Antworte NUR mit einem JSON-Objekt (kein Markdown):
@@ -54,9 +55,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown):
   "individual_instructions": "Detaillierte Schritt-für-Schritt Anleitung für diesen spezifischen Fall...",
   "individual_hint": "Wichtiger Hinweis zu Compliance/Sicherheit...",
   "individual_case_number": "GENERIERTE-VORGANGS-NR-123",
-  "status_update": "zugewiesen" 
-}
-(status_update nur wenn autoRun wahr ist)`;
+  "status_update": "zugewiesen"
+}`;
 
     try {
       const { callGateway } = await import("./interview-engine.server");
