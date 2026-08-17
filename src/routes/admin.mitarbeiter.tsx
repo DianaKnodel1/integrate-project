@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyState } from "@/components/EmptyState";
-import { Users, Search, ExternalLink, Check, X, Trash2, UserPlus, Copy } from "lucide-react";
+import { Users, Search, ExternalLink, Check, X, Trash2, UserPlus, Copy, MessageCircle } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { STATUS_CONFIG, ONBOARDING_STATUS_CONFIG, type EmployeeStatus } from "@/lib/status";
 import { StageTimeline, type Stage } from "@/components/StageTimeline";
@@ -312,6 +312,9 @@ function AdminMitarbeiterPage() {
                                 </Button>
                               </>
                             )}
+                            <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/chat?user=${r.id}`)} className="h-7 gap-1.5 text-xs text-blue-600">
+                              <MessageCircle className="h-3 w-3" /> Chat
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/personen/${r.id}`)} className="h-7 gap-1.5 text-xs">
                               Öffnen <ExternalLink className="h-3 w-3" />
                             </Button>

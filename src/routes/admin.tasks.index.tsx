@@ -169,8 +169,12 @@ function AdminTasksPage() {
         </div>
         <div className="flex gap-2">
           <Input placeholder="Suchen…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs h-8 text-sm" />
-          <Button size="sm" variant="outline" onClick={() => navigate("/admin/tasks/builder/new")}><Layers className="h-3.5 w-3.5 mr-1" /> Builder</Button>
-          <Button size="sm" onClick={() => { resetForm(); setShowCreate(true); }}><Plus className="h-3.5 w-3.5 mr-1" /> Schnell</Button>
+          <Button size="sm" variant="outline" onClick={() => navigate("/admin/tasks/builder/new")} className="gap-1.5">
+            <Layers className="h-3.5 w-3.5" /> Builder
+          </Button>
+          <Button size="sm" onClick={() => { resetForm(); setShowCreate(true); }} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> Schnell
+          </Button>
         </div>
       </div>
 
