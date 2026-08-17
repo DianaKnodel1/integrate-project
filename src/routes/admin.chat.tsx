@@ -22,7 +22,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ChatAttachmentButton, AttachmentPreview, type ChatAttachment } from "@/components/ChatAttachmentButton";
 import { useServerFn } from "@tanstack/react-start";
-import { getAiSuggestion } from "@/lib/ai-chat-helper.functions";
+import { getAiSuggestion, logAiCorrection } from "@/lib/ai-chat-helper.functions";
 
 interface Conversation {
   user_id: string;
@@ -74,6 +74,9 @@ function AdminChatPage() {
   const [loading, setLoading] = useState(true);
   const [generatingAi, setGeneratingAi] = useState(false);
   const aiSuggestionFn = useServerFn(getAiSuggestion);
+  const logCorrectionFn = useServerFn(logAiCorrection);
+  // Letzter KI-Vorschlag – dient dem stillen Nachlernen beim Senden.
+  const lastSuggestionRef = useRef<string>("");
   const [filterTab] = useState<"all" | "escalated" | "open">("all");
   const [viewTab, setViewTab] = useState<"active" | "hidden">("active");
   const [tenantFilter, setTenantFilter] = useState<string>("all"); // tenant_id oder "all"
@@ -434,7 +437,10 @@ function AdminChatPage() {
         }
       });
       if (res.suggestion) {
+        lastSuggestionRef.current = res.suggestion;
         setNewMessage(res.suggestion);
+      } else {
+        toast({ title: "KI", description: (res as any).error ?? "Kein Vorschlag erhalten.", variant: "destructive" });
       }
     } catch (e) {
       toast({ title: "KI Fehler", description: "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
@@ -457,6 +463,12 @@ function AdminChatPage() {
       attachment_name: pendingAttachment?.name ?? null,
       attachment_type: pendingAttachment?.type ?? null,
     } as any);
+    // Still lernen: Abweichung zwischen Vorschlag und tatsächlich Gesendetem merken.
+    if (lastSuggestionRef.current) {
+      const suggestion = lastSuggestionRef.current;
+      lastSuggestionRef.current = "";
+      void logCorrectionFn({ data: { targetUserId: selectedUserId, suggestion, finalText: newMessage.trim() } }).catch(() => {});
+    }
     setNewMessage("");
     setPendingAttachment(null);
     setSending(false);
