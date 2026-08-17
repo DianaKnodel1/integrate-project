@@ -24,6 +24,9 @@ import { TaskSmsMessages } from "@/components/TaskSmsMessages";
 import { AssignmentIndividualData } from "@/components/AssignmentIndividualData";
 import { WEBID_STATUS_LABEL, useWebIdEnabled, type WebIdStatus } from "@/lib/webid";
 import { getNextAvailableSlot } from "@/lib/slot-utils";
+import { createAssignmentAutomation } from "@/lib/bot-automation.functions";
+import { useServerFn } from "@tanstack/react-start";
+
 
 type AssignmentStatus = "entwurf" | "zugewiesen" | "geplant" | "in_bearbeitung" | "eingereicht" | "in_pruefung" | "genehmigt" | "abgelehnt" | "abgeschlossen" | "nachbesserung";
 
@@ -88,6 +91,9 @@ function AdminAssignmentDetailPage() {
   const [taskSteps, setTaskSteps] = useState<TaskStepRow[]>([]);
   const [existingFeedback, setExistingFeedback] = useState<StepFeedback[]>([]);
   const [newFeedback, setNewFeedback] = useState<{ step_number: number; block_id: string; comment: string }[]>([]);
+  const botAutomationFn = useServerFn(createAssignmentAutomation);
+  const [runningBot, setRunningBot] = useState(false);
+
 
   useEffect(() => {
     if (!assignment) return;
@@ -166,6 +172,32 @@ function AdminAssignmentDetailPage() {
     setNewFeedback((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const runBotAutomation = async () => {
+    if (!assignment) return;
+    setRunningBot(true);
+    try {
+      const res = await botAutomationFn({
+        data: {
+          assignmentId: assignment.id,
+          userId: assignment.user_id,
+          templateId: assignment.task_template_id
+        }
+      });
+      if (res.success) {
+        toast({ title: "Bot-Automatisierung abgeschlossen", description: "Auftragsdaten wurden generiert." });
+        loadData();
+        loadDetails();
+      } else {
+        throw new Error(res.error);
+      }
+    } catch (e: any) {
+      toast({ title: "Bot Fehler", description: e.message, variant: "destructive" });
+    } finally {
+      setRunningBot(false);
+    }
+  };
+
+
   if (!assignment || !template) {
     return (
       <div className="p-8 text-center">
@@ -192,6 +224,17 @@ function AdminAssignmentDetailPage() {
         <Badge variant="secondary" className={`text-xs ${statusColor}`}>
           {STATUS_LABELS[assignment.status] ?? assignment.status}
         </Badge>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 h-8 border-primary/30 hover:bg-primary/5 text-primary"
+          onClick={runBotAutomation}
+          disabled={runningBot}
+        >
+          {runningBot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bot className="h-3.5 w-3.5" />}
+          Bot Automatisierung
+        </Button>
+
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
