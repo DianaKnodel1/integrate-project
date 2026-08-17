@@ -210,7 +210,7 @@ function StatistikenPage() {
           <CardTitle className="text-sm">Was zeigen die Spalten?</CardTitle>
         </CardHeader>
         <CardContent className="text-xs text-muted-foreground space-y-1.5">
-          <p><strong className="text-foreground">Beworben:</strong> Neue Bewerbungen am Tag (ohne Test, nur Vermittlung/Fast-Track).</p>
+          <p><strong className="text-foreground">Beworben:</strong> Neue Bewerbungen am Tag (ohne Test, nur Vermittlung/Fast-Track). E-Mails werden über das Portal nicht versendet; die Kommunikation erfolgt ausschließlich über Calendly.</p>
           <p><strong className="text-foreground">Termin gebucht:</strong> Calendly-Termin wurde gesetzt.</p>
           <p><strong className="text-foreground">Wahrgenommen:</strong> Termin tatsächlich gehalten — Calendly-Status = completed oder Interview wurde abgeschlossen.</p>
           <p><strong className="text-foreground">No-Show:</strong> Termin gebucht, aber nicht erschienen.</p>

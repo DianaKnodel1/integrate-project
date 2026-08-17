@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useChatNotifications } from "@/hooks/use-chat-notifications";
-import { Send, Bot, UserCheck, Search, MessageCircle, Building2, EyeOff, ChevronRight, MailOpen, StickyNote, AlertCircle, Lock, Pencil, Trash2, Check, X, Mail } from "lucide-react";
+import { Send, Bot, UserCheck, Search, MessageCircle, Building2, EyeOff, ChevronRight, MailOpen, StickyNote, AlertCircle, Lock, Pencil, Trash2, Check, X, Mail, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLastSignIns } from "@/lib/last-sign-ins.functions";
 import { useOnlineUsers } from "@/hooks/use-presence";
@@ -21,6 +21,8 @@ import { useSearchParams } from "@/lib/router-compat";
 import { useNavigate } from "@/lib/router-compat";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ChatAttachmentButton, AttachmentPreview, type ChatAttachment } from "@/components/ChatAttachmentButton";
+import { useServerFn } from "@tanstack/react-start";
+import { getAiSuggestion } from "@/lib/ai-chat-helper.functions";
 
 interface Conversation {
   user_id: string;
@@ -70,6 +72,8 @@ function AdminChatPage() {
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [generatingAi, setGeneratingAi] = useState(false);
+  const aiSuggestionFn = useServerFn(getAiSuggestion);
   const [filterTab] = useState<"all" | "escalated" | "open">("all");
   const [viewTab, setViewTab] = useState<"active" | "hidden">("active");
   const [tenantFilter, setTenantFilter] = useState<string>("all"); // tenant_id oder "all"
@@ -407,6 +411,31 @@ function AdminChatPage() {
     const { error } = await supabase.from("chat_messages").delete().eq("id", msg.id);
     if (error) { toast({ title: "Fehler", description: error.message, variant: "destructive" }); return; }
     setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+  };
+
+  const generateSuggestion = async () => {
+    if (!selectedUserId || messages.length === 0) return;
+    setGeneratingAi(true);
+    try {
+      const lastUserMsg = [...messages].reverse().find(m => m.sender_id === selectedUserId);
+      const context = messages.slice(-10).map(m => ({
+        role: adminIdsRef.current.has(m.sender_id) ? "assistant" : "user" as "assistant" | "user",
+        content: m.message
+      }));
+
+      const res = await aiSuggestionFn({ 
+        data: { 
+          userId: selectedUserId, 
+          lastMessage: lastUserMsg?.message || "",
+          context
+        } 
+      });
+      setNewMessage(res.suggestion);
+    } catch (e) {
+      toast({ title: "KI Fehler", description: "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
+    } finally {
+      setGeneratingAi(false);
+    }
   };
 
   const sendMessage = async () => {
