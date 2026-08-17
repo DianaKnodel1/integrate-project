@@ -18,8 +18,9 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, CheckCircle2, XCircle, FileText, User, Calendar, Send,
-  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2, Sparkles as SparklesIcon,
+  RotateCcw, MessageSquare, Plus, Trash2, Phone, Download, Bot, Sparkles, Loader2, Sparkles as SparklesIcon, Layers,
 } from "lucide-react";
+
 import { TaskSmsMessages } from "@/components/TaskSmsMessages";
 import { AssignmentIndividualData } from "@/components/AssignmentIndividualData";
 import { WEBID_STATUS_LABEL, useWebIdEnabled, type WebIdStatus } from "@/lib/webid";
