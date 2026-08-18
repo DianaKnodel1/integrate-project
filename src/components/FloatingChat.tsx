@@ -79,25 +79,8 @@ function ChatButton({ onClick, unread, hasNewMessage, pulse24h }: { onClick: () 
   );
 }
 
-/* ── Mode Selector ─────────────────────────────────────────── */
-function ModeSelector({
-  mode,
-  onSelect,
-  locked,
-  aiDisabled,
-}: {
-  mode: "ai" | "human";
-  onSelect: (m: "ai" | "human") => void;
-  locked: boolean;
-  aiDisabled?: boolean;
-}) {
-  if (aiDisabled) return null;
-  return (
-    <div className="flex gap-1 bg-muted/60 rounded-xl p-1 mx-4 mt-3 shrink-0">
-      <button
-        onClick={() => !locked && onSelect("ai")}
-        disabled={locked}
-        title={locked ? "Du sprichst gerade mit deinem Teamleiter" : undefined}
+/* ── Mode Selector entfernt: System ist nun Mailless + Rein menschlicher Chat ── */
+
         className={cn(
           "flex-1 flex items-center justify-center gap-1.5 text-[12px] font-medium rounded-lg py-2 transition-all",
           mode === "ai" && !locked

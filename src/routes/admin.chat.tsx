@@ -933,9 +933,9 @@ function AdminChatPage() {
                   value={newMessage}
                   onChange={(e) => { setNewMessage(e.target.value); broadcastTyping(); }}
                   onKeyDown={handleKeyDown}
-                  placeholder="Nachricht schreiben… (Shift + Enter = neue Zeile)"
+                  placeholder="Nachricht schreiben… (Martin Schneider Stil)"
                   rows={3}
-                  className="flex-1 min-h-[80px] max-h-60 resize-y py-2 text-sm"
+                  className="flex-1 min-h-[80px] max-h-60 resize-y py-2 text-sm focus-visible:ring-blue-500"
                 />
                 <div className="flex flex-col gap-2">
                   <Button
@@ -943,10 +943,14 @@ function AdminChatPage() {
                     variant="outline"
                     onClick={generateSuggestion}
                     disabled={generatingAi || !selectedUserId}
-                    title="KI-Antwort vorschlagen"
-                    className="h-10 w-10 shrink-0 text-blue-600 border-blue-200 hover:bg-blue-50"
+                    title="KI-Antwort im Stil von Martin Schneider generieren"
+                    className={cn(
+                      "h-10 w-10 shrink-0 transition-all",
+                      "text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400",
+                      generatingAi && "animate-pulse"
+                    )}
                   >
-                    {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 fill-blue-50" />}
                   </Button>
                   <Button
                     size="icon"

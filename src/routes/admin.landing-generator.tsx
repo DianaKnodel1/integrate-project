@@ -43,6 +43,13 @@ import { applyFlowCopy } from "@/lib/flow-copy";
 
 export const Route = createFileRoute("/admin/landing-generator")({
   component: LandingGeneratorPage,
+  errorComponent: ({ error }) => (
+    <div className="p-8 text-center space-y-4">
+      <h2 className="text-xl font-bold text-destructive">Generator konnte nicht geladen werden</h2>
+      <p className="text-muted-foreground">Dies deutet oft auf ein unvollständiges Datenbank-Schema hin.</p>
+      <Button onClick={() => window.location.reload()}>Erneut versuchen</Button>
+    </div>
+  ),
 });
 
 type Branding = {
