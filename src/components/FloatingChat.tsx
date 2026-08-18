@@ -176,34 +176,6 @@ function StatusBanner({ mode, leaderName, leaderOnline, escalated, justResolved 
   );
 }
 
-/* ── Handover Card (visueller Übergang nach Eskalation) ────── */
-function HandoverCard({ leaderName, leaderInitials, leaderOnline }: { leaderName: string; leaderInitials: string; leaderOnline: boolean }) {
-  return (
-    <div className="my-2 mx-1 rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-4 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <div className="relative shrink-0">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-2 ring-accent/30">
-            <span className="text-sm font-bold text-primary">{leaderInitials}</span>
-          </div>
-          <span className={cn(
-            "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card",
-            leaderOnline ? "bg-accent animate-pulse" : "bg-muted-foreground/50"
-          )} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <UserCheck className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
-            <p className="text-[11px] font-semibold text-foreground uppercase tracking-wide">Teamleiter übernommen</p>
-          </div>
-          <p className="text-sm font-semibold text-foreground mt-0.5 truncate">{leaderName}</p>
-          <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-            {leaderOnline ? "Ist jetzt im Chat – antwortet gleich persönlich." : "Antwortet, sobald wieder online."}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ── Main FloatingChat Component ───────────────────────────── */
 export function FloatingChat() {
