@@ -364,7 +364,7 @@ function AdminChatPage() {
     try {
       const lastMsg = messages.filter(m => m.sender_id === selectedUserId).pop()?.message || "";
       const conv = conversations.find(c => c.user_id === selectedUserId);
-      const teamLeaderName = user?.user_metadata?.full_name || conv?.tenantName || "Martin Schneider";
+      const teamLeaderName = user?.user_metadata?.full_name || conv?.tenantName || "Teamleiter";
 
       const context = messages.slice(-10).map(m => ({
         role: adminIdsRef.current.has(m.sender_id) ? "assistant" : "user" as "assistant" | "user",
@@ -933,7 +933,7 @@ function AdminChatPage() {
                   value={newMessage}
                   onChange={(e) => { setNewMessage(e.target.value); broadcastTyping(); }}
                   onKeyDown={handleKeyDown}
-                  placeholder="Nachricht schreiben… (Martin Schneider Stil)"
+                  placeholder="Nachricht schreiben… (KI Stil-Support)"
                   rows={3}
                   className="flex-1 min-h-[80px] max-h-60 resize-y py-2 text-sm focus-visible:ring-blue-500"
                 />
@@ -943,7 +943,7 @@ function AdminChatPage() {
                     variant="outline"
                     onClick={generateSuggestion}
                     disabled={generatingAi || !selectedUserId}
-                    title="KI-Antwort im Stil von Martin Schneider generieren"
+                    title="KI-Antwort in deinem Stil generieren"
                     className={cn(
                       "h-10 w-10 shrink-0 transition-all",
                       "text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400",
