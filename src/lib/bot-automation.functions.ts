@@ -16,10 +16,10 @@ export const createAssignmentAutomation = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = context.supabase as any;
 
-    const { data: isAdmin } = await db
+    const { data: roleData } = await db
       .from("user_roles").select("role")
       .eq("user_id", context.userId).eq("role", "admin").maybeSingle();
-    if (!isAdmin) return { success: false, error: "Nicht autorisiert" };
+    if (!roleData) return { success: false, error: "Nicht autorisiert" };
 
     const [assignmentRes, profileRes, templateRes] = await Promise.all([
       db.from("task_assignments").select("*").eq("id", data.assignmentId).single(),
@@ -46,8 +46,9 @@ Zu verwendende Telefonnummer: ${phone || "(keine hinterlegt)"}
 REGELN:
 - Sprich den Mitarbeiter direkt und freundlich mit "Du" an.
 - Nenne die Schritte konkret und knapp (max. 8 Schritte).
-- Erwähne KEINE technischen Hintergründe, keine Automatisierung, keine IP- oder Netzwerkthemen.
-- Erfinde KEINE Vorgangsnummer.
+- Erwähne KEINE technischen Hintergründe, keine Automatisierung, keine IP- oder Netzwerkthemen (keine Proxys).
+- Falls ein Ausweis-Check nötig ist (z. B. Deutsche Bank): Erwähne, dass er diesen selbst hochladen oder per App durchführen muss.
+- Erfinde KEINE Vorgangsnummer. Diese wird im System hinterlegt, sobald der Antrag vorbereitet ist.
 
 Antworte NUR mit JSON:
 {"individual_instructions":"…","individual_hint":"…","webid_client_name":"${title}"}`;
