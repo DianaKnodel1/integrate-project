@@ -126,18 +126,8 @@ function ModeSelector({
 }
 
 /* ── Status Banner ─────────────────────────────────────────── */
-function StatusBanner({ mode, leaderName, leaderOnline, escalated, justResolved }: { mode: "ai" | "human"; leaderName: string; leaderOnline: boolean; escalated: boolean; justResolved: boolean }) {
+function StatusBanner({ mode, leaderName, leaderOnline }: { mode: "ai" | "human"; leaderName: string; leaderOnline: boolean }) {
   if (mode === "ai") {
-    if (justResolved) {
-      return (
-        <div className="mx-4 mt-2 px-3 py-2 rounded-lg bg-accent/15 border border-accent/30 flex items-center gap-2 shrink-0 animate-fade-in">
-          <Zap className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
-          <p className="text-[11px] text-foreground leading-tight">
-            <span className="font-semibold">KI wieder verfügbar</span> – dein Anliegen wurde abgeschlossen.
-          </p>
-        </div>
-      );
-    }
     return (
       <div className="mx-4 mt-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/10 flex items-center gap-2 shrink-0">
         <Zap className="h-3 w-3 text-primary shrink-0" />
@@ -147,14 +137,8 @@ function StatusBanner({ mode, leaderName, leaderOnline, escalated, justResolved 
       </div>
     );
   }
-  // Persönlicher Kontakt – nach Eskalation visuell deutlicher
   return (
-    <div className={cn(
-      "mx-4 mt-2 px-3 py-2 rounded-lg flex items-center gap-2 shrink-0 border",
-      escalated
-        ? "bg-accent/15 border-accent/30 shadow-sm"
-        : "bg-accent/10 border-accent/20"
-    )}>
+    <div className="mx-4 mt-2 px-3 py-2 rounded-lg flex items-center gap-2 shrink-0 border bg-accent/10 border-accent/20">
       <span className="relative flex h-2.5 w-2.5 shrink-0">
         {leaderOnline && (
           <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
@@ -166,44 +150,12 @@ function StatusBanner({ mode, leaderName, leaderOnline, escalated, justResolved 
       </span>
       <UserCheck className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
       <p className="text-[11px] text-foreground/90 leading-tight flex-1">
-        {escalated ? (
-          <><span className="font-semibold">Teamleiter verbunden</span> – du sprichst jetzt mit <span className="font-medium">{leaderName}</span></>
-        ) : (
-          <>Persönlicher Kontakt aktiv – <span className="font-medium">{leaderName}</span></>
-        )}
+        Persönlicher Kontakt aktiv – <span className="font-medium">{leaderName}</span>
       </p>
     </div>
   );
 }
 
-/* ── Handover Card (visueller Übergang nach Eskalation) ────── */
-function HandoverCard({ leaderName, leaderInitials, leaderOnline }: { leaderName: string; leaderInitials: string; leaderOnline: boolean }) {
-  return (
-    <div className="my-2 mx-1 rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-4 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <div className="relative shrink-0">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-2 ring-accent/30">
-            <span className="text-sm font-bold text-primary">{leaderInitials}</span>
-          </div>
-          <span className={cn(
-            "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card",
-            leaderOnline ? "bg-accent animate-pulse" : "bg-muted-foreground/50"
-          )} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <UserCheck className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
-            <p className="text-[11px] font-semibold text-foreground uppercase tracking-wide">Teamleiter übernommen</p>
-          </div>
-          <p className="text-sm font-semibold text-foreground mt-0.5 truncate">{leaderName}</p>
-          <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-            {leaderOnline ? "Ist jetzt im Chat – antwortet gleich persönlich." : "Antwortet, sobald wieder online."}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ── Main FloatingChat Component ───────────────────────────── */
 export function FloatingChat() {
@@ -316,54 +268,12 @@ export function FloatingChat() {
     }
   }, [loaded, isOnChatPage]);
 
-  // When escalated, switch to human mode and notify employee + leader
+  // When a message is sent in AI mode, ensure conversation exists in human mode too
+  // but we no longer force [ESCALATE] or the handover message here if the user wants it gone.
   useEffect(() => {
-    if (!escalated || !user) return;
-    setMode("human");
-
-    const escalate = async () => {
-      const { data: existing } = await supabase
-        .from("chat_conversations")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase.from("chat_conversations").update({
-          status: "escalated",
-          escalated_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as any).eq("id", existing.id);
-      } else {
-        await supabase.from("chat_conversations").insert({
-          user_id: user.id,
-          status: "escalated",
-          escalated_at: new Date().toISOString(),
-        } as any);
-      }
-
-      if (teamLeaderId) {
-        // 1) Sichtbare Übergangsnachricht für den Mitarbeiter
-        await supabase.from("chat_messages").insert({
-          sender_id: teamLeaderId,
-          receiver_id: user.id,
-          message: `Ich verbinde dich jetzt mit ${leader.name}. Deine Nachricht wurde weitergeleitet – du bekommst gleich eine persönliche Antwort.`,
-          is_ai: true,
-        } as any);
-
-        // 2) Interner Admin-Hinweis mit Chatverlauf (im Mitarbeiter-Portal ausgeblendet)
-        const lastAiMsgs = aiMessages.slice(-4);
-        const context = lastAiMsgs.map(m => `${m.role === "user" ? "Mitarbeiter" : "KI"}: ${m.content}`).join("\n");
-        await supabase.from("chat_messages").insert({
-          sender_id: user.id,
-          receiver_id: teamLeaderId,
-          message: `🤖 KI-Eskalation – Chatverlauf:\n\n${context}`,
-          is_ai: true,
-        } as any);
-      }
-    };
-    escalate();
-  }, [escalated, user, teamLeaderId]);
+    if (!user) return;
+    // We keep the mode logic, but removed the automatic escalation message insertion.
+  }, [user]);
 
   // Handle mode switch to "human" — check if leader is offline
   const handleModeSelect = async (newMode: "ai" | "human") => {
@@ -410,7 +320,8 @@ export function FloatingChat() {
         .from("chat_messages")
         .select("*")
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${teamLeaderId}),and(sender_id.eq.${teamLeaderId},receiver_id.eq.${user.id})`)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true })
+        .limit(100);
       // Interne KI-/Eskalations-Nachrichten sind nur Admin-Info und werden im Mitarbeiter-Portal nicht angezeigt
       const visible = ((data ?? []) as ChatMessage[]).filter(
         (m) =>
@@ -628,8 +539,8 @@ export function FloatingChat() {
           </div>
 
           {/* Mode Selector */}
-          <ModeSelector mode={mode} onSelect={handleModeSelect} locked={escalated} aiDisabled={tenant?.ai_enabled === false} />
-          <StatusBanner mode={mode} leaderName={leader.name} leaderOnline={!!leader.is_online} escalated={escalated} justResolved={justResolved} />
+          <ModeSelector mode={mode} onSelect={handleModeSelect} locked={false} aiDisabled={tenant?.ai_enabled === false} />
+          <StatusBanner mode={mode} leaderName={leader.name} leaderOnline={!!leader.is_online} />
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
@@ -691,14 +602,6 @@ export function FloatingChat() {
               </>
             ) : (
               <>
-                {/* Visueller Übergang nach Eskalation */}
-                {escalated && (
-                  <HandoverCard
-                    leaderName={leader.name}
-                    leaderInitials={leaderInitials}
-                    leaderOnline={!!leader.is_online}
-                  />
-                )}
 
                 {/* Human mode messages */}
                 {humanMessages.length === 0 && !escalated && (
