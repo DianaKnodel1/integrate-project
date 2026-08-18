@@ -692,8 +692,8 @@ export function FloatingChat() {
                     </div>
                     <div className="bg-muted/80 border border-border rounded-2xl rounded-bl-sm px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-muted-foreground mr-1">{leader.name} tippt</span>
-                        <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
+                        <span className="text-[10px] text-primary font-semibold mr-1">Tippt gerade live...</span>
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
                         <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
                         <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
                       </div>

@@ -338,7 +338,8 @@ function ChatPage() {
             </div>
             <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
               <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
+                <span className="text-[10px] text-primary font-semibold mr-1">Tippt gerade live...</span>
+                <div className="h-2 w-2 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
                 <div className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
                 <div className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
               </div>

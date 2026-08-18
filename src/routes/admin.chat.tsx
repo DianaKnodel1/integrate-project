@@ -805,13 +805,13 @@ function AdminChatPage() {
                   </p>
                 )}
                 {partnerTyping && (
-                  <p className="text-[11px] text-primary flex items-center gap-1.5 mt-0.5">
+                  <p className="text-[11px] text-primary flex items-center gap-1.5 mt-0.5 font-medium">
                     <span className="flex gap-0.5">
                       <span className="h-1 w-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
                       <span className="h-1 w-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
                       <span className="h-1 w-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
                     </span>
-                    schreibt …
+                    schreibt gerade live …
                   </p>
                 )}
               </button>
