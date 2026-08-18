@@ -110,7 +110,7 @@ export default function FloatingChat() {
         } else if (isFromLeader) {
           setUnread((u) => u + 1);
           setHasNewMessage(true);
-          triggerNotification({ senderName: leader.name || "Teamleiter", message: msg.message });
+          triggerNotification({ senderName: leader.name || "Teamleiter", body: msg.message });
         }
       })
       .on("broadcast", { event: "typing" }, (payload) => {

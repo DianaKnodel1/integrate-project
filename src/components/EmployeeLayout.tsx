@@ -33,7 +33,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
-import { FloatingChat } from "@/components/FloatingChat";
+import FloatingChat from "@/components/FloatingChat";
 import { MissingPayrollDataBanner } from "@/components/MissingPayrollDataBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useEffect, useState } from "react";
