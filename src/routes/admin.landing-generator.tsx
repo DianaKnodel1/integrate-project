@@ -253,7 +253,10 @@ function LandingGeneratorPage() {
   const listPartnersFn = useServerFn(listPartnerCompanies);
   const [partners, setPartners] = useState<Array<{ id: string; name: string; calendly_url: string; logo_url: string | null }>>([]);
   useEffect(() => {
-    listPartnersFn({} as any).then((r: any) => setPartners(r?.rows ?? [])).catch(() => {});
+    listPartnersFn({} as any).then((r: any) => setPartners(r?.rows ?? [])).catch((err) => {
+      console.error("Partners load error:", err);
+      setPartners([]);
+    });
   }, [listPartnersFn]);
 
   // Terminzeiten (Verfügbarkeiten) je Landing — für den Setup-Check in der Liste.
