@@ -323,16 +323,7 @@ export const THEMES: ThemeFiles[] = [
   { id: tepMeta.id, name: tepMeta.name, description: tepMeta.description, html: tepHtml, css: tepCss, js: tepJs, slots: pickSlots(tepMeta) },
   { id: tqtMeta.id, name: tqtMeta.name, description: tqtMeta.description, html: tqtHtml, css: tqtCss, js: tqtJs, slots: pickSlots(tqtMeta) },
   { id: tnfMeta.id, name: tnfMeta.name, description: tnfMeta.description, html: tnfHtml, css: tnfCss, js: tnfJs, slots: pickSlots(tnfMeta) },
-  { id: tamberMeta.id, name: tamberMeta.name, description: tamberMeta.description, html: tamberHtml, css: tamberCss, js: tamberJs, slots: pickSlots(tamberMeta) },
-  { id: temeraldMeta.id, name: temeraldMeta.name, description: temeraldMeta.description, html: temeraldHtml, css: temeraldCss, js: temeraldJs, slots: pickSlots(temeraldMeta) },
-  { id: tsapphireMeta.id, name: tsapphireMeta.name, description: tsapphireMeta.description, html: tsapphireHtml, css: tsapphireCss, js: tsapphireJs, slots: pickSlots(tsapphireMeta) },
-  { id: trubyMeta.id, name: trubyMeta.name, description: trubyMeta.description, html: trubyHtml, css: trubyCss, js: trubyJs, slots: pickSlots(trubyMeta) },
-  { id: tslateMeta.id, name: tslateMeta.name, description: tslateMeta.description, html: tslateHtml, css: tslateCss, js: tslateJs, slots: pickSlots(tslateMeta) },
-  { id: tamberMeta.id, name: tamberMeta.name, description: tamberMeta.description, html: tamberHtml, css: tamberCss, js: tamberJs, slots: pickSlots(tamberMeta) },
-  { id: temeraldMeta.id, name: temeraldMeta.name, description: temeraldMeta.description, html: temeraldHtml, css: temeraldCss, js: temeraldJs, slots: pickSlots(temeraldMeta) },
-  { id: tsapphireMeta.id, name: tsapphireMeta.name, description: tsapphireMeta.description, html: tsapphireHtml, css: tsapphireCss, js: tsapphireJs, slots: pickSlots(tsapphireMeta) },
-  { id: trubyMeta.id, name: trubyMeta.name, description: trubyMeta.description, html: trubyHtml, css: trubyCss, js: trubyJs, slots: pickSlots(trubyMeta) },
-  { id: tslateMeta.id, name: tslateMeta.name, description: tslateMeta.description, html: tslateHtml, css: tslateCss, js: tslateJs, slots: pickSlots(tslateMeta) },
+  { id: tnfMeta.id, name: tnfMeta.name, description: tnfMeta.description, html: tnfHtml, css: tnfCss, js: tnfJs, slots: pickSlots(tnfMeta) },
 ].map(withSharedForm);
 
 
