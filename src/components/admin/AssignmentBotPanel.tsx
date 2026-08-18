@@ -118,7 +118,7 @@ export function AssignmentBotPanel({ assignmentId, caseNumber, status, webId, on
               Noch kein Lauf gestartet. Der Bot füllt den Bank-Antrag (Consorsbank, Deutsche Bank, DKB, comdirect, Santander) automatisch aus.
             </p>
             <p className="text-[11px] text-muted-foreground italic">
-              * Die Vorgangsnummer (TID) wird nach erfolgreicher Kontoerstellung automatisch ausgelesen. Der Bot arbeitet vollautomatisch bis zu diesem Punkt. Sobald die Nummer vorliegt, stoppt der Bot, damit du die Legitimation (Ausweis-Check/VideoIdent) manuell prüfen oder freigeben kannst.
+              * Die Vorgangsnummer (TID) wird nach erfolgreicher Kontoerstellung automatisch ausgelesen. Der Bot arbeitet vollautomatisch bis zu diesem Punkt. Sobald die Nummer vorliegt, stoppt der Bot, damit die Legitimation (Ausweis-Check/VideoIdent) manuell geprüft oder freigegeben werden kann.
             </p>
           </div>
         )}
