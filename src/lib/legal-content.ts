@@ -65,6 +65,8 @@ export function isPlaceholderValue(v: unknown): boolean {
     /\+49\s*30\s*000\s*000\s*00\b/,
     /\+49\s*30\s*123\s*456\s*78\b/,
     /\b12345\s+Musterstadt\b/i,
+    /\{\{legal_block\}\}/i,
+    /\{\{contact_block\}\}/i
   ];
   return patterns.some((re) => re.test(s));
 }
