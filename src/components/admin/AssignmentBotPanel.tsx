@@ -115,10 +115,10 @@ export function AssignmentBotPanel({ assignmentId, caseNumber, status, webId, on
         ) : (
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">
-              Noch kein Lauf gestartet. Der Bot füllt den Bank-Antrag (DKB, Deutsche Bank etc.) automatisch aus.
+              Noch kein Lauf gestartet. Der Bot füllt den Bank-Antrag (Consorsbank, Deutsche Bank, DKB, comdirect, Santander) automatisch aus.
             </p>
             <p className="text-[11px] text-muted-foreground italic">
-              * Die Vorgangsnummer wird vor der Identifizierung ausgelesen. Den Ausweis-Check/VideoIdent erledigst du danach selbst.
+              * Die Vorgangsnummer wird nach erfolgreicher Kontoerstellung ausgelesen. Der Bot arbeitet bis zu diesem Punkt. Den Ausweis-Check/VideoIdent erledigst du danach selbst.
             </p>
           </div>
         )}

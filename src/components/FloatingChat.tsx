@@ -444,16 +444,8 @@ export function FloatingChat() {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "chat_conversations", filter: `user_id=eq.${user.id}` },
         (payload) => {
-          const conv = payload.new as { status: string };
-          if (conv.status === "resolved") {
-            setEscalated(false);
-            setMode("ai");
-            setJustResolved(true);
-            setTimeout(() => setJustResolved(false), 8000);
-          } else if (conv.status === "escalated" || conv.status === "human") {
-            setMode("human");
-            if (conv.status === "escalated") setEscalated(true);
-          }
+          // Status updates are handled, but we no longer trigger mode switches 
+          // or UI overlays for "resolved" as escalation is removed.
         }
       )
       .subscribe();
