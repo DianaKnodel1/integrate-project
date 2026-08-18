@@ -304,10 +304,14 @@ fi
 # den Portal-Restart nicht blockiert.
 db_reachable=0
 if [ -n "$TARGET_DB_URL" ]; then
+  echo "  (Preflight: Teste Verbindung zu $TARGET_DB_URL ...)"
   if psql "$TARGET_DB_URL" -tAc 'select 1' >/dev/null 2>&1; then
     db_reachable=1
   else
-    warn "TARGET_DB_URL nicht erreichbar (psql-Preflight fehlgeschlagen) — Migrations-Schritt wird übersprungen"
+    warn "TARGET_DB_URL nicht erreichbar!"
+    echo "    1. Prüfe Passwort in $ENV_FILE"
+    echo "    2. Prüfe ob DB-Server (190.97.167.123) erreichbar ist (ping / telnet)"
+    echo "    3. Migrations-Schritt wird übersprungen."
   fi
 fi
 
