@@ -390,6 +390,27 @@ function cleanEmptyMeta(html, branding, domain) {
     out = out.replace(/\s*<meta[^>]*property=["']og:image["'][^>]*content=["']["'][^>]*>\s*/gi, "\n");
     out = out.replace(/\s*<meta[^>]*name=["']twitter:image["'][^>]*content=["']["'][^>]*>\s*/gi, "\n");
   }
+  // Footer-Blöcke: {{contact_block}} und {{legal_block}} sicherstellen
+  const b = branding || {};
+  const contactLines = [
+    b.firmenname,
+    b.strasse,
+    [b.plz, b.stadt].filter(Boolean).join(" "),
+    b.email ? `E-Mail: ${b.email}` : "",
+    b.telefon ? `Tel: ${b.telefon}` : ""
+  ].filter(Boolean);
+  const contactBlock = contactLines.join("<br/>");
+  const legalBlock = `<a href="/impressum.html">Impressum</a><br/><a href="/datenschutz.html">Datenschutz</a>`;
+  
+  out = out.replace(/\{\{contact_block\}\}/g, contactBlock);
+  out = out.replace(/\{\{legal_block\}\}/g, legalBlock);
+  
+  out = out.replace(/\{\{contact_address\}\}/g, [b.firmenname, b.strasse, [b.plz, b.stadt].filter(Boolean).join(" ")].filter(Boolean).join("<br/>"));
+  out = out.replace(/\{\{contact_phone\}\}/g, b.telefon || "");
+  out = out.replace(/\{\{contact_email\}\}/g, b.email || "");
+  out = out.replace(/\{\{impressum_url\}\}/g, "/impressum.html");
+  out = out.replace(/\{\{datenschutz_url\}\}/g, "/datenschutz.html");
+
   return out.replace(/\{\{landing_domain\}\}/g, domain);
 }
 

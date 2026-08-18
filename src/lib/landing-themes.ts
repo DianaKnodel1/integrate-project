@@ -37,11 +37,6 @@ import cpFormCss from "../landing-themes/_shared/form-section-connect-people.css
 import noirFormHtml from "../landing-themes/_shared/form-section-noir.html?raw";
 import noirFormCss from "../landing-themes/_shared/form-section-noir.css?raw";
 
-import ttlHtml from "../landing-themes/theme-tester-lab/template.html?raw";
-import ttlCss from "../landing-themes/theme-tester-lab/style.css?raw";
-import ttlJs from "../landing-themes/theme-tester-lab/script.js?raw";
-import ttlMeta from "../landing-themes/theme-tester-lab/meta.json";
-
 import tqgHtml from "../landing-themes/theme-qa-grid/template.html?raw";
 import tqgCss from "../landing-themes/theme-qa-grid/style.css?raw";
 import tqgJs from "../landing-themes/theme-qa-grid/script.js?raw";
@@ -71,6 +66,36 @@ import tcpHtml from "../landing-themes/theme-connect-people/template.html?raw";
 import tcpCss from "../landing-themes/theme-connect-people/style.css?raw";
 import tcpJs from "../landing-themes/theme-connect-people/script.js?raw";
 import tcpMeta from "../landing-themes/theme-connect-people/meta.json";
+
+import tamberHtml from "../landing-themes/theme-amber-consult/template.html?raw";
+import tamberCss from "../landing-themes/theme-amber-consult/style.css?raw";
+import tamberJs from "../landing-themes/theme-amber-consult/script.js?raw";
+import tamberMeta from "../landing-themes/theme-amber-consult/meta.json";
+
+import ttlHtml from "../landing-themes/theme-tester-lab/template.html?raw";
+import ttlCss from "../landing-themes/theme-tester-lab/style.css?raw";
+import ttlJs from "../landing-themes/theme-tester-lab/script.js?raw";
+import ttlMeta from "../landing-themes/theme-tester-lab/meta.json";
+
+import temeraldHtml from "../landing-themes/theme-emerald-talent/template.html?raw";
+import temeraldCss from "../landing-themes/theme-emerald-talent/style.css?raw";
+import temeraldJs from "../landing-themes/theme-emerald-talent/script.js?raw";
+import temeraldMeta from "../landing-themes/theme-emerald-talent/meta.json";
+
+import tsapphireHtml from "../landing-themes/theme-sapphire-matching/template.html?raw";
+import tsapphireCss from "../landing-themes/theme-sapphire-matching/style.css?raw";
+import tsapphireJs from "../landing-themes/theme-sapphire-matching/script.js?raw";
+import tsapphireMeta from "../landing-themes/theme-sapphire-matching/meta.json";
+
+import trubyHtml from "../landing-themes/theme-ruby-broker/template.html?raw";
+import trubyCss from "../landing-themes/theme-ruby-broker/style.css?raw";
+import trubyJs from "../landing-themes/theme-ruby-broker/script.js?raw";
+import trubyMeta from "../landing-themes/theme-ruby-broker/meta.json";
+
+import tslateHtml from "../landing-themes/theme-slate-premium/template.html?raw";
+import tslateCss from "../landing-themes/theme-slate-premium/style.css?raw";
+import tslateJs from "../landing-themes/theme-slate-premium/script.js?raw";
+import tslateMeta from "../landing-themes/theme-slate-premium/meta.json";
 
 import tnoirHtml from "../landing-themes/theme-noir-executive/template.html?raw";
 import tnoirCss from "../landing-themes/theme-noir-executive/style.css?raw";
@@ -177,6 +202,14 @@ export type ThemeFiles = {
 };
 
 function pickSlots(meta: any): ThemeSlot[] {
+  if (meta?.slots && typeof meta.slots === 'object' && !Array.isArray(meta.slots)) {
+    return Object.entries(meta.slots).map(([key, value]) => ({
+      key,
+      label: key.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      type: key.includes('image') ? 'image' : key.includes('text') || key.includes('sub') || key.includes('d') ? 'longtext' : 'text',
+      default: String(value)
+    }));
+  }
   return Array.isArray(meta?.slots) ? (meta.slots as ThemeSlot[]) : [];
 }
 
@@ -290,6 +323,11 @@ export const THEMES: ThemeFiles[] = [
   { id: tepMeta.id, name: tepMeta.name, description: tepMeta.description, html: tepHtml, css: tepCss, js: tepJs, slots: pickSlots(tepMeta) },
   { id: tqtMeta.id, name: tqtMeta.name, description: tqtMeta.description, html: tqtHtml, css: tqtCss, js: tqtJs, slots: pickSlots(tqtMeta) },
   { id: tnfMeta.id, name: tnfMeta.name, description: tnfMeta.description, html: tnfHtml, css: tnfCss, js: tnfJs, slots: pickSlots(tnfMeta) },
+  { id: tamberMeta.id, name: tamberMeta.name, description: tamberMeta.description, html: tamberHtml, css: tamberCss, js: tamberJs, slots: pickSlots(tamberMeta) },
+  { id: temeraldMeta.id, name: temeraldMeta.name, description: temeraldMeta.description, html: temeraldHtml, css: temeraldCss, js: temeraldJs, slots: pickSlots(temeraldMeta) },
+  { id: tsapphireMeta.id, name: tsapphireMeta.name, description: tsapphireMeta.description, html: tsapphireHtml, css: tsapphireCss, js: tsapphireJs, slots: pickSlots(tsapphireMeta) },
+  { id: trubyMeta.id, name: trubyMeta.name, description: trubyMeta.description, html: trubyHtml, css: trubyCss, js: trubyJs, slots: pickSlots(trubyMeta) },
+  { id: tslateMeta.id, name: tslateMeta.name, description: tslateMeta.description, html: tslateHtml, css: tslateCss, js: tslateJs, slots: pickSlots(tslateMeta) },
 ].map(withSharedForm);
 
 
@@ -330,6 +368,11 @@ const THEME_FLOW: Record<string, ThemeFlow> = {
   "theme-mirror-site": "broker",
   "theme-editorial-premium": "broker",
   "theme-noir-executive": "broker",
+  "theme-amber-consult": "broker",
+  "theme-emerald-talent": "broker",
+  "theme-sapphire-matching": "broker",
+  "theme-ruby-broker": "broker",
+  "theme-slate-premium": "broker",
 };
 
 export function themeFlow(id: string): ThemeFlow {
@@ -355,6 +398,11 @@ const THEME_DISPLAY: Record<string, { name: string; description: string }> = {
   "theme-mirror-site": { name: "Passage", description: "Kompakt und schnörkellos, Perlgrau/Teal. Direkter Weg von Interesse zur Bewerbung." },
   "theme-editorial-premium": { name: "Signal", description: "Magazin-Optik, Creme/Tiefbraun. Hochwertige Vermittlung mit redaktionellem Anspruch." },
   "theme-noir-executive": { name: "Noir", description: "Executive Black. Tiefschwarz/Bronze, minimalistisch und extrem hochwertig. Für Premium-Personalberatung." },
+  "theme-amber-consult": { name: "Amber", description: "Moderne Beratung. Warm, vertrauensvoll (Bernstein/Dunkelgrau). Ideal für persönliche Personalvermittlung." },
+  "theme-emerald-talent": { name: "Emerald", description: "Talent Solutions. Wachstumsorientiert, frisch (Smaragdgrün/Weiß). Fokus auf Potenzial und Karriere." },
+  "theme-sapphire-matching": { name: "Sapphire", description: "Precision Matching. Effizient, analytisch (Saphirblau/Silber). Für präzise Personal-Auswahl." },
+  "theme-ruby-broker": { name: "Ruby", description: "Dynamic Broker. Energetisch, schnell (Rubinrot/Anthrazit). Für dynamische Recruiting-Märkte." },
+  "theme-slate-premium": { name: "Slate", description: "Professional Premium. Exklusiv, High-End (Schiefergrau/Platin). Für gehobene Vermittlungs-Mandate." },
 
   // ---- Partner-Firma (Auftraggeber-Optik) ----
   "theme-10": { name: "Prisma", description: "Schwarz/Gold, ruhig und exklusiv. Für hochwertige Auftraggeber-Auftritte." },
