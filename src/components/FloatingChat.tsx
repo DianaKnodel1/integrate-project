@@ -539,7 +539,7 @@ export function FloatingChat() {
           </div>
 
           {/* Mode Selector */}
-          <ModeSelector mode={mode} onSelect={handleModeSelect} locked={escalated} aiDisabled={tenant?.ai_enabled === false} />
+          <ModeSelector mode={mode} onSelect={handleModeSelect} locked={false} aiDisabled={tenant?.ai_enabled === false} />
           <StatusBanner mode={mode} leaderName={leader.name} leaderOnline={!!leader.is_online} />
 
           {/* Messages */}
