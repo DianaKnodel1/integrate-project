@@ -364,7 +364,7 @@ function AdminChatPage() {
     try {
       const lastMsg = messages.filter(m => m.sender_id === selectedUserId).pop()?.message || "";
       const conv = conversations.find(c => c.user_id === selectedUserId);
-      const teamLeaderName = user?.user_metadata?.full_name || conv?.tenantName || "Martin Schneider";
+      const teamLeaderName = user?.user_metadata?.full_name || conv?.tenantName || "Teamleiter";
 
       const context = messages.slice(-10).map(m => ({
         role: adminIdsRef.current.has(m.sender_id) ? "assistant" : "user" as "assistant" | "user",

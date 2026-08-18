@@ -18,7 +18,7 @@ export const getAiSuggestion = createServerFn({ method: "POST" })
     const { callGateway } = await import("./interview-engine.server");
     const { analyzeStyle } = await import("./chat-style.server");
 
-    const recruiterName = data.teamLeaderName || "Martin Schneider";
+    const recruiterName = data.teamLeaderName || "Teamleiter";
 
     // Eigene bisherige Nachrichten an genau diesen Mitarbeiter (Stilquelle).
     const { data: own } = await db
@@ -56,11 +56,11 @@ export const getAiSuggestion = createServerFn({ method: "POST" })
       .map((c) => `Vorschlag: ${String(c.suggestion).slice(0, 400)}\nDeine Fassung: ${String(c.final_text).slice(0, 400)}`)
       .join("\n---\n");
 
-    const systemPrompt = `Du formulierst einen Antwortvorschlag für ${recruiterName}, den Teamleiter im Mitarbeiterportal.
+    const systemPrompt = `Du formulierst einen Antwortvorschlag für den Teamleiter im Mitarbeiterportal.
 
 DEINE AUFGABE:
 - Unterstütze den Teamleiter dabei, auf die letzte Nachricht des Mitarbeiters zu reagieren.
-- Analysiere die Nachricht des Mitarbeiters und schlage eine passende, hilfreiche Antwort im Stil von ${recruiterName} vor.
+- Analysiere die Nachricht des Mitarbeiters und schlage eine passende, hilfreiche Antwort im Stil des Teamleiters vor.
 
 ERKANNTER SCHREIBSTIL (automatisch aus bisherigen Nachrichten abgeleitet):
 - Anrede: ${style.anrede}
@@ -69,7 +69,7 @@ ERKANNTER SCHREIBSTIL (automatisch aus bisherigen Nachrichten abgeleitet):
 - Grußformel: ${style.closing}
 - Emojis: ${style.emojis ? "werden sparsam verwendet" : "werden nicht verwendet"}
 
-STILBEISPIELE (so schreibt ${recruiterName} wirklich):
+STILBEISPIELE (so schreibt der Teamleiter wirklich):
 ${style.examples.map((e) => `- ${e}`).join("\n") || "- (noch keine Beispiele vorhanden)"}
 
 ${correctionBlock ? `FRÜHERE KORREKTUREN – lerne daraus:\n${correctionBlock}\n` : ""}
