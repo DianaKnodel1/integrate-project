@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "@/lib/router-compat";
+import { useLocation } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTeamLeader } from "@/hooks/use-team-leader";
 import { useChatNotifications } from "@/hooks/use-chat-notifications";
 import { useTenant } from "@/contexts/TenantContext";
-import { MessageCircle, X, Send, BadgeCheck, Minus, Bot, User, ExternalLink, Zap, UserCheck } from "lucide-react";
+import { MessageCircle, Send, BadgeCheck, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatMessage {
@@ -26,7 +26,7 @@ function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
 
-function ChatButton({ onClick, unread, hasNewMessage, pulse24h }: { onClick: () => void; unread: number; hasNewMessage: boolean; pulse24h: boolean }) {
+function ChatButton({ onClick, unread, hasNewMessage }: { onClick: () => void; unread: number; hasNewMessage: boolean }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -39,12 +39,6 @@ function ChatButton({ onClick, unread, hasNewMessage, pulse24h }: { onClick: () 
             hasNewMessage && "animate-chat-bounce"
           )}
         >
-          {pulse24h && unread === 0 && (
-            <>
-              <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping" />
-              <span className="absolute -inset-1 rounded-full ring-2 ring-primary/30" />
-            </>
-          )}
           <MessageCircle className="h-6 w-6 text-primary-foreground relative" />
           {unread > 0 && (
             <span className="absolute -top-1 -right-1 h-5 min-w-[20px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1.5 shadow-sm">
@@ -65,9 +59,8 @@ export default function FloatingChat() {
   const location = useLocation();
   const { toast } = useToast();
   const { leader, teamLeaderId, initials: leaderInitials } = useTeamLeader();
-  const { triggerNotification } = useChatNotifications();
-  const { whatsappNumber } = useTenant();
-
+  const { tenant } = useTenant();
+  
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -75,13 +68,13 @@ export default function FloatingChat() {
   const [humanMessages, setHumanMessages] = useState<ChatMessage[]>([]);
   const [unread, setUnread] = useState(0);
   const [hasNewMessage, setHasNewMessage] = useState(false);
-  const [pulse24h, setPulse24h] = useState(false);
   const [leaderTyping, setLeaderTyping] = useState(false);
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const isOnChatPage = location.pathname.includes("/chat");
 
-  // Load unread count
+  const { trigger: triggerNotification } = useChatNotifications({ unread, enabled: true });
+
   useEffect(() => {
     if (!user || !teamLeaderId || isOnChatPage) return;
     const check = async () => {
@@ -97,7 +90,6 @@ export default function FloatingChat() {
     check();
   }, [user, teamLeaderId, isOnChatPage]);
 
-  // Realtime for human messages
   useEffect(() => {
     if (!user || !teamLeaderId) return;
     const channel = supabase
@@ -108,8 +100,6 @@ export default function FloatingChat() {
         const isFromMe = msg.sender_id === user.id && msg.receiver_id === teamLeaderId;
         
         if (!isFromLeader && !isFromMe) return;
-
-        // Skip internal escalation tags
         if (msg.message.includes("[ESCALATE]") || msg.message.includes("🤖 KI Eskalation")) return;
 
         if (open) {
@@ -133,7 +123,6 @@ export default function FloatingChat() {
     return () => { supabase.removeChannel(channel); };
   }, [user, teamLeaderId, open, leader.name, triggerNotification]);
 
-  // Load initial messages
   useEffect(() => {
     if (!open || !user || !teamLeaderId) return;
     const load = async () => {
@@ -188,8 +177,8 @@ export default function FloatingChat() {
   return (
     <>
       {!open && (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-          <ChatButton onClick={() => setOpen(true)} unread={unread} hasNewMessage={hasNewMessage} pulse24h={pulse24h} />
+        <div className="fixed bottom-6 right-6 z-50">
+          <ChatButton onClick={() => setOpen(true)} unread={unread} hasNewMessage={hasNewMessage} />
         </div>
       )}
 

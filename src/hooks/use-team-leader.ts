@@ -21,6 +21,7 @@ const DEFAULT: TeamLeaderSettings = {
 export function useTeamLeader() {
   const { user } = useAuth();
   const [leader, setLeader] = useState<TeamLeaderSettings>(DEFAULT);
+  const [teamLeaderId, setTeamLeaderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +32,8 @@ export function useTeamLeader() {
           .select("tenant_id, team_leader_id, leader_title, leader_avatar_url, leader_online")
           .eq("user_id", user.id)
           .maybeSingle();
+
+        setTeamLeaderId(profile?.team_leader_id || null);
 
         // 1) Tenant defaults (fallback)
         let tenantDefaults: Partial<TeamLeaderSettings> = {};
@@ -91,5 +94,5 @@ export function useTeamLeader() {
 
   const lastActiveText = leader.is_online ? "Online" : "";
 
-  return { leader, loading, initials, lastActiveText };
+  return { leader, loading, initials, lastActiveText, teamLeaderId };
 }
