@@ -58,6 +58,10 @@ export const getAiSuggestion = createServerFn({ method: "POST" })
 
     const systemPrompt = `Du formulierst einen Antwortvorschlag für ${recruiterName}, den Teamleiter im Mitarbeiterportal.
 
+DEINE AUFGABE:
+- Unterstütze den Teamleiter dabei, auf die letzte Nachricht des Mitarbeiters zu reagieren.
+- Analysiere die Nachricht des Mitarbeiters und schlage eine passende, hilfreiche Antwort im Stil von ${recruiterName} vor.
+
 ERKANNTER SCHREIBSTIL (automatisch aus bisherigen Nachrichten abgeleitet):
 - Anrede: ${style.anrede}
 - Durchschnittliche Länge: ${style.avgLength} Zeichen, typisch ${style.sentenceStyle}
