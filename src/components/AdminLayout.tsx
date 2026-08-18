@@ -41,6 +41,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Bewerbungen", url: "/admin/bewerbungen", icon: Users, badgeKey: "newApplications" },
       { title: "Mitarbeiter", url: "/admin/mitarbeiter", icon: Users },
+      { title: "Termine", url: "/admin/appointments", icon: CalendarDays },
     ],
   },
   {
