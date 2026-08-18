@@ -1,23 +1,25 @@
 {
   "id": "theme-emerald-talent",
   "name": "Emerald — Talent Solutions",
-  "description": "Frisches, wachstumsorientiertes Design in Smaragdgrün und Weiß. Fokus auf Karriereentwicklung und moderne Arbeitswelten.",
-  "slots": [
-    { "key": "brand_name", "label": "Marke", "type": "text", "default": "TALENT" },
-    { "key": "hero_title", "label": "Gestalten Sie Ihre Zukunft.", "type": "text", "default": "Gestalten Sie Ihre Zukunft." },
-    { "key": "hero_sub", "label": "Hero Untertitel", "type": "longtext", "default": "Wir begleiten Talente nachhaltig in moderne Arbeitsumgebungen mit Perspektive." },
-    { "key": "hero_cta", "label": "Hero Button", "type": "text", "default": "Karriere starten" },
-    { "key": "hero_cta_sec", "label": "Hero Sekundär", "type": "text", "default": "Offene Stellen" },
-    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
-    { "key": "trust_title", "label": "Werte", "type": "text", "default": "Was uns antreibt" },
-    { "key": "t1_t", "label": "Trust 1", "type": "text", "default": "Nachhaltiges Wachstum" },
-    { "key": "t2_t", "label": "Trust 2", "type": "text", "default": "Moderne Kultur" },
-    { "key": "t3_t", "label": "Trust 3", "type": "text", "default": "Echte Perspektiven" },
-    { "key": "contact_email", "label": "E-Mail", "type": "text", "default": "" },
-    { "key": "contact_phone", "label": "Telefon", "type": "text", "default": "" },
-    { "key": "impressum_url", "label": "Impressum URL", "type": "text", "default": "#" },
-    { "key": "datenschutz_url", "label": "Datenschutz URL", "type": "text", "default": "#" },
-    { "key": "seo_title", "label": "SEO Titel", "type": "text", "default": "Emerald Talent Solutions | Karriereberatung" },
-    { "key": "seo_description", "label": "SEO Beschreibung", "type": "text", "default": "Entdecken Sie neue Karrieremöglichkeiten mit Emerald Talent Solutions." }
-  ]
+  "description": "Talent-orientiert, frisch und modern. Ideal für IT und kreative Vermittlung.",
+  "slots": {
+    "hero_title": "Finde deinen nächsten Karriereschritt",
+    "hero_sub": "Wir verbinden erstklassige Talente mit den spannendsten Unternehmen der Branche.",
+    "hero_cta": "Jetzt bewerben",
+    "hero_cta_sec": "Mehr erfahren",
+    "hero_image": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1200",
+    "trust_title": "Warum Emerald?",
+    "t1_t": "Individuelles Coaching",
+    "t2_t": "Direktkontakt zu Entscheidern",
+    "t3_t": "100% Kostenlose Vermittlung",
+    "process_title": "Dein Weg zum neuen Job",
+    "s1_t": "Schnellcheck",
+    "s1_d": "Kurze Online-Bewerbung in nur 2 Minuten.",
+    "s2_t": "Kennenlernen",
+    "s2_d": "Persönliches Gespräch über deine Ziele.",
+    "s3_t": "Match-Day",
+    "s3_d": "Vorstellung bei deinem Wunsch-Arbeitgeber.",
+    "about_title": "Über uns",
+    "about_text": "Emerald Talent Solutions steht für nachhaltige Karriereentwicklung. Wir sehen nicht nur den Lebenslauf, sondern den Menschen dahinter."
+  }
 }
