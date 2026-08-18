@@ -91,6 +91,9 @@ function ChatPage() {
           .from("chat_messages")
           .select("*")
           .or(`and(sender_id.eq.${user!.id},receiver_id.eq.${leaderId}),and(sender_id.eq.${leaderId},receiver_id.eq.${user!.id})`)
+          .not("message", "ilike", "%[ESCALATE]%")
+          .not("message", "ilike", "%🤖 KI Eskalation%")
+          .not("message", "ilike", "%🤖 KI-Eskalation%")
           .order("created_at", { ascending: true })
           .limit(200);
         const visible = ((msgs ?? []) as ChatMessage[]).filter((m) => !isInternalAdminNote(m));

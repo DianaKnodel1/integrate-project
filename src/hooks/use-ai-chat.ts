@@ -36,10 +36,7 @@ export function useAiChat() {
       if (!resp.ok) throw new Error(data?.error || `HTTP ${resp.status}`);
 
       let content: string = data.content ?? "";
-      if (content.includes("[ESCALATE]")) {
-        setEscalated(true);
-        content = content.replace("[ESCALATE]", "").trim();
-      }
+      setMessages((prev) => [...prev, { role: "assistant", content }]);
       setMessages((prev) => [...prev, { role: "assistant", content }]);
     } catch (e: any) {
       if (e.name !== "AbortError") {
