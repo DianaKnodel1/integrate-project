@@ -121,6 +121,9 @@ function AdminChatPage() {
       supabase
         .from("chat_messages")
         .select("sender_id, receiver_id, message, read, created_at")
+        .not("message", "ilike", "%[ESCALATE]%")
+        .not("message", "ilike", "%🤖 KI Eskalation%")
+        .not("message", "ilike", "%🤖 KI-Eskalation%")
         .order("created_at", { ascending: false })
         .limit(100),
       supabase.from("tenants").select("id, name"),
@@ -229,6 +232,9 @@ function AdminChatPage() {
     const { data: msgs } = await supabase
       .from("chat_messages").select("*")
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+      .not("message", "ilike", "%[ESCALATE]%")
+      .not("message", "ilike", "%🤖 KI Eskalation%")
+      .not("message", "ilike", "%🤖 KI-Eskalation%")
       .order("created_at", { ascending: true })
       .limit(200);
     setMessages((msgs ?? []) as ChatMessage[]);

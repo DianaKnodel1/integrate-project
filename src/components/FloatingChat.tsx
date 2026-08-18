@@ -320,6 +320,9 @@ export function FloatingChat() {
         .from("chat_messages")
         .select("*")
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${teamLeaderId}),and(sender_id.eq.${teamLeaderId},receiver_id.eq.${user.id})`)
+        .not("message", "ilike", "%[ESCALATE]%")
+        .not("message", "ilike", "%🤖 KI Eskalation%")
+        .not("message", "ilike", "%🤖 KI-Eskalation%")
         .order("created_at", { ascending: true })
         .limit(100);
       // Interne KI-/Eskalations-Nachrichten sind nur Admin-Info und werden im Mitarbeiter-Portal nicht angezeigt
