@@ -760,26 +760,6 @@ function AdminChatPage() {
                 >
                   <MailOpen className="h-3.5 w-3.5 mr-1" /> Ungelesen
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => sendReminder(selectedUserId!)}
-                  disabled={remindingId === selectedUserId}
-                  className="text-xs text-muted-foreground hover:text-primary"
-                  title="E-Mail-Erinnerung an Mitarbeiter senden (max. 1× pro 24h)"
-                >
-                  <Mail className="h-3.5 w-3.5 mr-1" /> {remindingId === selectedUserId ? "Sende…" : "Erinnerung senden"}
-                </Button>
-                {reminderHistory.count > 0 && (
-                  <span className="text-[11px] text-muted-foreground self-center px-1.5" title={reminderHistory.lastAt ? `Letzter Reminder: ${new Date(reminderHistory.lastAt).toLocaleString("de-DE")}` : undefined}>
-                    📧 {(() => {
-                      if (!reminderHistory.lastAt) return `${reminderHistory.count}× gesendet`;
-                      const diffH = Math.round((Date.now() - new Date(reminderHistory.lastAt).getTime()) / 3600000);
-                      const when = diffH < 1 ? "<1h" : diffH < 24 ? `${diffH}h` : `${Math.round(diffH / 24)}d`;
-                      return `vor ${when} • ${reminderHistory.count}× gesendet`;
-                    })()}
-                  </span>
-                )}
 
                 {selectedConv?.hiddenAt ? (
                   <Button
