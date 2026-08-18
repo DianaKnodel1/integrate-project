@@ -360,6 +360,11 @@ const THEME_FLOW: Record<string, ThemeFlow> = {
   "theme-mirror-site": "broker",
   "theme-editorial-premium": "broker",
   "theme-noir-executive": "broker",
+  "theme-amber-consult": "broker",
+  "theme-emerald-talent": "broker",
+  "theme-sapphire-matching": "broker",
+  "theme-ruby-broker": "broker",
+  "theme-slate-premium": "broker",
 };
 
 export function themeFlow(id: string): ThemeFlow {
