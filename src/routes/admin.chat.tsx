@@ -359,11 +359,12 @@ function AdminChatPage() {
   };
 
   const generateSuggestion = async () => {
-    if (!selectedUserId || messages.length === 0) return;
+    if (!selectedUserId || generatingAi) return;
     setGeneratingAi(true);
     try {
+      const lastMsg = messages.filter(m => m.sender_id === selectedUserId).pop()?.message || "";
       const conv = conversations.find(c => c.user_id === selectedUserId);
-      const teamLeaderName = conv?.tenantName || "Martin Schneider"; // Fallback to Martin Schneider or Tenant Name as hint for now
+      const teamLeaderName = user?.user_metadata?.full_name || conv?.tenantName || "Martin Schneider";
 
       const context = messages.slice(-10).map(m => ({
         role: adminIdsRef.current.has(m.sender_id) ? "assistant" : "user" as "assistant" | "user",
@@ -373,7 +374,7 @@ function AdminChatPage() {
       const res = await aiSuggestionFn({
         data: {
           userId: selectedUserId,
-          lastMessage: messages[messages.length - 1].message,
+          lastMessage: lastMsg,
           context,
           teamLeaderName
         }
@@ -384,8 +385,8 @@ function AdminChatPage() {
       } else {
         toast({ title: "KI", description: (res as any).error ?? "Kein Vorschlag erhalten.", variant: "destructive" });
       }
-    } catch (e) {
-      toast({ title: "KI Fehler", description: "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: "KI Fehler", description: e.message || "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
     } finally {
       setGeneratingAi(false);
     }
