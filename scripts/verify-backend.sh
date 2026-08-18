@@ -62,6 +62,8 @@ FAILED=0
 # Critical tables/columns from recent migrations
 check_table "bot_proxies" || FAILED=1
 check_table "ai_style_corrections" || FAILED=1
+check_table "landing_pages" || FAILED=1
+check_table "partner_companies" || FAILED=1
 check_column "task_assignments" "assignment_group" || FAILED=1
 check_column "task_templates" "assignment_mode" || FAILED=1
 check_column "tenants" "mailless_mode" || FAILED=1
