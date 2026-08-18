@@ -560,7 +560,7 @@ export function FloatingChat() {
 
           {/* Mode Selector */}
           <ModeSelector mode={mode} onSelect={handleModeSelect} locked={escalated} aiDisabled={tenant?.ai_enabled === false} />
-          <StatusBanner mode={mode} leaderName={leader.name} leaderOnline={!!leader.is_online} escalated={escalated} justResolved={justResolved} />
+          <StatusBanner mode={mode} leaderName={leader.name} leaderOnline={!!leader.is_online} />
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
