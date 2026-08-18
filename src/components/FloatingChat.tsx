@@ -368,7 +368,8 @@ export function FloatingChat() {
         .from("chat_messages")
         .select("*")
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${teamLeaderId}),and(sender_id.eq.${teamLeaderId},receiver_id.eq.${user.id})`)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true })
+        .limit(100);
       // Interne KI-/Eskalations-Nachrichten sind nur Admin-Info und werden im Mitarbeiter-Portal nicht angezeigt
       const visible = ((data ?? []) as ChatMessage[]).filter(
         (m) =>
