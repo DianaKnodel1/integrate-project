@@ -202,6 +202,14 @@ export type ThemeFiles = {
 };
 
 function pickSlots(meta: any): ThemeSlot[] {
+  if (meta?.slots && typeof meta.slots === 'object' && !Array.isArray(meta.slots)) {
+    return Object.entries(meta.slots).map(([key, value]) => ({
+      key,
+      label: key.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      type: key.includes('image') ? 'image' : key.includes('text') || key.includes('sub') || key.includes('d') ? 'longtext' : 'text',
+      default: String(value)
+    }));
+  }
   return Array.isArray(meta?.slots) ? (meta.slots as ThemeSlot[]) : [];
 }
 
