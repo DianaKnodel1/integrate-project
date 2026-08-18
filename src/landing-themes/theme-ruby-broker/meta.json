@@ -1,0 +1,19 @@
+{
+  "id": "theme-ruby-broker",
+  "name": "Ruby — Dynamic Broker",
+  "description": "Energisches Design in Rubinrot und Anthrazit. Fokus auf Geschwindigkeit, Dynamik und Erfolg.",
+  "slots": [
+    { "key": "brand_name", "label": "Marke", "type": "text", "default": "BROKER" },
+    { "key": "hero_title", "label": "Dynamik für Ihre Karriere.", "type": "text", "default": "Dynamik für Ihre Karriere." },
+    { "key": "hero_sub", "label": "Hero Untertitel", "type": "longtext", "default": "Schnelle Wege, direkte Kontakte und maximale Erfolgschancen für Ihre Bewerbung." },
+    { "key": "hero_cta", "label": "Hero Button", "type": "text", "default": "Jetzt durchstarten" },
+    { "key": "hero_cta_sec", "label": "Hero Sekundär", "type": "text", "default": "Vorteile" },
+    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
+    { "key": "contact_email", "label": "E-Mail", "type": "text", "default": "" },
+    { "key": "contact_phone", "label": "Telefon", "type": "text", "default": "" },
+    { "key": "impressum_url", "label": "Impressum URL", "type": "text", "default": "#" },
+    { "key": "datenschutz_url", "label": "Datenschutz URL", "type": "text", "default": "#" },
+    { "key": "seo_title", "label": "SEO Titel", "type": "text", "default": "Ruby Broker | Dynamische Personalvermittlung" },
+    { "key": "seo_description", "label": "SEO Beschreibung", "type": "text", "default": "Schnelle und dynamische Karrierevermittlung." }
+  ]
+}

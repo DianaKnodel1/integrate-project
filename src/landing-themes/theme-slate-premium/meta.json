@@ -1,0 +1,19 @@
+{
+  "id": "theme-slate-premium",
+  "name": "Slate — Professional Premium",
+  "description": "Edles Design in Schiefergrau und Platin. Fokus auf Exklusivität, Diskretion und High-End Beratung.",
+  "slots": [
+    { "key": "brand_name", "label": "Marke", "type": "text", "default": "PREMIUM" },
+    { "key": "hero_title", "label": "Exklusivität in jeder Beratung.", "type": "text", "default": "Exklusivität in jeder Beratung." },
+    { "key": "hero_sub", "label": "Hero Untertitel", "type": "longtext", "default": "Für Fach- und Führungskräfte, die Diskretion und erstklassige Kontakte schätzen." },
+    { "key": "hero_cta", "label": "Hero Button", "type": "text", "default": "Kontakt aufnehmen" },
+    { "key": "hero_cta_sec", "label": "Hero Sekundär", "type": "text", "default": "Expertise" },
+    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
+    { "key": "contact_email", "label": "E-Mail", "type": "text", "default": "" },
+    { "key": "contact_phone", "label": "Telefon", "type": "text", "default": "" },
+    { "key": "impressum_url", "label": "Impressum URL", "type": "text", "default": "#" },
+    { "key": "datenschutz_url", "label": "Datenschutz URL", "type": "text", "default": "#" },
+    { "key": "seo_title", "label": "SEO Titel", "type": "text", "default": "Slate Premium | High-End Personalberatung" },
+    { "key": "seo_description", "label": "SEO Beschreibung", "type": "text", "default": "Exklusive Personalberatung für höchste Ansprüche." }
+  ]
+}

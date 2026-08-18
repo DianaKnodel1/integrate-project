@@ -1,0 +1,19 @@
+{
+  "id": "theme-sapphire-matching",
+  "name": "Sapphire — Precision Matching",
+  "description": "Kühles, präzises Design in Saphirblau und Silber. Fokus auf exaktes Matching und Effizienz in der Vermittlung.",
+  "slots": [
+    { "key": "brand_name", "label": "Marke", "type": "text", "default": "MATCHING" },
+    { "key": "hero_title", "label": "Präzision in der Vermittlung.", "type": "text", "default": "Präzision in der Vermittlung." },
+    { "key": "hero_sub", "label": "Hero Untertitel", "type": "longtext", "default": "Wir nutzen datengestützte Analysen für das perfekte Match zwischen Talent und Unternehmen." },
+    { "key": "hero_cta", "label": "Hero Button", "type": "text", "default": "Match finden" },
+    { "key": "hero_cta_sec", "label": "Hero Sekundär", "type": "text", "default": "Unsere Methode" },
+    { "key": "hero_image", "label": "Hero Bild", "type": "image", "default": "assets/hero.jpg" },
+    { "key": "contact_email", "label": "E-Mail", "type": "text", "default": "" },
+    { "key": "contact_phone", "label": "Telefon", "type": "text", "default": "" },
+    { "key": "impressum_url", "label": "Impressum URL", "type": "text", "default": "#" },
+    { "key": "datenschutz_url", "label": "Datenschutz URL", "type": "text", "default": "#" },
+    { "key": "seo_title", "label": "SEO Titel", "type": "text", "default": "Sapphire Matching | Präzise Personalvermittlung" },
+    { "key": "seo_description", "label": "SEO Beschreibung", "type": "text", "default": "Effiziente und präzise Vermittlung von Fachkräften." }
+  ]
+}
