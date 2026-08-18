@@ -382,23 +382,35 @@ function AdminAssignmentDetailPage() {
         <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm">WebID-Identifikation</CardTitle>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="h-7 text-[10px]"
-              onClick={() => {
-                const url = (assignment as any).webid_start_url;
-                const nr = (assignment as any).individual_case_number;
-                if (!url) {
-                  toast({ title: "Keine URL", description: "Es ist keine WebID-Start-URL hinterlegt.", variant: "destructive" });
-                  return;
-                }
-                const finalUrl = url.replace(/\{(vorgangsnummer|case|casenumber|tid)\}/gi, encodeURIComponent(nr || ""));
-                window.open(finalUrl, "_blank");
-              }}
-            >
-              Daten im Antrag prüfen
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-7 text-[10px]"
+                onClick={() => {
+                  const url = (assignment as any).webid_start_url;
+                  const nr = (assignment as any).individual_case_number;
+                  if (!url) {
+                    toast({ title: "Keine URL", description: "Es ist keine WebID-Start-URL hinterlegt.", variant: "destructive" });
+                    return;
+                  }
+                  const finalUrl = url.replace(/\{(vorgangsnummer|case|casenumber|tid)\}/gi, encodeURIComponent(nr || ""));
+                  window.open(finalUrl, "_blank");
+                }}
+              >
+                Simulation öffnen
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-7 text-[10px]"
+                onClick={() => {
+                  window.open("https://webid-gateway.de", "_blank");
+                }}
+              >
+                Original prüfen
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-1.5 text-sm">
             <div className="flex items-center justify-between gap-3">

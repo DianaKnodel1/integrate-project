@@ -10,9 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { getRunForAssignment, releaseAssignment, startRunForAssignment } from "@/lib/bots.functions";
 
 const RUN_LABEL: Record<string, string> = {
-  queued: "In Warteschlange",
-  running: "Läuft",
-  waiting_admin: "Wartet auf dich (Legitimation)",
+  queued: "Wartet auf IP-Zuweisung",
+  running: "Antrag wird ausgefüllt...",
+  waiting_admin: "Identifizierung / Legitimation erforderlich",
   done: "Abgeschlossen",
   failed: "Fehlgeschlagen",
   cancelled: "Abgebrochen",
@@ -113,9 +113,14 @@ export function AssignmentBotPanel({ assignmentId, caseNumber, status, webId, on
             {run.last_error && <p className="text-xs text-destructive">Fehler: {run.last_error}</p>}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            Noch kein Lauf. Der Bot füllt die Antragsstrecke bis zur Legitimation aus; VideoIdent und TAN erledigst du danach selbst.
-          </p>
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              Noch kein Lauf gestartet. Der Bot füllt den Bank-Antrag (DKB, Deutsche Bank etc.) automatisch aus.
+            </p>
+            <p className="text-[11px] text-muted-foreground italic">
+              * Die Vorgangsnummer wird vor der Identifizierung ausgelesen. Den Ausweis-Check/VideoIdent erledigst du danach selbst.
+            </p>
+          </div>
         )}
 
         <div className="rounded-md border p-3 space-y-1.5">
