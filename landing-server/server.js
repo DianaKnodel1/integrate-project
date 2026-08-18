@@ -405,6 +405,12 @@ function cleanEmptyMeta(html, branding, domain) {
   out = out.replace(/\{\{contact_block\}\}/g, contactBlock);
   out = out.replace(/\{\{legal_block\}\}/g, legalBlock);
   
+  out = out.replace(/\{\{contact_address\}\}/g, [b.firmenname, b.strasse, [b.plz, b.stadt].filter(Boolean).join(" ")].filter(Boolean).join("<br/>"));
+  out = out.replace(/\{\{contact_phone\}\}/g, b.telefon || "");
+  out = out.replace(/\{\{contact_email\}\}/g, b.email || "");
+  out = out.replace(/\{\{impressum_url\}\}/g, "/impressum.html");
+  out = out.replace(/\{\{datenschutz_url\}\}/g, "/datenschutz.html");
+
   return out.replace(/\{\{landing_domain\}\}/g, domain);
 }
 
