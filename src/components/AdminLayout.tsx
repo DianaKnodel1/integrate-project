@@ -82,7 +82,7 @@ function AdminSidebar() {
   const { signOut, isAdmin } = useAuth();
   const badges = useAdminBadges();
   const { pathname } = useLocation();
-  const groups = isAdmin ? navGroups : staffNavGroups;
+  const groups = isAdmin ? navGroups : [];
 
   // Nur die Gruppe der aktuellen Seite ist offen — das hält die Sidebar ruhig.
   const activeGroup =
