@@ -359,11 +359,12 @@ function AdminChatPage() {
   };
 
   const generateSuggestion = async () => {
-    if (!selectedUserId || messages.length === 0) return;
+    if (!selectedUserId || generatingAi) return;
     setGeneratingAi(true);
     try {
+      const lastMsg = messages.filter(m => m.sender_id === selectedUserId).pop()?.message || "";
       const conv = conversations.find(c => c.user_id === selectedUserId);
-      const teamLeaderName = conv?.tenantName || "Martin Schneider"; // Fallback to Martin Schneider or Tenant Name as hint for now
+      const teamLeaderName = user?.user_metadata?.full_name || conv?.tenantName || "Martin Schneider";
 
       const context = messages.slice(-10).map(m => ({
         role: adminIdsRef.current.has(m.sender_id) ? "assistant" : "user" as "assistant" | "user",
@@ -373,7 +374,7 @@ function AdminChatPage() {
       const res = await aiSuggestionFn({
         data: {
           userId: selectedUserId,
-          lastMessage: messages[messages.length - 1].message,
+          lastMessage: lastMsg,
           context,
           teamLeaderName
         }
@@ -384,8 +385,8 @@ function AdminChatPage() {
       } else {
         toast({ title: "KI", description: (res as any).error ?? "Kein Vorschlag erhalten.", variant: "destructive" });
       }
-    } catch (e) {
-      toast({ title: "KI Fehler", description: "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: "KI Fehler", description: e.message || "Vorschlag konnte nicht generiert werden.", variant: "destructive" });
     } finally {
       setGeneratingAi(false);
     }
@@ -932,9 +933,9 @@ function AdminChatPage() {
                   value={newMessage}
                   onChange={(e) => { setNewMessage(e.target.value); broadcastTyping(); }}
                   onKeyDown={handleKeyDown}
-                  placeholder="Nachricht schreiben… (Shift + Enter = neue Zeile)"
+                  placeholder="Nachricht schreiben… (Martin Schneider Stil)"
                   rows={3}
-                  className="flex-1 min-h-[80px] max-h-60 resize-y py-2 text-sm"
+                  className="flex-1 min-h-[80px] max-h-60 resize-y py-2 text-sm focus-visible:ring-blue-500"
                 />
                 <div className="flex flex-col gap-2">
                   <Button
@@ -942,10 +943,14 @@ function AdminChatPage() {
                     variant="outline"
                     onClick={generateSuggestion}
                     disabled={generatingAi || !selectedUserId}
-                    title="KI-Antwort vorschlagen"
-                    className="h-10 w-10 shrink-0 text-blue-600 border-blue-200 hover:bg-blue-50"
+                    title="KI-Antwort im Stil von Martin Schneider generieren"
+                    className={cn(
+                      "h-10 w-10 shrink-0 transition-all",
+                      "text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400",
+                      generatingAi && "animate-pulse"
+                    )}
                   >
-                    {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 fill-blue-50" />}
                   </Button>
                   <Button
                     size="icon"

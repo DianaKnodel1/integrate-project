@@ -36,6 +36,8 @@ export interface Tenant {
   /** Portal-Design für Login/Registrierung */
   portal_theme?: string | null;
   portal_background_url?: string | null;
+  whatsapp_number?: string | null;
+
 
 }
 

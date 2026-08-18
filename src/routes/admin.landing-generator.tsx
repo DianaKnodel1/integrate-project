@@ -43,6 +43,13 @@ import { applyFlowCopy } from "@/lib/flow-copy";
 
 export const Route = createFileRoute("/admin/landing-generator")({
   component: LandingGeneratorPage,
+  errorComponent: ({ error }) => (
+    <div className="p-8 text-center space-y-4">
+      <h2 className="text-xl font-bold text-destructive">Generator konnte nicht geladen werden</h2>
+      <p className="text-muted-foreground">Dies deutet oft auf ein unvollständiges Datenbank-Schema hin.</p>
+      <Button onClick={() => window.location.reload()}>Erneut versuchen</Button>
+    </div>
+  ),
 });
 
 type Branding = {
@@ -253,7 +260,10 @@ function LandingGeneratorPage() {
   const listPartnersFn = useServerFn(listPartnerCompanies);
   const [partners, setPartners] = useState<Array<{ id: string; name: string; calendly_url: string; logo_url: string | null }>>([]);
   useEffect(() => {
-    listPartnersFn({} as any).then((r: any) => setPartners(r?.rows ?? [])).catch(() => {});
+    listPartnersFn({} as any).then((r: any) => setPartners(r?.rows ?? [])).catch((err) => {
+      console.error("Partners load error:", err);
+      setPartners([]);
+    });
   }, [listPartnersFn]);
 
   // Terminzeiten (Verfügbarkeiten) je Landing — für den Setup-Check in der Liste.
@@ -270,16 +280,26 @@ function LandingGeneratorPage() {
           ),
         ),
       )
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Schedules load error:", err);
+        setScheduleLandingIds(new Set());
+      });
   }, [listSchedulesFn]);
 
   const reloadLandings = useCallback(async () => {
     setLandingsLoading(true);
     try {
       const r = await listFn({} as any);
+      if (!r) throw new Error("Keine Daten vom Server erhalten");
       setLandings((r as any)?.rows ?? []);
     } catch (e: any) {
-      toast({ title: "Liste laden fehlgeschlagen", description: e?.message ?? String(e), variant: "destructive" });
+      console.error("Landings load error:", e);
+      toast({ 
+        title: "Generator-Daten unvollständig", 
+        description: "Das Backend ist möglicherweise nicht auf dem neuesten Stand oder die Tabelle 'landing_pages' fehlt.", 
+        variant: "destructive" 
+      });
+      setLandings([]);
     } finally {
       setLandingsLoading(false);
     }
@@ -288,10 +308,18 @@ function LandingGeneratorPage() {
   useEffect(() => { reloadLandings(); }, [reloadLandings]);
 
   // Slot-Werte pro Theme — bei Theme-Wechsel mit Defaults vorbelegen.
-  const [slotValues, setSlotValues] = useState<Record<string, string>>(() => themeSlotDefaults(THEME_LIST[0]?.id ?? ""));
+  const [slotValues, setSlotValues] = useState<Record<string, string>>(() => {
+    try {
+      return themeSlotDefaults(THEME_LIST[0]?.id ?? "");
+    } catch (e) {
+      console.error("Default slots error:", e);
+      return {};
+    }
+  });
   const currentTheme = THEME_LIST.find((t) => t.id === themeId);
   const currentSlots = currentTheme?.slots ?? [];
   const slotsForOutput = normalizeSlotsForTheme(themeId, slotValues, withSeoDefaults(branding));
+
 
   // Pflichtangaben nach § 5 DDG — fehlen sie, ist das Impressum unvollständig.
   const impressumMissing = (
