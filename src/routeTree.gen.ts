@@ -50,6 +50,7 @@ import { Route as AdminChatRouteImport } from './routes/admin.chat'
 import { Route as AdminCalendlyRouteImport } from './routes/admin.calendly'
 import { Route as AdminBotsRouteImport } from './routes/admin.bots'
 import { Route as AdminBewerbungenRouteImport } from './routes/admin.bewerbungen'
+import { Route as AdminAppointmentsRouteImport } from './routes/admin.appointments'
 import { Route as AdminAiSettingsRouteImport } from './routes/admin.ai-settings'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as EmployeeVerificationRouteImport } from './routes/_employee/verification'
@@ -293,6 +294,11 @@ const AdminBewerbungenRoute = AdminBewerbungenRouteImport.update({
   path: '/bewerbungen',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAppointmentsRoute = AdminAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAiSettingsRoute = AdminAiSettingsRouteImport.update({
   id: '/ai-settings',
   path: '/ai-settings',
@@ -522,6 +528,7 @@ export interface FileRoutesByFullPath {
   '/verification': typeof EmployeeVerificationRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/bewerbungen': typeof AdminBewerbungenRoute
   '/admin/bots': typeof AdminBotsRoute
   '/admin/calendly': typeof AdminCalendlyRoute
@@ -601,6 +608,7 @@ export interface FileRoutesByTo {
   '/verification': typeof EmployeeVerificationRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/bewerbungen': typeof AdminBewerbungenRoute
   '/admin/bots': typeof AdminBotsRoute
   '/admin/calendly': typeof AdminCalendlyRoute
@@ -683,6 +691,7 @@ export interface FileRoutesById {
   '/_employee/verification': typeof EmployeeVerificationRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/ai-settings': typeof AdminAiSettingsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/bewerbungen': typeof AdminBewerbungenRoute
   '/admin/bots': typeof AdminBotsRoute
   '/admin/calendly': typeof AdminCalendlyRoute
@@ -765,6 +774,7 @@ export interface FileRouteTypes {
     | '/verification'
     | '/admin/activity'
     | '/admin/ai-settings'
+    | '/admin/appointments'
     | '/admin/bewerbungen'
     | '/admin/bots'
     | '/admin/calendly'
@@ -844,6 +854,7 @@ export interface FileRouteTypes {
     | '/verification'
     | '/admin/activity'
     | '/admin/ai-settings'
+    | '/admin/appointments'
     | '/admin/bewerbungen'
     | '/admin/bots'
     | '/admin/calendly'
@@ -925,6 +936,7 @@ export interface FileRouteTypes {
     | '/_employee/verification'
     | '/admin/activity'
     | '/admin/ai-settings'
+    | '/admin/appointments'
     | '/admin/bewerbungen'
     | '/admin/bots'
     | '/admin/calendly'
@@ -1305,6 +1317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBewerbungenRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/appointments': {
+      id: '/admin/appointments'
+      path: '/appointments'
+      fullPath: '/admin/appointments'
+      preLoaderRoute: typeof AdminAppointmentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ai-settings': {
       id: '/admin/ai-settings'
       path: '/ai-settings'
@@ -1639,6 +1658,7 @@ const AdminPersonenRouteWithChildren = AdminPersonenRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
   AdminAiSettingsRoute: typeof AdminAiSettingsRoute
+  AdminAppointmentsRoute: typeof AdminAppointmentsRoute
   AdminBewerbungenRoute: typeof AdminBewerbungenRoute
   AdminBotsRoute: typeof AdminBotsRoute
   AdminCalendlyRoute: typeof AdminCalendlyRoute
@@ -1672,6 +1692,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
   AdminAiSettingsRoute: AdminAiSettingsRoute,
+  AdminAppointmentsRoute: AdminAppointmentsRoute,
   AdminBewerbungenRoute: AdminBewerbungenRoute,
   AdminBotsRoute: AdminBotsRoute,
   AdminCalendlyRoute: AdminCalendlyRoute,
