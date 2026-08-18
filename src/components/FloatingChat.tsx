@@ -622,14 +622,6 @@ export function FloatingChat() {
               </>
             ) : (
               <>
-                {/* Visueller Übergang nach Eskalation */}
-                {escalated && (
-                  <HandoverCard
-                    leaderName={leader.name}
-                    leaderInitials={leaderInitials}
-                    leaderOnline={!!leader.is_online}
-                  />
-                )}
 
                 {/* Human mode messages */}
                 {humanMessages.length === 0 && !escalated && (
