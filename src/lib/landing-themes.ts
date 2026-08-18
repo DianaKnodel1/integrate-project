@@ -37,41 +37,16 @@ import cpFormCss from "../landing-themes/_shared/form-section-connect-people.css
 import noirFormHtml from "../landing-themes/_shared/form-section-noir.html?raw";
 import noirFormCss from "../landing-themes/_shared/form-section-noir.css?raw";
 
+import tamberHtml from "../landing-themes/theme-amber-consult/template.html?raw";
+import tamberCss from "../landing-themes/theme-amber-consult/style.css?raw";
+import tamberJs from "../landing-themes/theme-amber-consult/script.js?raw";
+import tamberMeta from "../landing-themes/theme-amber-consult/meta.json";
+
 import ttlHtml from "../landing-themes/theme-tester-lab/template.html?raw";
 import ttlCss from "../landing-themes/theme-tester-lab/style.css?raw";
 import ttlJs from "../landing-themes/theme-tester-lab/script.js?raw";
 import ttlMeta from "../landing-themes/theme-tester-lab/meta.json";
-
-import tqgHtml from "../landing-themes/theme-qa-grid/template.html?raw";
-import tqgCss from "../landing-themes/theme-qa-grid/style.css?raw";
-import tqgJs from "../landing-themes/theme-qa-grid/script.js?raw";
-import tqgMeta from "../landing-themes/theme-qa-grid/meta.json";
-
-import tthHtml from "../landing-themes/theme-talent-hub/template.html?raw";
-import tthCss from "../landing-themes/theme-talent-hub/style.css?raw";
-import tthJs from "../landing-themes/theme-talent-hub/script.js?raw";
-import tthMeta from "../landing-themes/theme-talent-hub/meta.json";
-
-import tcaHtml from "../landing-themes/theme-career-atlas/template.html?raw";
-import tcaCss from "../landing-themes/theme-career-atlas/style.css?raw";
-import tcaJs from "../landing-themes/theme-career-atlas/script.js?raw";
-import tcaMeta from "../landing-themes/theme-career-atlas/meta.json";
-
-import tdsHtml from "../landing-themes/theme-device-stack/template.html?raw";
-import tdsCss from "../landing-themes/theme-device-stack/style.css?raw";
-import tdsJs from "../landing-themes/theme-device-stack/script.js?raw";
-import tdsMeta from "../landing-themes/theme-device-stack/meta.json";
-
-import tqrHtml from "../landing-themes/theme-quality-report/template.html?raw";
-import tqrCss from "../landing-themes/theme-quality-report/style.css?raw";
-import tqrJs from "../landing-themes/theme-quality-report/script.js?raw";
-import tqrMeta from "../landing-themes/theme-quality-report/meta.json";
-
-import tcpHtml from "../landing-themes/theme-connect-people/template.html?raw";
-import tcpCss from "../landing-themes/theme-connect-people/style.css?raw";
-import tcpJs from "../landing-themes/theme-connect-people/script.js?raw";
-import tcpMeta from "../landing-themes/theme-connect-people/meta.json";
-
+...
 import tnoirHtml from "../landing-themes/theme-noir-executive/template.html?raw";
 import tnoirCss from "../landing-themes/theme-noir-executive/style.css?raw";
 import tnoirJs from "../landing-themes/theme-noir-executive/script.js?raw";
