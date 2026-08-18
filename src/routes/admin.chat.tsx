@@ -122,7 +122,7 @@ function AdminChatPage() {
         .from("chat_messages")
         .select("sender_id, receiver_id, message, read, created_at")
         .order("created_at", { ascending: false })
-        .limit(5000),
+        .limit(100),
       supabase.from("tenants").select("id, name"),
       supabase.from("user_roles").select("user_id, role"),
     ]);
@@ -229,7 +229,8 @@ function AdminChatPage() {
     const { data: msgs } = await supabase
       .from("chat_messages").select("*")
       .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(200);
     setMessages((msgs ?? []) as ChatMessage[]);
 
     await supabase

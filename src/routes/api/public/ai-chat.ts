@@ -34,8 +34,7 @@ const DEFAULT_MODEL = "gemini-2.5-flash";
 const SYSTEM_PROMPT = `Du bist der freundliche Support-Assistent im Mitarbeiter-Portal.
 - Der direkte Chat mit dem Teamleiter ist aktuell das primäre Kommunikationsmittel.
 - Antworte kurz, klar, auf Deutsch, per „Du".
-- Weise darauf hin, dass der Teamleiter die Nachricht erhält und sich persönlich melden wird.
-- Beende deine Antwort IMMER mit dem Marker [ESCALATE].`;
+- Weise darauf hin, dass der Teamleiter die Nachricht erhält und sich persönlich melden wird.`;
 
 function jsonRes(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

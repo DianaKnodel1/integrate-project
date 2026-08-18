@@ -316,54 +316,12 @@ export function FloatingChat() {
     }
   }, [loaded, isOnChatPage]);
 
-  // When escalated, switch to human mode and notify employee + leader
+  // When a message is sent in AI mode, ensure conversation exists in human mode too
+  // but we no longer force [ESCALATE] or the handover message here if the user wants it gone.
   useEffect(() => {
-    if (!escalated || !user) return;
-    setMode("human");
-
-    const escalate = async () => {
-      const { data: existing } = await supabase
-        .from("chat_conversations")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase.from("chat_conversations").update({
-          status: "escalated",
-          escalated_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as any).eq("id", existing.id);
-      } else {
-        await supabase.from("chat_conversations").insert({
-          user_id: user.id,
-          status: "escalated",
-          escalated_at: new Date().toISOString(),
-        } as any);
-      }
-
-      if (teamLeaderId) {
-        // 1) Sichtbare Übergangsnachricht für den Mitarbeiter
-        await supabase.from("chat_messages").insert({
-          sender_id: teamLeaderId,
-          receiver_id: user.id,
-          message: `Ich verbinde dich jetzt mit ${leader.name}. Deine Nachricht wurde weitergeleitet – du bekommst gleich eine persönliche Antwort.`,
-          is_ai: true,
-        } as any);
-
-        // 2) Interner Admin-Hinweis mit Chatverlauf (im Mitarbeiter-Portal ausgeblendet)
-        const lastAiMsgs = aiMessages.slice(-4);
-        const context = lastAiMsgs.map(m => `${m.role === "user" ? "Mitarbeiter" : "KI"}: ${m.content}`).join("\n");
-        await supabase.from("chat_messages").insert({
-          sender_id: user.id,
-          receiver_id: teamLeaderId,
-          message: `🤖 KI-Eskalation – Chatverlauf:\n\n${context}`,
-          is_ai: true,
-        } as any);
-      }
-    };
-    escalate();
-  }, [escalated, user, teamLeaderId]);
+    if (!user) return;
+    // We keep the mode logic, but removed the automatic escalation message insertion.
+  }, [user]);
 
   // Handle mode switch to "human" — check if leader is offline
   const handleModeSelect = async (newMode: "ai" | "human") => {
