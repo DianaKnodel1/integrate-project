@@ -46,7 +46,27 @@ import ttlHtml from "../landing-themes/theme-tester-lab/template.html?raw";
 import ttlCss from "../landing-themes/theme-tester-lab/style.css?raw";
 import ttlJs from "../landing-themes/theme-tester-lab/script.js?raw";
 import ttlMeta from "../landing-themes/theme-tester-lab/meta.json";
-...
+
+import temeraldHtml from "../landing-themes/theme-emerald-talent/template.html?raw";
+import temeraldCss from "../landing-themes/theme-emerald-talent/style.css?raw";
+import temeraldJs from "../landing-themes/theme-emerald-talent/script.js?raw";
+import temeraldMeta from "../landing-themes/theme-emerald-talent/meta.json";
+
+import tsapphireHtml from "../landing-themes/theme-sapphire-matching/template.html?raw";
+import tsapphireCss from "../landing-themes/theme-sapphire-matching/style.css?raw";
+import tsapphireJs from "../landing-themes/theme-sapphire-matching/script.js?raw";
+import tsapphireMeta from "../landing-themes/theme-sapphire-matching/meta.json";
+
+import trubyHtml from "../landing-themes/theme-ruby-broker/template.html?raw";
+import trubyCss from "../landing-themes/theme-ruby-broker/style.css?raw";
+import trubyJs from "../landing-themes/theme-ruby-broker/script.js?raw";
+import trubyMeta from "../landing-themes/theme-ruby-broker/meta.json";
+
+import tslateHtml from "../landing-themes/theme-slate-premium/template.html?raw";
+import tslateCss from "../landing-themes/theme-slate-premium/style.css?raw";
+import tslateJs from "../landing-themes/theme-slate-premium/script.js?raw";
+import tslateMeta from "../landing-themes/theme-slate-premium/meta.json";
+
 import tnoirHtml from "../landing-themes/theme-noir-executive/template.html?raw";
 import tnoirCss from "../landing-themes/theme-noir-executive/style.css?raw";
 import tnoirJs from "../landing-themes/theme-noir-executive/script.js?raw";
