@@ -290,12 +290,13 @@ function LandingGeneratorPage() {
     setLandingsLoading(true);
     try {
       const r = await listFn({} as any);
+      if (!r) throw new Error("Keine Daten vom Server erhalten");
       setLandings((r as any)?.rows ?? []);
     } catch (e: any) {
       console.error("Landings load error:", e);
       toast({ 
         title: "Generator-Daten unvollständig", 
-        description: "Das Backend ist möglicherweise nicht auf dem neuesten Stand. Bitte führe ein Deployment durch.", 
+        description: "Das Backend ist möglicherweise nicht auf dem neuesten Stand oder die Tabelle 'landing_pages' fehlt.", 
         variant: "destructive" 
       });
       setLandings([]);
@@ -307,10 +308,18 @@ function LandingGeneratorPage() {
   useEffect(() => { reloadLandings(); }, [reloadLandings]);
 
   // Slot-Werte pro Theme — bei Theme-Wechsel mit Defaults vorbelegen.
-  const [slotValues, setSlotValues] = useState<Record<string, string>>(() => themeSlotDefaults(THEME_LIST[0]?.id ?? ""));
+  const [slotValues, setSlotValues] = useState<Record<string, string>>(() => {
+    try {
+      return themeSlotDefaults(THEME_LIST[0]?.id ?? "");
+    } catch (e) {
+      console.error("Default slots error:", e);
+      return {};
+    }
+  });
   const currentTheme = THEME_LIST.find((t) => t.id === themeId);
   const currentSlots = currentTheme?.slots ?? [];
   const slotsForOutput = normalizeSlotsForTheme(themeId, slotValues, withSeoDefaults(branding));
+
 
   // Pflichtangaben nach § 5 DDG — fehlen sie, ist das Impressum unvollständig.
   const impressumMissing = (
