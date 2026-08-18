@@ -390,6 +390,11 @@ const THEME_DISPLAY: Record<string, { name: string; description: string }> = {
   "theme-mirror-site": { name: "Passage", description: "Kompakt und schnörkellos, Perlgrau/Teal. Direkter Weg von Interesse zur Bewerbung." },
   "theme-editorial-premium": { name: "Signal", description: "Magazin-Optik, Creme/Tiefbraun. Hochwertige Vermittlung mit redaktionellem Anspruch." },
   "theme-noir-executive": { name: "Noir", description: "Executive Black. Tiefschwarz/Bronze, minimalistisch und extrem hochwertig. Für Premium-Personalberatung." },
+  "theme-amber-consult": { name: "Amber", description: "Moderne Beratung. Warm, vertrauensvoll (Bernstein/Dunkelgrau). Ideal für persönliche Personalvermittlung." },
+  "theme-emerald-talent": { name: "Emerald", description: "Talent Solutions. Wachstumsorientiert, frisch (Smaragdgrün/Weiß). Fokus auf Potenzial und Karriere." },
+  "theme-sapphire-matching": { name: "Sapphire", description: "Precision Matching. Effizient, analytisch (Saphirblau/Silber). Für präzise Personal-Auswahl." },
+  "theme-ruby-broker": { name: "Ruby", description: "Dynamic Broker. Energetisch, schnell (Rubinrot/Anthrazit). Für dynamische Recruiting-Märkte." },
+  "theme-slate-premium": { name: "Slate", description: "Professional Premium. Exklusiv, High-End (Schiefergrau/Platin). Für gehobene Vermittlungs-Mandate." },
 
   // ---- Partner-Firma (Auftraggeber-Optik) ----
   "theme-10": { name: "Prisma", description: "Schwarz/Gold, ruhig und exklusiv. Für hochwertige Auftraggeber-Auftritte." },
