@@ -126,18 +126,8 @@ function ModeSelector({
 }
 
 /* ── Status Banner ─────────────────────────────────────────── */
-function StatusBanner({ mode, leaderName, leaderOnline, escalated, justResolved }: { mode: "ai" | "human"; leaderName: string; leaderOnline: boolean; escalated: boolean; justResolved: boolean }) {
+function StatusBanner({ mode, leaderName, leaderOnline }: { mode: "ai" | "human"; leaderName: string; leaderOnline: boolean }) {
   if (mode === "ai") {
-    if (justResolved) {
-      return (
-        <div className="mx-4 mt-2 px-3 py-2 rounded-lg bg-accent/15 border border-accent/30 flex items-center gap-2 shrink-0 animate-fade-in">
-          <Zap className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
-          <p className="text-[11px] text-foreground leading-tight">
-            <span className="font-semibold">KI wieder verfügbar</span> – dein Anliegen wurde abgeschlossen.
-          </p>
-        </div>
-      );
-    }
     return (
       <div className="mx-4 mt-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/10 flex items-center gap-2 shrink-0">
         <Zap className="h-3 w-3 text-primary shrink-0" />
@@ -147,14 +137,8 @@ function StatusBanner({ mode, leaderName, leaderOnline, escalated, justResolved 
       </div>
     );
   }
-  // Persönlicher Kontakt – nach Eskalation visuell deutlicher
   return (
-    <div className={cn(
-      "mx-4 mt-2 px-3 py-2 rounded-lg flex items-center gap-2 shrink-0 border",
-      escalated
-        ? "bg-accent/15 border-accent/30 shadow-sm"
-        : "bg-accent/10 border-accent/20"
-    )}>
+    <div className="mx-4 mt-2 px-3 py-2 rounded-lg flex items-center gap-2 shrink-0 border bg-accent/10 border-accent/20">
       <span className="relative flex h-2.5 w-2.5 shrink-0">
         {leaderOnline && (
           <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
@@ -166,11 +150,7 @@ function StatusBanner({ mode, leaderName, leaderOnline, escalated, justResolved 
       </span>
       <UserCheck className="h-3.5 w-3.5 text-accent-foreground shrink-0" />
       <p className="text-[11px] text-foreground/90 leading-tight flex-1">
-        {escalated ? (
-          <><span className="font-semibold">Teamleiter verbunden</span> – du sprichst jetzt mit <span className="font-medium">{leaderName}</span></>
-        ) : (
-          <>Persönlicher Kontakt aktiv – <span className="font-medium">{leaderName}</span></>
-        )}
+        Persönlicher Kontakt aktiv – <span className="font-medium">{leaderName}</span>
       </p>
     </div>
   );
