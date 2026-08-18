@@ -273,7 +273,10 @@ function LandingGeneratorPage() {
           ),
         ),
       )
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Schedules load error:", err);
+        setScheduleLandingIds(new Set());
+      });
   }, [listSchedulesFn]);
 
   const reloadLandings = useCallback(async () => {
@@ -282,7 +285,13 @@ function LandingGeneratorPage() {
       const r = await listFn({} as any);
       setLandings((r as any)?.rows ?? []);
     } catch (e: any) {
-      toast({ title: "Liste laden fehlgeschlagen", description: e?.message ?? String(e), variant: "destructive" });
+      console.error("Landings load error:", e);
+      toast({ 
+        title: "Generator-Daten unvollständig", 
+        description: "Das Backend ist möglicherweise nicht auf dem neuesten Stand. Bitte führe ein Deployment durch.", 
+        variant: "destructive" 
+      });
+      setLandings([]);
     } finally {
       setLandingsLoading(false);
     }
