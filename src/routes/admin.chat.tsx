@@ -289,31 +289,6 @@ function AdminChatPage() {
   };
 
 
-  const generateSuggestion = async () => {
-    if (!selectedUserId || generatingAi) return;
-    setGeneratingAi(true);
-    try {
-      const lastMsg = messages.filter(m => m.sender_id === selectedUserId).pop()?.message || "";
-      const res = await aiSuggestionFn({
-        data: {
-          userId: selectedUserId,
-          lastMessage: lastMsg,
-          teamLeaderName: user?.user_metadata?.full_name || "Martin Schneider"
-        }
-      });
-      if (res.suggestion) {
-        setNewMessage(res.suggestion);
-        lastSuggestionRef.current = res.suggestion;
-      } else if (res.error) {
-        toast({ title: "KI Fehler", description: res.error, variant: "destructive" });
-      }
-    } catch (e: any) {
-      toast({ title: "KI Fehler", description: e.message, variant: "destructive" });
-    } finally {
-      setGeneratingAi(false);
-    }
-  };
-
   const takeOver = async (userId: string) => {
     await supabase
       .from("chat_conversations")
