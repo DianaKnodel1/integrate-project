@@ -2,10 +2,6 @@
 # =============================================================================
 #  SYNC-TO-BACKEND.SH — Abgleich von Server .124 zu Server .123
 # =============================================================================
-#  Dieses Skript wird auf dem PROJEKT-SERVER (.124) ausgeführt.
-#  Es überträgt die Migrations-Dateien auf den Backend-Server (.123)
-#  und führt sie dort im Datenbank-Container aus.
-# =============================================================================
 
 set -euo pipefail
 
@@ -27,12 +23,13 @@ ok "Dateien kopiert"
 
 log "3/3  Migrationen auf Backend-Datenbank anwenden"
 # Wir führen das Kommando direkt via SSH auf dem Backend aus
-ssh "$BACKEND_USER@$BACKEND_IP" <<EOF
+ssh "$BACKEND_USER@$BACKEND_IP" "bash -s" <<'EOF'
   set -euo pipefail
-  cd $REMOTE_PATH
+  cd /opt/apps/portal
   
-  # DB-Container finden
-  CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "db|postgres" | head -n 1)
+  # DB-Container finden - Pfad-Check für Docker
+  DOCKER_BIN=$(which docker || echo "/usr/bin/docker")
+  CONTAINER=$($DOCKER_BIN ps --format "{{.Names}}" | grep -E "db|postgres" | head -n 1)
   
   if [ -z "$CONTAINER" ]; then
     echo "Fehler: Kein Datenbank-Container auf .123 gefunden!"
@@ -41,15 +38,15 @@ ssh "$BACKEND_USER@$BACKEND_IP" <<EOF
   
   echo "Nutze Container: $CONTAINER"
   
-  # Status-Datei auf dem Backend-Server, um Doppel-Migrationen zu vermeiden
-  STATE_FILE="$REMOTE_PATH/.backend-migrations-applied"
+  # Status-Datei auf dem Backend-Server
+  STATE_FILE="/opt/apps/portal/.backend-migrations-applied"
   touch "$STATE_FILE"
 
   for sql in $(find supabase/manual-migrations -maxdepth 1 -type f -name '*.sql' | sort); do
     name=$(basename "$sql")
     if ! grep -qxF "$name" "$STATE_FILE"; then
       echo "Applying $name..."
-      if docker exec -i -u postgres "$CONTAINER" psql -d postgres -U supabase_admin \
+      if $DOCKER_BIN exec -i -u postgres "$CONTAINER" psql -d postgres -U supabase_admin \
         -v ON_ERROR_STOP=1 --single-transaction < "$sql"; then
         echo "$name" >> "$STATE_FILE"
       else
@@ -62,4 +59,4 @@ ssh "$BACKEND_USER@$BACKEND_IP" <<EOF
   done
 EOF
 
-ok "Backend (.123) erfolgreich aktualisiert! Alle Funktionen sind nun auf dem neuesten Stand. ✅"
+ok "Backend (.123) erfolgreich aktualisiert! ✅"
