@@ -2,8 +2,6 @@
 # =============================================================================
 #  REMOTE-DEPLOY.SH — Automatisiertes Full-Stack Deployment von .124 -> .123
 # =============================================================================
-# Dieses Skript wird auf .124 ausgeführt und bringt ALLES auf .123 auf Stand.
-# =============================================================================
 
 set -euo pipefail
 
@@ -25,7 +23,6 @@ NODE_OPTIONS="--max-old-space-size=4096" bun run build
 ok "Build auf .124 abgeschlossen"
 
 log "2/4  Synchronisierung der Dateien nach .123"
-# Wir übertragen .output (Build), supabase (Migrationen) und scripts
 ssh "$BACKEND_USER@$BACKEND_IP" "mkdir -p '$PROJECT_DIR/.output' '$PROJECT_DIR/supabase' '$PROJECT_DIR/scripts'"
 rsync -avz --delete .output/ "$BACKEND_USER@$BACKEND_IP:$PROJECT_DIR/.output/"
 rsync -avz supabase/ "$BACKEND_USER@$BACKEND_IP:$PROJECT_DIR/supabase/"
@@ -37,8 +34,6 @@ bash scripts/sync-to-backend.sh
 ok "Datenbank ist aktuell"
 
 log "4/4  Dienst auf .123 neu starten (falls vorhanden)"
-# Falls auf .123 auch die UI läuft, starten wir sie neu.
-# Ansonsten sorgt sync-to-backend bereits für die DB-Aktualität.
 ssh "$BACKEND_USER@$BACKEND_IP" "systemctl restart portal.service 2>/dev/null || echo 'Kein systemd Dienst auf .123 - überspringe Restart'"
 
 ok "Full-Stack Deployment von .124 auf .123 abgeschlossen! ✅"
