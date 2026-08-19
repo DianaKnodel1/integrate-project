@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAdminData } from "@/contexts/AdminDataContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,15 @@ function AdminAppointmentsPage() {
   const [assignFor, setAssignFor] = useState<Slot | null>(null);
   const [autoRunning, setAutoRunning] = useState(false);
 
+  // Filter-Zustand bleibt erhalten (verpasste Termine sollen sichtbar bleiben).
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem("admin-appointments-hide-past") : null;
+    if (saved !== null) setHidePast(saved === "1");
+  }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined") window.localStorage.setItem("admin-appointments-hide-past", hidePast ? "1" : "0");
+  }, [hidePast]);
+
   const slots = useMemo<Slot[]>(() => {
     return (allBookings as any[])
       .filter((b) => b.user_id && !b.application_id)
@@ -75,6 +84,11 @@ function AdminAppointmentsPage() {
   }, [allBookings, profiles]);
 
   const assignmentIds = useMemo(() => new Set(assignments.map((a) => a.id)), [assignments]);
+  const assignmentGroups = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const a of assignments as any[]) m.set(a.id, a.assignment_group === "automatisch" ? "automatisch" : "manuell");
+    return m;
+  }, [assignments]);
   const now = Date.now();
 
   const filtered = slots.filter((s) => {
