@@ -17,10 +17,10 @@ function AdminAppointmentsPage() {
 
   if (loading) return <div className="p-6 space-y-4"><PageHeaderSkeleton /><TableSkeleton /></div>;
 
-  // Filter for employee bookings (excluding interviews)
+  // Filter for employee bookings (excluding recruitment interviews)
   const employeeBookings = allBookings.filter((b: any) => {
-    // Determine if it's an employee booking: has user_id, not linked to a generic application phase "interview"
-    // or explicitly marked as an employee task appointment
+    // If it has a user_id and NO application_id, it's definitely an employee task booking.
+    // If it has an assignment_id, it's a booking for a specific task.
     return b.user_id && !b.application_id;
   });
 
@@ -82,7 +82,7 @@ function AdminAppointmentsPage() {
                       <User className="h-4 w-4 text-muted-foreground" />
                       <div className="text-sm">
                         <div className="font-medium">
-                          {b.full_name || profile?.full_name || (application as any)?.full_name || b.name || "Unbekannt"}
+                          {b.full_name || profile?.full_name || b.name || "Mitarbeiter"}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {b.email || profile?.email || (application as any)?.email || "Keine E-Mail"}
@@ -110,12 +110,12 @@ function AdminAppointmentsPage() {
                       >
                         <Briefcase className="h-3.5 w-3.5" /> Zuweisen
                       </Button>
-                      {(b.application_id || b.user_id || profile?.id || (application as any)?.id) && (
+                      {(b.user_id || profile?.id) && (
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-8 gap-1.5"
-                          onClick={() => navigate(`/admin/personen/${profile?.id || (application as any)?.id || b.user_id || b.application_id}`)}
+                          onClick={() => navigate(`/admin/personen/${profile?.id || b.user_id}`)}
                         >
                           Details <ExternalLink className="h-3 w-3" />
                         </Button>
