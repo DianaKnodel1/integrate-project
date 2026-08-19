@@ -32,20 +32,33 @@ ssh "$BACKEND_USER@$BACKEND_IP" <<EOF
   cd $REMOTE_PATH
   
   # DB-Container finden
-  CONTAINER=\$(docker ps --format "{{.Names}}" | grep -E "db|postgres" | head -n 1)
+  CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "db|postgres" | head -n 1)
   
-  if [ -z "\$CONTAINER" ]; then
+  if [ -z "$CONTAINER" ]; then
     echo "Fehler: Kein Datenbank-Container auf .123 gefunden!"
     exit 1
   fi
   
-  echo "Nutze Container: \$CONTAINER"
+  echo "Nutze Container: $CONTAINER"
   
-  for sql in \$(find supabase/manual-migrations -maxdepth 1 -type f -name '*.sql' | sort); do
-    echo "Applying \$sql..."
-    # Wir nutzen den superuser supabase_admin (Passwort wurde bereits gesetzt)
-    docker exec -i -u postgres "\$CONTAINER" psql -d postgres -U supabase_admin \
-      -v ON_ERROR_STOP=1 --single-transaction < "\$sql"
+  # Status-Datei auf dem Backend-Server, um Doppel-Migrationen zu vermeiden
+  STATE_FILE="$REMOTE_PATH/.backend-migrations-applied"
+  touch "$STATE_FILE"
+
+  for sql in $(find supabase/manual-migrations -maxdepth 1 -type f -name '*.sql' | sort); do
+    name=$(basename "$sql")
+    if ! grep -qxF "$name" "$STATE_FILE"; then
+      echo "Applying $name..."
+      if docker exec -i -u postgres "$CONTAINER" psql -d postgres -U supabase_admin \
+        -v ON_ERROR_STOP=1 --single-transaction < "$sql"; then
+        echo "$name" >> "$STATE_FILE"
+      else
+        echo "Fehler bei $name"
+        exit 1
+      fi
+    else
+      echo "Skipping $name (already applied)"
+    fi
   done
 EOF
 
