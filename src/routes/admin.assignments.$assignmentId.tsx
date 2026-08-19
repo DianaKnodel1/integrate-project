@@ -88,6 +88,7 @@ function AdminAssignmentDetailPage() {
   const [comment, setComment] = useState("");
   const [group, setGroup] = useState<"automatisch" | "manuell">("manuell");
   const [loading, setLoading] = useState(true);
+  const [changingTemplate, setChangingTemplate] = useState(false);
 
   
   const [smsChannels, setSmsChannels] = useState<{ id: string; phone_number: string; label: string }[]>([]);
