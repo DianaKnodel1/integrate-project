@@ -24,12 +24,14 @@ function AdminDashboardPage() {
   const pendingReviews = assignments.filter((a) => a.status === "eingereicht" || a.status === "in_pruefung").length;
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayBookings = allBookings.filter((b) => (b as any).booking_date === todayStr && (b as any).user_id && !(b as any).application_id).length;
+  // Fallback if no specific date bookings: count all active employee bookings
+  const totalEmployeeBookings = allBookings.filter((b) => (b as any).user_id && !(b as any).application_id && (b as any).status !== 'cancelled').length;
   const activeEmployees = profiles.filter((p) => p.status === "angenommen").length;
 
   const actionCards = [
     { label: "Bewerbungen", value: newApplications, icon: FileText, path: "/admin/bewerbungen", highlight: newApplications > 0 },
     { label: "Aufgaben zur Prüfung", value: pendingReviews, icon: ClipboardList, path: "/admin/tasks", highlight: pendingReviews > 0 },
-    { label: "Mitarbeiter-Termine", value: todayBookings, icon: CalendarDays, path: "/admin/appointments", highlight: todayBookings > 0 },
+    { label: "Mitarbeiter-Termine", value: totalEmployeeBookings, icon: CalendarDays, path: "/admin/appointments", highlight: totalEmployeeBookings > 0 },
     { label: "Mitarbeiter", value: activeEmployees, icon: FileText, path: "/admin/mitarbeiter", highlight: false },
     { label: "Statistik", value: profiles.length, icon: FileText, path: "/admin/statistiken", highlight: false },
   ];
