@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmptyState } from "@/components/EmptyState";
+import { AssignTaskDialog } from "@/components/admin/AssignTaskDialog";
 import { Plus, Trash2, ClipboardList, Pencil, Layers, Copy, Upload, Loader2, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ function AdminTasksPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
+  const [assignTemplateId, setAssignTemplateId] = useState<string | null>(null);
   const uploadImage = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "Datei zu groß", description: "Max. 5 MB.", variant: "destructive" });
