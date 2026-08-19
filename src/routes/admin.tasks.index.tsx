@@ -303,6 +303,12 @@ function AdminTasksPage() {
           <DialogFooter><Button onClick={saveTemplate} disabled={saving} size="sm">{saving ? "Speichern…" : "Speichern"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AssignTaskDialog
+        open={!!assignTemplateId}
+        onOpenChange={(o) => { if (!o) setAssignTemplateId(null); }}
+        templateId={assignTemplateId}
+      />
     </div>
   );
 }
