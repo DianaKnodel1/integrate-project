@@ -169,7 +169,7 @@ function AdminAppointmentsPage() {
             Nur offene
           </Button>
           <Button size="sm" variant={hidePast ? "default" : "outline"} className="h-8 text-xs" onClick={() => setHidePast((v) => !v)}>
-            Vergangene ausblenden
+            {hidePast ? "Vergangene anzeigen" : "Vergangene ausgeblendet"}
           </Button>
         </div>
       </div>
