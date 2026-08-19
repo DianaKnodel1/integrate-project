@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { EmptyState } from "@/components/EmptyState";
+import { AssignTaskDialog } from "@/components/admin/AssignTaskDialog";
 import { Plus, Trash2, ClipboardList, Pencil, Layers, Copy, Upload, Loader2, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ function AdminTasksPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
+  const [assignTemplateId, setAssignTemplateId] = useState<string | null>(null);
   const uploadImage = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "Datei zu groß", description: "Max. 5 MB.", variant: "destructive" });
@@ -223,7 +225,7 @@ function AdminTasksPage() {
                       <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => duplicateTemplate(tpl)}>
                         <Copy className="h-3 w-3" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigate(`/admin/mitarbeiter`)}>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAssignTemplateId(tpl.id)}>
                         <UserCheck className="h-3 w-3 mr-1" /> Zuweisen
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => deleteTemplate(tpl)}>
@@ -301,6 +303,12 @@ function AdminTasksPage() {
           <DialogFooter><Button onClick={saveTemplate} disabled={saving} size="sm">{saving ? "Speichern…" : "Speichern"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AssignTaskDialog
+        open={!!assignTemplateId}
+        onOpenChange={(o) => { if (!o) setAssignTemplateId(null); }}
+        templateId={assignTemplateId}
+      />
     </div>
   );
 }
