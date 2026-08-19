@@ -69,7 +69,8 @@ export function AssignTaskDialog({
         status: "zugewiesen",
         release_at: releaseAt ? new Date(releaseAt).toISOString() : null,
         individual_hint: hint.trim() || null,
-      })
+        assignment_group: "manuell",
+      } as any)
       .select("id")
       .single();
 

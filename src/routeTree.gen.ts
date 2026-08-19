@@ -79,6 +79,7 @@ import { Route as ApiPublicInterviewChatRouteImport } from './routes/api/public/
 import { Route as ApiPublicDomainHealthCronRouteImport } from './routes/api/public/domain-health-cron'
 import { Route as ApiPublicCalendlyWebhookRouteImport } from './routes/api/public/calendly-webhook'
 import { Route as ApiPublicBookingRouteImport } from './routes/api/public/booking'
+import { Route as ApiPublicAutoAssignCronRouteImport } from './routes/api/public/auto-assign-cron'
 import { Route as ApiPublicApplicationsRouteImport } from './routes/api/public/applications'
 import { Route as ApiPublicApplicationLookupRouteImport } from './routes/api/public/application-lookup'
 import { Route as ApiPublicApplicationByTokenRouteImport } from './routes/api/public/application-by-token'
@@ -444,6 +445,11 @@ const ApiPublicBookingRoute = ApiPublicBookingRouteImport.update({
   path: '/api/public/booking',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAutoAssignCronRoute = ApiPublicAutoAssignCronRouteImport.update({
+  id: '/api/public/auto-assign-cron',
+  path: '/api/public/auto-assign-cron',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicApplicationsRoute = ApiPublicApplicationsRouteImport.update({
   id: '/api/public/applications',
   path: '/api/public/applications',
@@ -566,6 +572,7 @@ export interface FileRoutesByFullPath {
   '/api/public/application-by-token': typeof ApiPublicApplicationByTokenRoute
   '/api/public/application-lookup': typeof ApiPublicApplicationLookupRoute
   '/api/public/applications': typeof ApiPublicApplicationsRoute
+  '/api/public/auto-assign-cron': typeof ApiPublicAutoAssignCronRoute
   '/api/public/booking': typeof ApiPublicBookingRoute
   '/api/public/calendly-webhook': typeof ApiPublicCalendlyWebhookRoute
   '/api/public/domain-health-cron': typeof ApiPublicDomainHealthCronRoute
@@ -646,6 +653,7 @@ export interface FileRoutesByTo {
   '/api/public/application-by-token': typeof ApiPublicApplicationByTokenRoute
   '/api/public/application-lookup': typeof ApiPublicApplicationLookupRoute
   '/api/public/applications': typeof ApiPublicApplicationsRoute
+  '/api/public/auto-assign-cron': typeof ApiPublicAutoAssignCronRoute
   '/api/public/booking': typeof ApiPublicBookingRoute
   '/api/public/calendly-webhook': typeof ApiPublicCalendlyWebhookRoute
   '/api/public/domain-health-cron': typeof ApiPublicDomainHealthCronRoute
@@ -729,6 +737,7 @@ export interface FileRoutesById {
   '/api/public/application-by-token': typeof ApiPublicApplicationByTokenRoute
   '/api/public/application-lookup': typeof ApiPublicApplicationLookupRoute
   '/api/public/applications': typeof ApiPublicApplicationsRoute
+  '/api/public/auto-assign-cron': typeof ApiPublicAutoAssignCronRoute
   '/api/public/booking': typeof ApiPublicBookingRoute
   '/api/public/calendly-webhook': typeof ApiPublicCalendlyWebhookRoute
   '/api/public/domain-health-cron': typeof ApiPublicDomainHealthCronRoute
@@ -812,6 +821,7 @@ export interface FileRouteTypes {
     | '/api/public/application-by-token'
     | '/api/public/application-lookup'
     | '/api/public/applications'
+    | '/api/public/auto-assign-cron'
     | '/api/public/booking'
     | '/api/public/calendly-webhook'
     | '/api/public/domain-health-cron'
@@ -892,6 +902,7 @@ export interface FileRouteTypes {
     | '/api/public/application-by-token'
     | '/api/public/application-lookup'
     | '/api/public/applications'
+    | '/api/public/auto-assign-cron'
     | '/api/public/booking'
     | '/api/public/calendly-webhook'
     | '/api/public/domain-health-cron'
@@ -974,6 +985,7 @@ export interface FileRouteTypes {
     | '/api/public/application-by-token'
     | '/api/public/application-lookup'
     | '/api/public/applications'
+    | '/api/public/auto-assign-cron'
     | '/api/public/booking'
     | '/api/public/calendly-webhook'
     | '/api/public/domain-health-cron'
@@ -1013,6 +1025,7 @@ export interface RootRouteChildren {
   ApiPublicApplicationByTokenRoute: typeof ApiPublicApplicationByTokenRoute
   ApiPublicApplicationLookupRoute: typeof ApiPublicApplicationLookupRoute
   ApiPublicApplicationsRoute: typeof ApiPublicApplicationsRoute
+  ApiPublicAutoAssignCronRoute: typeof ApiPublicAutoAssignCronRoute
   ApiPublicBookingRoute: typeof ApiPublicBookingRoute
   ApiPublicCalendlyWebhookRoute: typeof ApiPublicCalendlyWebhookRoute
   ApiPublicDomainHealthCronRoute: typeof ApiPublicDomainHealthCronRoute
@@ -1520,6 +1533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBookingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auto-assign-cron': {
+      id: '/api/public/auto-assign-cron'
+      path: '/api/public/auto-assign-cron'
+      fullPath: '/api/public/auto-assign-cron'
+      preLoaderRoute: typeof ApiPublicAutoAssignCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/applications': {
       id: '/api/public/applications'
       path: '/api/public/applications'
@@ -1746,6 +1766,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicApplicationByTokenRoute: ApiPublicApplicationByTokenRoute,
   ApiPublicApplicationLookupRoute: ApiPublicApplicationLookupRoute,
   ApiPublicApplicationsRoute: ApiPublicApplicationsRoute,
+  ApiPublicAutoAssignCronRoute: ApiPublicAutoAssignCronRoute,
   ApiPublicBookingRoute: ApiPublicBookingRoute,
   ApiPublicCalendlyWebhookRoute: ApiPublicCalendlyWebhookRoute,
   ApiPublicDomainHealthCronRoute: ApiPublicDomainHealthCronRoute,
