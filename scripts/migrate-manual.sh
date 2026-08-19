@@ -2,8 +2,16 @@
 # Script zum manuellen Einspielen der Tabellen auf dem Backend (.123)
 
 # 1. Projekt-Verzeichnis finden
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$PROJECT_ROOT" || { echo "Fehler: Projekt-Verzeichnis nicht gefunden!"; exit 1; }
+# Da der User oft nicht in /opt/apps/portal ist, suchen wir es
+if [ -d "/opt/apps/portal" ]; then
+  PROJECT_ROOT="/opt/apps/portal"
+elif [ -d "$HOME/portal" ]; then
+  PROJECT_ROOT="$HOME/portal"
+else
+  PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fi
+
+cd "$PROJECT_ROOT" || { echo "Fehler: Projekt-Verzeichnis $PROJECT_ROOT nicht gefunden!"; exit 1; }
 
 echo "Projekt-Verzeichnis: $PROJECT_ROOT"
 
