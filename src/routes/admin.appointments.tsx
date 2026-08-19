@@ -37,8 +37,8 @@ function AdminAppointmentsPage() {
           <CalendarDays className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-heading font-bold">Mitarbeiter-Termine</h1>
-          <p className="text-sm text-muted-foreground">Übersicht der Termine, die Mitarbeiter im Portal gebucht haben.</p>
+          <h1 className="text-2xl font-heading font-bold">Termin-Übersicht (Mitarbeiter)</h1>
+          <p className="text-sm text-muted-foreground">Alle von Mitarbeitern im Portal gebuchten Termine für die Auftragszuweisung.</p>
         </div>
       </div>
 
