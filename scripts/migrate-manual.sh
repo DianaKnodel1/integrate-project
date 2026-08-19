@@ -1,25 +1,35 @@
 #!/bin/bash
 # Script zum manuellen Einspielen der Tabellen auf dem Backend (.123)
 
-# 1. Container-Name auf .123 ermitteln
+# 1. Projekt-Verzeichnis finden
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT" || { echo "Fehler: Projekt-Verzeichnis nicht gefunden!"; exit 1; }
+
+echo "Projekt-Verzeichnis: $PROJECT_ROOT"
+
+# 2. Container-Name auf .123 ermitteln
 CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "db|postgres" | head -n 1)
 
 if [ -z "$CONTAINER" ]; then
   echo "Fehler: Kein Datenbank-Container gefunden!"
+  echo "Stellen Sie sicher, dass Docker auf diesem Server installiert ist und der DB-Container läuft."
   exit 1
 fi
 
 echo "Verwende Container: $CONTAINER"
 
-# 2. Migrations nacheinander einspielen
-# Da die Dateien auf .124 liegen, müssen sie einzeln via Docker exec übertragen werden
-# (Wenn dieses Script direkt auf .123 ausgeführt wird und das Projekt dort unter /opt/apps/portal liegt)
-
-cd /opt/apps/portal
+# 3. Migrations nacheinander einspielen
+if [ ! -d "supabase/manual-migrations" ]; then
+  echo "Fehler: Verzeichnis supabase/manual-migrations nicht gefunden!"
+  exit 1
+fi
 
 for sql in $(ls supabase/manual-migrations/*.sql | sort); do
   echo "Wende an: $sql ..."
-  cat "$sql" | docker exec -i -u postgres "$CONTAINER" psql -d postgres -U supabase_admin
+  if ! cat "$sql" | docker exec -i -u postgres "$CONTAINER" psql -d postgres -U supabase_admin; then
+    echo "Fehler beim Anwenden von $sql"
+    exit 1
+  fi
 done
 
 echo "Fertig! Datenbank auf .123 ist nun aktuell. ✅"
