@@ -130,6 +130,51 @@ CREATE INDEX IF NOT EXISTS ai_style_corrections_idx
 
 -- ------------------------------------------------------- Bot-Profile (5)
 -- Globale Profile (tenant_id IS NULL) dürfen nur einmal je Anbieter existieren.
+-- Altdaten können durch frühere, nullable UNIQUE-Constraints doppelt vorhanden
+-- sein. Referenzen zuerst auf das älteste Profil zusammenführen, dann bereinigen.
+DO $$
+DECLARE
+  duplicate record;
+  canonical_id uuid;
+BEGIN
+  FOR duplicate IN
+    SELECT provider_key
+      FROM public.bot_profiles
+     WHERE tenant_id IS NULL
+     GROUP BY provider_key
+    HAVING count(*) > 1
+  LOOP
+    SELECT id INTO canonical_id
+      FROM public.bot_profiles
+     WHERE tenant_id IS NULL AND provider_key = duplicate.provider_key
+     ORDER BY created_at, id
+     LIMIT 1;
+
+    UPDATE public.bot_runs
+       SET profile_id = canonical_id
+     WHERE profile_id IN (
+       SELECT id FROM public.bot_profiles
+        WHERE tenant_id IS NULL
+          AND provider_key = duplicate.provider_key
+          AND id <> canonical_id
+     );
+
+    UPDATE public.task_templates
+       SET bot_profile_id = canonical_id
+     WHERE bot_profile_id IN (
+       SELECT id FROM public.bot_profiles
+        WHERE tenant_id IS NULL
+          AND provider_key = duplicate.provider_key
+          AND id <> canonical_id
+     );
+
+    DELETE FROM public.bot_profiles
+     WHERE tenant_id IS NULL
+       AND provider_key = duplicate.provider_key
+       AND id <> canonical_id;
+  END LOOP;
+END $$;
+
 CREATE UNIQUE INDEX IF NOT EXISTS bot_profiles_global_provider_uidx
   ON public.bot_profiles (provider_key) WHERE tenant_id IS NULL;
 

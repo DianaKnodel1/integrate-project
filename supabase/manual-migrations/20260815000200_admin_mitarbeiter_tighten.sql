@@ -32,6 +32,7 @@ DECLARE t text;
 BEGIN
   FOREACH t IN ARRAY ARRAY['task_templates','task_steps','task_questions'] LOOP
     EXECUTE format('DROP POLICY IF EXISTS "Admin staff full access" ON public.%I', t);
+    EXECUTE format('DROP POLICY IF EXISTS "Admin staff read" ON public.%I', t);
     EXECUTE format(
       'CREATE POLICY "Admin staff read" ON public.%I FOR SELECT TO authenticated
          USING (public.is_admin_staff(auth.uid()))', t);
@@ -40,6 +41,8 @@ END $$;
 
 -- 3) Aktivitätsprotokoll: nur eigene Einträge schreiben, kein Vollzugriff
 DROP POLICY IF EXISTS "Admin staff full access" ON public.activity_log;
+DROP POLICY IF EXISTS "Admin staff read" ON public.activity_log;
+DROP POLICY IF EXISTS "Admin staff insert" ON public.activity_log;
 CREATE POLICY "Admin staff read" ON public.activity_log
   FOR SELECT TO authenticated USING (public.is_admin_staff(auth.uid()));
 CREATE POLICY "Admin staff insert" ON public.activity_log
