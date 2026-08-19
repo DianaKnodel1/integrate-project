@@ -111,5 +111,11 @@ cd "$PROJECT_DIR"
 
   log "5/5  restart"
   systemctl restart "$SERVICE_NAME"
+  # Automatischer Sync nach .123 am Ende jedes Deploys
+  if [ -f "$PROJECT_DIR/scripts/sync-to-backend.sh" ]; then
+    log "Zusatz: Synchronisiere Backend-Status nach .123..."
+    bash "$PROJECT_DIR/scripts/sync-to-backend.sh" || warn "Backend-Sync verzögert."
+  fi
+
   ok "Deploy finished ✅"
 }
