@@ -5,11 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CalendarDays, Phone, Briefcase, ExternalLink, ClipboardCheck } from "lucide-react";
+import { CalendarDays, Briefcase, ExternalLink, ClipboardCheck, Wand2, Loader2 } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { useNavigate } from "@/lib/router-compat";
 import { AssignTaskDialog } from "@/components/admin/AssignTaskDialog";
 import { cn } from "@/lib/utils";
+import { planAutoAssignments, runAutoAssignments } from "@/lib/auto-assign";
+import { useToast } from "@/hooks/use-toast";
 
 export const Route = createFileRoute("/admin/appointments")({
   component: AdminAppointmentsPage,
@@ -39,13 +41,15 @@ function dayLabel(dateStr: string) {
 }
 
 function AdminAppointmentsPage() {
-  const { allBookings, profiles, assignments, loading } = useAdminData();
+  const { allBookings, profiles, assignments, templates, loading, loadData } = useAdminData();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [search, setSearch] = useState("");
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [hidePast, setHidePast] = useState(true);
   const [assignFor, setAssignFor] = useState<Slot | null>(null);
+  const [autoRunning, setAutoRunning] = useState(false);
 
   const slots = useMemo<Slot[]>(() => {
     return (allBookings as any[])
@@ -93,6 +97,28 @@ function AdminAppointmentsPage() {
 
   const openCount = slots.filter((s) => !s.assignmentId && s.ts >= now).length;
 
+  const autoPlan = useMemo(
+    () => planAutoAssignments(
+      upcoming.filter((s) => s.status !== "cancelled"),
+      assignments as any[],
+      templates as any[],
+    ),
+    [upcoming, assignments, templates],
+  );
+
+  const handleAutoAssign = async () => {
+    if (autoPlan.length === 0) return;
+    setAutoRunning(true);
+    const { created, failed } = await runAutoAssignments(autoPlan);
+    setAutoRunning(false);
+    toast({
+      title: created > 0 ? `${created} Aufträge zugewiesen` : "Keine Zuweisung möglich",
+      description: failed > 0 ? `${failed} fehlgeschlagen` : undefined,
+      variant: created === 0 ? "destructive" : undefined,
+    });
+    await loadData();
+  };
+
   if (loading) return <div className="p-6 space-y-4"><PageHeaderSkeleton /><TableSkeleton /></div>;
 
   return (
@@ -110,6 +136,15 @@ function AdminAppointmentsPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            disabled={autoRunning || autoPlan.length === 0}
+            onClick={handleAutoAssign}
+          >
+            {autoRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+            Automatisch zuweisen{autoPlan.length > 0 ? ` (${autoPlan.length})` : ""}
+          </Button>
           <Input
             placeholder="Mitarbeiter suchen…"
             value={search}
@@ -155,11 +190,6 @@ function AdminAppointmentsPage() {
                       <span className="font-mono text-sm font-semibold w-14 shrink-0">{s.timeStr || "—"}</span>
                       <div className="min-w-[160px] flex-1">
                         <div className="text-sm font-medium truncate">{s.name}</div>
-                        {s.phone && (
-                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <Phone className="h-3 w-3" /> {s.phone}
-                          </div>
-                        )}
                       </div>
 
                       {cancelled ? (
@@ -182,6 +212,7 @@ function AdminAppointmentsPage() {
 
                       <div className="flex items-center gap-1 ml-auto">
                         {hasAssignment ? (
+                          <>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -190,6 +221,17 @@ function AdminAppointmentsPage() {
                           >
                             <ClipboardCheck className="h-3.5 w-3.5" /> Auftrag öffnen
                           </Button>
+                          {isPast && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs gap-1.5"
+                              onClick={() => setAssignFor(s)}
+                            >
+                              <Briefcase className="h-3.5 w-3.5" /> Neu zuweisen
+                            </Button>
+                          )}
+                          </>
                         ) : (
                           <Button
                             variant="ghost"
@@ -208,7 +250,7 @@ function AdminAppointmentsPage() {
                             className="h-7 text-xs gap-1"
                             onClick={() => navigate(`/admin/personen/${s.profileId || s.userId}`)}
                           >
-                            Details <ExternalLink className="h-3 w-3" />
+                            Öffnen <ExternalLink className="h-3 w-3" />
                           </Button>
                         )}
                       </div>
