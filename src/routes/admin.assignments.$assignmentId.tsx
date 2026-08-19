@@ -303,6 +303,43 @@ function AdminAssignmentDetailPage() {
           </CardContent>
         </Card>
         <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Layers className="h-4 w-4" /> Auftragsvorlage</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            <select
+              value={assignment.task_template_id}
+              disabled={changingTemplate}
+              className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm"
+              onChange={async (e) => {
+                const nextId = e.target.value;
+                if (!nextId || nextId === assignment.task_template_id) return;
+                const duplicate = assignments.some(
+                  (a) => a.user_id === assignment.user_id && a.id !== assignment.id && a.task_template_id === nextId,
+                );
+                if (duplicate) {
+                  toast({ title: "Bereits zugewiesen", description: "Dieser Mitarbeiter hat diesen Auftrag schon.", variant: "destructive" });
+                  return;
+                }
+                setChangingTemplate(true);
+                const { error } = await supabase.from("task_assignments")
+                  .update({ task_template_id: nextId, assignment_group: "manuell" } as any)
+                  .eq("id", assignment.id);
+                setChangingTemplate(false);
+                if (error) { toast({ title: "Wechsel fehlgeschlagen", description: error.message, variant: "destructive" }); return; }
+                setGroup("manuell");
+                toast({ title: "Auftrag geändert" });
+                await loadData();
+              }}
+            >
+              {templates.filter((t) => t.is_active || t.id === assignment.task_template_id).map((t) => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted-foreground">
+              Beim Wechsel wird die Zuweisung automatisch als „manuell" markiert — die Automatik fasst sie danach nicht mehr an.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Calendar className="h-4 w-4" /> Termin</CardTitle></CardHeader>
           <CardContent className="space-y-2">
 
