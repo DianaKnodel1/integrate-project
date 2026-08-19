@@ -57,8 +57,12 @@ cd "$PROJECT_DIR"
   log "4/5  migrations"
   TARGET_DB_URL="$(env_file_value TARGET_DB_URL)"
   if [ -n "$TARGET_DB_URL" ]; then
-    # Try TCP connection first
-    if psql -h 190.97.167.123 -U postgres -d postgres -c "SELECT 1" >/dev/null 2>&1; then
+    log "4/5  Manual-Migrations prüfen"
+    # Extract host from URL if possible, otherwise use fallback
+    DB_HOST=$(echo "$TARGET_DB_URL" | grep -oP '(?<=@)[^:/]+' || echo "190.97.167.123")
+    
+    echo "  (Preflight: Teste Verbindung zu $DB_HOST ...)"
+    if psql "$TARGET_DB_URL" -c "SELECT 1" >/dev/null 2>&1; then
       MIG_DIR="$PROJECT_DIR/supabase/manual-migrations"
       STATE_FILE="$PROJECT_DIR/.deploy-migrations-applied"
       touch "$STATE_FILE"
@@ -66,14 +70,19 @@ cd "$PROJECT_DIR"
         name="$(basename "$sql")"
         if ! grep -qxF "$name" "$STATE_FILE"; then
           echo "  · Applying $name..."
-          if psql -h 190.97.167.123 -U postgres -d postgres -f "$sql"; then
+          if psql "$TARGET_DB_URL" -f "$sql"; then
             echo "$name" >> "$STATE_FILE"
             ok "$name applied"
+          else
+            warn "Fehler beim Anwenden von $name"
           fi
         fi
       done
     else
-      warn "DB (190.97.167.123) not reachable via TCP. Skipping migrations."
+      warn "TARGET_DB_URL nicht erreichbar!"
+      echo "    1. Prüfe Passwort in $ENV_FILE"
+      echo "    2. Prüfe ob DB-Server ($DB_HOST) erreichbar ist (ping / telnet)"
+      echo "    3. Migrations-Schritt wird übersprungen."
     fi
   fi
 
