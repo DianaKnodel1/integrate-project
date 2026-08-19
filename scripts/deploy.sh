@@ -46,7 +46,15 @@ cd "$PROJECT_DIR"
 
   log "2/5  build"
   bun install --frozen-lockfile
-  bun run build
+  # Fix for Bun SIGABRT/Memory issues: use Node for build if available, or try to limit Bun memory
+  if command -v node >/dev/null 2>&1; then
+    log "  (Using Node.js for build to avoid SIGABRT)"
+    # Ensure dependencies are available for Node
+    NODE_OPTIONS="--max-old-space-size=4096" npm run build || bun run build
+  else
+    # Fallback to Bun with limited parallel tasks if possible, but Bun doesn't have a direct equivalent to --max-old-space-size
+    bun run build
+  fi
 
   log "3/5  release activation"
   release_dir="$RELEASES_DIR/$(date +%Y%m%d-%H%M%S)"
