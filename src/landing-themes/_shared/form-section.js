@@ -207,16 +207,16 @@
       var when=document.createElement('p');when.style.cssText='margin:0 0 6px;font-size:16px;color:#0f172a;font-weight:600;';
       when.textContent=fmtDayLong.format(start)+' · '+fmtTime.format(start)+'–'+fmtTime.format(end)+' Uhr (deutsche Zeit)';
       var mail=document.createElement('p');mail.style.cssText='margin:6px 0 14px;color:#475569;font-size:13.5px;';
-      mail.textContent='Ihre Terminbestätigung inklusive Kalendereintrag und Erinnerungen erhalten Sie automatisch von Calendly per E-Mail und SMS.';
+      mail.textContent='Ihre Bewerbung ist eingegangen. Alle weiteren Details finden Sie direkt hier im Portal.';
       wrap.appendChild(chk);wrap.appendChild(h2);wrap.appendChild(when);wrap.appendChild(mail);
 
       var next=document.createElement('div');
       next.style.cssText='margin:4px auto 0;padding:16px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;text-align:left;font-size:13.5px;line-height:1.6;color:#0f172a;max-width:560px;';
       next.innerHTML='<strong>So geht es weiter:</strong>'
-        + '<div style="margin-top:8px;">1. Terminbestätigung von Calendly öffnen und den Termin im Kalender speichern.</div>'
-        + '<div style="margin-top:4px;">2. Zur vereinbarten Zeit über den Link in der Calendly-Bestätigung teilnehmen – das Gespräch findet online statt, ein Telefonanruf erfolgt nicht.</div>'
+        + '<div style="margin-top:8px;">1. Den Termin im Kalender vormerken.</div>'
+        + '<div style="margin-top:4px;">2. Zur vereinbarten Zeit über den Button hier im Portal am Gespräch teilnehmen.</div>'
         + '<div style="margin-top:4px;">3. Bei einer Zusage schließen Sie Ihre Registrierung direkt im Anschluss ab.</div>'
-        + '<div style="margin-top:10px;color:#475569;">Sollten Sie den Termin nicht wahrnehmen können, sagen Sie ihn bitte über den Link in der Calendly-Bestätigung ab – so kann jemand anderes den Platz nutzen.</div>';
+        + '<div style="margin-top:10px;color:#475569;">Sollten Sie den Termin nicht wahrnehmen können, geben Sie uns bitte rechtzeitig über das Portal Bescheid.</div>';
       wrap.appendChild(next);
 
       if(state.schedule && state.schedule.event_description){
