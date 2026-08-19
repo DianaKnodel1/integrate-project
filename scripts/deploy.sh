@@ -108,6 +108,14 @@ cd "$PROJECT_DIR"
       warn "sync-to-backend.sh nicht gefunden. Überspringe Migration."
     fi
   fi
+  else
+    warn "DB-Host $DB_HOST:5432 nicht erreichbar. Nutze SSH-Sync auf .123..."
+    if [ -f "$PROJECT_DIR/scripts/sync-to-backend.sh" ]; then
+      bash "$PROJECT_DIR/scripts/sync-to-backend.sh" || warn "SSH-Sync fehlgeschlagen."
+    else
+      warn "sync-to-backend.sh nicht gefunden. Überspringe Migration."
+    fi
+  fi
 
   log "5/5  restart"
   systemctl restart "$SERVICE_NAME"
