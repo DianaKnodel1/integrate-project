@@ -18,7 +18,7 @@ const BROKER: FlowCopy[] = [
     title: "Wir bringen Sie mit dem passenden Auftraggeber zusammen",
     subtitle:
       "Sie bewerben sich einmal — wir übernehmen den Rest. Wir prüfen Ihr Profil, schlagen Sie bei geprüften Unternehmen vor und begleiten Sie bis zum Vertrag. Kostenfrei für Bewerber.",
-    ctaPrimary: "Jetzt unverbindlich bewerben",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "So läuft die Vermittlung",
   },
   {
@@ -26,7 +26,7 @@ const BROKER: FlowCopy[] = [
     title: "Ein Profil. Mehrere Chancen.",
     subtitle:
       "Statt sich einzeln überall zu bewerben: Wir kennen die Unternehmen, wissen wer gerade einstellt und stellen Sie gezielt vor — diskret und ohne Kosten für Sie.",
-    ctaPrimary: "Profil einreichen",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "Ablauf ansehen",
   },
   {
@@ -34,7 +34,7 @@ const BROKER: FlowCopy[] = [
     title: "Der kurze Weg zu Ihrem nächsten Job",
     subtitle:
       "Bewerbung in zwei Minuten, persönliches Kennenlernen, Vorstellung beim passenden Auftraggeber. Sie entscheiden in jedem Schritt selbst, wie es weitergeht.",
-    ctaPrimary: "Vermittlung starten",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "Mehr erfahren",
   },
   {
@@ -42,7 +42,7 @@ const BROKER: FlowCopy[] = [
     title: "Wir kennen die Unternehmen, die Sie suchen",
     subtitle:
       "Als Vermittler sitzen wir zwischen beiden Seiten: Wir wissen, welche Auftraggeber gerade Personal brauchen — und bringen Ihr Profil dort hin, wo es gebraucht wird.",
-    ctaPrimary: "Kostenlos bewerben",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "Häufige Fragen",
   },
   {
@@ -50,7 +50,7 @@ const BROKER: FlowCopy[] = [
     title: "Bewerben Sie sich einmal — wir öffnen die Türen",
     subtitle:
       "Wir bereiten Ihre Unterlagen auf, empfehlen Sie weiter und stimmen den Gesprächstermin direkt mit dem Unternehmen ab. Für Sie bleibt nur ein Schritt: das Formular.",
-    ctaPrimary: "Bewerbung absenden",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "Ablauf in 3 Schritten",
   },
   {
@@ -58,7 +58,7 @@ const BROKER: FlowCopy[] = [
     title: "Passende Auftraggeber statt endloser Bewerbungen",
     subtitle:
       "Kein Anschreiben, keine Warteschleife. Wir sprechen kurz mit Ihnen, verstehen was Sie suchen und vermitteln Sie an das Unternehmen, das dazu passt.",
-    ctaPrimary: "Jetzt vermitteln lassen",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "Vorteile ansehen",
   },
 ];
