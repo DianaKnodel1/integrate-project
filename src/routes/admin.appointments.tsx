@@ -57,7 +57,7 @@ function AdminAppointmentsPage() {
             
             // Try to find if this booking belongs to an existing profile
             const profile = b.user_id ? profiles.find((p: any) => p.user_id === b.user_id) : null;
-            const application = b.application_id ? applications.find((a: any) => a.id === b.application_id) : null;
+            const application = null; // Removed application lookup for employee appointments
 
             return (
               <Card key={b.id} className={isPast ? "opacity-60" : ""}>
