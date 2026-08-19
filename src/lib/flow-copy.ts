@@ -77,7 +77,7 @@ const FAST: FlowCopy[] = [
     title: "Qualitätssicherung im Homeoffice — ohne Vorerfahrung",
     subtitle:
       "Sie testen Anwendungen und Abläufe unserer Auftraggeber und melden, was nicht rund läuft. Alles, was Sie brauchen: Laptop, Internet und Sorgfalt.",
-    ctaPrimary: "In 2 Minuten bewerben",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "So arbeiten wir",
   },
   {
@@ -85,7 +85,7 @@ const FAST: FlowCopy[] = [
     title: "Ein Job, der sich Ihrem Alltag anpasst",
     subtitle:
       "Feste Anstellung, planbare Vergütung, Arbeitszeiten die Sie selbst legen. Wir arbeiten für Unternehmen, deren Namen Sie kennen — und suchen Verstärkung.",
-    ctaPrimary: "Bewerbung starten",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "Konditionen ansehen",
   },
   {
@@ -101,7 +101,7 @@ const FAST: FlowCopy[] = [
     title: "Sichere Anstellung. Freie Zeiteinteilung.",
     subtitle:
       "Sie unterstützen unsere Auftraggeber bei Qualitäts- und Prüfprozessen. Einstieg jederzeit möglich, Einarbeitung bezahlt, Ansprechpartner inklusive.",
-    ctaPrimary: "Bewerbung absenden",
+    ctaPrimary: "Jetzt bewerben",
     ctaSecondary: "Mehr zum Job",
   },
   {
