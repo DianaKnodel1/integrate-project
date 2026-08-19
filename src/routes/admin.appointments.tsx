@@ -193,6 +193,7 @@ function AdminAppointmentsPage() {
                   const isPast = s.ts < now;
                   const cancelled = s.status === "cancelled";
                   const hasAssignment = !!s.assignmentId && assignmentIds.has(s.assignmentId);
+                  const group = s.assignmentId ? assignmentGroups.get(s.assignmentId) : undefined;
                   return (
                     <div
                       key={s.id}
@@ -217,11 +218,15 @@ function AdminAppointmentsPage() {
                         className={cn(
                           "text-[10px] border",
                           hasAssignment
-                            ? "bg-status-success/15 text-status-success border-status-success/30"
+                            ? group === "automatisch"
+                              ? "bg-status-info/10 text-status-info border-status-info/25"
+                              : "bg-status-success/15 text-status-success border-status-success/30"
                             : "bg-muted text-muted-foreground border-border",
                         )}
                       >
-                        {hasAssignment ? "Auftrag zugewiesen" : "Offen"}
+                        {hasAssignment
+                          ? group === "automatisch" ? "Auto zugewiesen" : "Manuell zugewiesen"
+                          : "Offen"}
                       </Badge>
 
                       <div className="flex items-center gap-1 ml-auto">
