@@ -82,17 +82,17 @@ function AdminAppointmentsPage() {
                       <User className="h-4 w-4 text-muted-foreground" />
                       <div className="text-sm">
                         <div className="font-medium">
-                          {b.full_name || profile?.full_name || application?.full_name || b.name || "Unbekannt"}
+                          {b.full_name || profile?.full_name || (application as any)?.full_name || b.name || "Unbekannt"}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {b.email || profile?.email || application?.email || "Keine E-Mail"}
+                          {b.email || profile?.email || (application as any)?.email || "Keine E-Mail"}
                         </div>
                       </div>
                     </div>
-                    {(b.phone || profile?.phone || application?.phone) && (
+                    {(b.phone || profile?.phone || (application as any)?.phone) && (
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{b.phone || profile?.phone || application?.phone}</span>
+                        <span className="text-sm">{b.phone || profile?.phone || (application as any)?.phone}</span>
                       </div>
                     )}
                   </div>
@@ -110,12 +110,12 @@ function AdminAppointmentsPage() {
                       >
                         <Briefcase className="h-3.5 w-3.5" /> Zuweisen
                       </Button>
-                      {(b.application_id || b.user_id || profile?.id || application?.id) && (
+                      {(b.application_id || b.user_id || profile?.id || (application as any)?.id) && (
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-8 gap-1.5"
-                          onClick={() => navigate(`/admin/personen/${profile?.id || application?.id || b.user_id || b.application_id}`)}
+                          onClick={() => navigate(`/admin/personen/${profile?.id || (application as any)?.id || b.user_id || b.application_id}`)}
                         >
                           Details <ExternalLink className="h-3 w-3" />
                         </Button>
