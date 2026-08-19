@@ -256,3 +256,18 @@ Das Skript zeigt zuerst die betroffenen Zeilen, setzt sie dann auf `superseded`
 und listet am Ende die echten Hänger (Pending ohne späteren finalen Versand).
 Dashboard und E-Mail-Center benutzen danach identische Zahlen
 (`computeEmailStats` / `dedupeEmailLogs` in `src/lib/email-stats.ts`).
+
+## Automatische Auftragszuweisung (15 Min. vor Termin)
+
+Cron auf .123 / .124 (minütlich):
+
+```
+* * * * * curl -fsS "https://mb-portal.com/api/public/auto-assign-cron?key=<CRON_SECRET>" >/dev/null
+```
+
+Regeln: nur Termine ohne `bookings.assignment_id`, nur Vorlagen mit
+`task_templates.assignment_mode = 'auto'`, nie dieselbe Vorlage doppelt pro
+Mitarbeiter (inkl. vergangener und manueller Zuweisungen). Automatisch
+angelegte Zuweisungen tragen `assignment_group = 'automatisch'` und
+`auto_assigned_at`. Sobald du Vorlage oder Gruppe im Portal änderst, gilt sie
+als manuell und wird nicht mehr angefasst.
