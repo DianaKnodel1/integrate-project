@@ -30,6 +30,12 @@ import { PaginationBar } from "@/components/PaginationBar";
  * Mitarbeiter (mit user_id + Profile) verschwinden hier und leben in /admin/mitarbeiter.
  */
 
+type ProfileInfo = {
+  onboarding: string | null;
+  status: string | null;
+  contractSigned: boolean;
+} | null;
+
 type Phase =
   | "termin_offen" | "termin_gebucht" | "abgesagt" | "no_show"
   | "interview_laeuft"
@@ -51,6 +57,67 @@ const PHASES: { key: Phase | "alle"; label: string; emoji: string }[] = [
   { key: "onboarding_komplett", label: "Onboarding", emoji: "📝" },
   { key: "mitarbeiter_aktiv", label: "Aktiv", emoji: "🚀" },
 ];
+
+const PHASE_COLOR: Record<Phase, string> = {
+  termin_offen: "bg-muted text-muted-foreground",
+  termin_gebucht: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  abgesagt: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+  no_show: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  interview_laeuft: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+  auswertung_fehler: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  angenommen: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  abgelehnt: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
+  registriert: "bg-primary/10 text-primary",
+  onboarding_komplett: "bg-primary/20 text-primary",
+  mitarbeiter_aktiv: "bg-primary text-primary-foreground",
+};
+
+function computePhase(a: any, sched: Date | null, prof: ProfileInfo): Phase {
+  if (prof) {
+    if (prof.status === "angenommen") return "mitarbeiter_aktiv";
+    if (prof.status === "abgelehnt") return "abgelehnt";
+    if (prof.onboarding === "abgeschlossen") return "onboarding_komplett";
+    return "registriert";
+  }
+  if (a.phase === "abgelehnt") return "abgelehnt";
+  if (a.phase === "angenommen") return "angenommen";
+  if (a.phase === "no_show") return "no_show";
+  if (a.phase === "cancelled") return "abgesagt";
+
+  if (sched) {
+    const now = Date.now();
+    const start = sched.getTime();
+    const end = start + 60 * 60 * 1000;
+    if (now > end) return "auswertung_fehler";
+    if (now > start) return "interview_laeuft";
+    return "termin_gebucht";
+  }
+
+  return "termin_offen";
+}
+
+function phaseToStages(p: Phase): Stage[] {
+  const s = (state: Stage["state"], label: string, key: string): Stage => ({ key, label, state });
+  const interview: Stage["state"] =
+    ["interview_laeuft", "auswertung_fehler", "angenommen", "registriert", "onboarding_komplett", "mitarbeiter_aktiv"].includes(p) ? "done" :
+    p === "termin_gebucht" ? "current" :
+    p === "no_show" ? "failed" : "todo";
+  const zusage: Stage["state"] =
+    ["registriert", "onboarding_komplett", "mitarbeiter_aktiv"].includes(p) ? "done" :
+    p === "angenommen" ? "done" :
+    p === "abgelehnt" ? "failed" :
+    interview === "done" ? "current" : "todo";
+  const portal: Stage["state"] =
+    ["onboarding_komplett", "mitarbeiter_aktiv"].includes(p) ? "done" :
+    p === "registriert" ? "current" :
+    zusage === "done" ? "current" : "todo";
+  return [
+    s("done", "Bewerbung", "app"),
+    s(interview, "Interview", "int"),
+    s(zusage, "Zusage", "dec"),
+    s(portal, "Portal", "port"),
+  ];
+}
 
 const searchSchema = z.object({
   tab: z.enum([
