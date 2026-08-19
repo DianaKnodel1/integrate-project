@@ -1,35 +1,30 @@
-# Plan: Restore Admin Appointments and Scheduling Overview
+# Mitarbeiter-Termine aufräumen + "Zuweisen" funktionsfähig machen
 
-The user reported that booked appointments and the assignment process are no longer visible or working as before. We need to restore the "Termine" (Appointments) overview and ensure the flow from booking to assignment is clear and functional.
+## Problem (geprüft)
+- Die Terminliste zeigt pro Buchung eine große Karte mit Telefonnummer und "Keine E-Mail". Grund: `bookings` enthält keine Kontaktdaten (nur `user_id`, Datum, Zeit, Status), die Seite fällt deshalb auf Profil-Telefon zurück und zeigt bei fehlender E-Mail den Platzhalter.
+- "Zuweisen" navigiert nur nach `/admin/mitarbeiter` — es passiert nichts. Im gesamten Projekt gibt es **keine** Stelle, die eine Zuweisung anlegt (`task_assignments` wird nur gelesen/aktualisiert). Das gleiche gilt für den "Zuweisen"-Button in der Auftrags-Übersicht.
 
-## User Review Required
+## Was gebaut wird
 
-> [!IMPORTANT]
-> - Should the dashboard also show a "Live Feed" of current/upcoming appointments, or is the dedicated "Termine" page sufficient?
-> - In the "Termine" list, do you want to see the specific source (Landing Page) for each booking directly in the card?
+### 1. Aufgeräumte Terminliste
+- Kompakte Zeilen statt großer Karten, gruppiert nach Tag ("Heute", "Morgen", Datum) mit Sortierung: kommende Termine zuerst, vergangene ausgegraut ans Ende.
+- Pro Zeile: Uhrzeit, Mitarbeitername, Status-Badge und ein Badge "Auftrag zugewiesen" / "Offen".
+- Telefonnummer und E-Mail nicht mehr prominent — Telefon nur als kleines, dezentes Detail, "Keine E-Mail" entfällt komplett (Mailless-Modus).
+- Filter oben: Suche nach Name, Umschalter "Nur offene Termine" und "Vergangene ausblenden".
 
-## Proposed Changes
+### 2. "Zuweisen" wird echt
+Klick öffnet einen Dialog, der eine Zuweisung tatsächlich anlegt:
+- Auswahl der Auftragsvorlage (aktive Vorlagen aus `task_templates`).
+- Freigabezeitpunkt: standardmäßig auf Datum/Uhrzeit des Termins vorbelegt (`release_at`), manuell änderbar.
+- Optionales Feld "Individueller Hinweis".
+- Beim Speichern: Eintrag in `task_assignments` (Mitarbeiter aus der Buchung, Vorlage, `release_at`, Status offen) und Verknüpfung der Buchung über `bookings.assignment_id`, damit Termin und Auftrag zusammenhängen.
+- Dubletten-Schutz: Hat der Termin bereits eine Zuweisung, zeigt die Zeile stattdessen "Auftrag öffnen" und führt zur Zuweisungs-Detailseite.
+- Erfolgsmeldung als Toast, Liste lädt danach neu.
 
-### 1. Sidebar Restoration
-- Ensure "Termine" is prominently visible in `AdminLayout.tsx` under the "Personen" group.
-- Keep the existing navigation link to `/admin/appointments`.
+### 3. Konsistenz
+- Der "Zuweisen"-Button in der Auftrags-Übersicht bekommt denselben Dialog (Vorlage vorbelegt, Mitarbeiter wählbar), statt nur zur Mitarbeiterliste zu springen.
 
-### 2. Dashboard Integration
-- Add an "Aktuelle Termine" (Current Appointments) widget to the `admin.index.tsx` (Dashboard).
-- This will show the next 5 upcoming appointments so the admin sees them immediately upon login.
-
-### 3. Appointments Page Optimization (`admin.appointments.tsx`)
-- Enhance the sorting logic to ensure upcoming appointments are at the top, followed by recent past ones.
-- Add a search/filter bar to find specific candidates or dates.
-- Standardize the "Zuweisen" (Assign) action to point to the employee management page where tasks can be handled.
-- Improve data resolution: Ensure that if a user has multiple bookings, the most relevant details (name, phone, email) are always shown.
-
-### 4. Application Funnel Visibility (`admin.bewerbungen.tsx`)
-- Verify that "Termin gebucht" and "Kein Termin" filters are working correctly to identify candidates who haven't moved forward yet.
-
-## Technical Details
-
-- **Route:** `src/routes/admin.appointments.tsx` will remain the main entry point.
-- **Component:** A new `UpcomingBookings` widget will be added to `src/routes/admin.index.tsx`.
-- **Data:** Use `allBookings` from `AdminDataContext` to drive all visualizations.
-- **Navigation:** Standardize the link pattern `/admin/personen/:id` for detailed applicant views.
+## Technisch
+- Neue Komponente `src/components/admin/AssignTaskDialog.tsx` mit Insert in `task_assignments` + optionalem Update von `bookings.assignment_id`; genutzt von `src/routes/admin.appointments.tsx` und `src/routes/admin.tasks.index.tsx`.
+- `admin.appointments.tsx` wird auf kompakte, gruppierte Liste umgebaut; Zuweisungsstatus über die bereits geladenen `assignments` aus `AdminDataContext`.
+- Keine Schemaänderung nötig — alle Spalten (`release_at`, `individual_hint`, `bookings.assignment_id`) existieren bereits.
