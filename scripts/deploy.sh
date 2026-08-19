@@ -74,7 +74,10 @@ cd "$PROJECT_DIR"
   DB_HOST=$(echo "$TARGET_DB_URL" | grep -oP '(?<=@)[^:/]+' || echo "190.97.167.123")
   echo "  (Preflight: Teste Verbindung zu $DB_HOST ...)"
 
-  if psql "$TARGET_DB_URL" -c "SELECT 1" >/dev/null 2>&1; then
+  # Wir prüfen, ob Port 5432 (Postgres) auf dem Zielhost offen ist
+  if command -v nc >/dev/null 2>&1 && nc -z -w 2 "$DB_HOST" 5432 >/dev/null 2>&1; then
+    log "  (Host $DB_HOST ist erreichbar, versuche psql...)"
+    if psql "$TARGET_DB_URL" -c "SELECT 1" >/dev/null 2>&1; then
     log "  (Direkte DB-Verbindung erfolgreich)"
     for sql in $(ls "$MIG_DIR"/*.sql 2>/dev/null | sort); do
       name="$(basename "$sql")"
