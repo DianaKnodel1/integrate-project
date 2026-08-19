@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "Login | Mitarbeiter Portal" },
+      { name: "description", content: "Melden Sie sich in Ihrem Mitarbeiter-Portal an, um Ihre Aufgaben und Termine zu verwalten." },
+      { property: "og:title", content: "Login | Mitarbeiter Portal" },
+      { property: "og:description", content: "Sicherer Zugang zum Portal." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: LoginPage,
 });
 

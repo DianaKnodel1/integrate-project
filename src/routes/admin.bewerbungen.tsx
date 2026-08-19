@@ -1,4 +1,16 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+export const Route = createFileRoute("/admin/bewerbungen")({
+  head: () => ({
+    meta: [
+      { title: "Bewerber Übersicht | Admin Portal" },
+      { name: "description", content: "Verwalten Sie hier alle aktuellen Bewerbungen und den Status der Kandidaten." },
+      { property: "og:title", content: "Bewerber Übersicht | Admin" },
+      { property: "og:type", content: "website" },
+      { name: "robots", content: "noindex,nofollow" },
+    ],
+  }),
+});
+
+import { useSearch } from "@tanstack/react-router";
 import { useNavigate } from "@/lib/router-compat";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
