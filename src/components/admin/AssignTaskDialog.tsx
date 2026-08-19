@@ -28,7 +28,7 @@ interface Props {
 export function AssignTaskDialog({
   open, onOpenChange, userId, templateId, bookingId, defaultReleaseAt, onCreated,
 }: Props) {
-  const { templates, profiles, adminUserIds, loadData } = useAdminData();
+  const { templates, profiles, adminUserIds, assignments, loadData } = useAdminData();
   const { toast } = useToast();
 
   const [selectedUser, setSelectedUser] = useState(userId ?? "");
@@ -46,12 +46,20 @@ export function AssignTaskDialog({
   }, [open, userId, templateId, defaultReleaseAt]);
 
   const employees = getAssignableEmployees(profiles, adminUserIds);
-  const activeTemplates = templates.filter((t) => t.is_active);
+  // Dubletten-Schutz: Vorlagen, die dieser Mitarbeiter bereits hat, ausblenden.
+  const alreadyAssigned = new Set(
+    assignments.filter((a) => a.user_id === selectedUser).map((a) => a.task_template_id),
+  );
+  const activeTemplates = templates.filter((t) => t.is_active && !alreadyAssigned.has(t.id));
   const employeeName = profiles.find((p) => p.user_id === selectedUser)?.full_name;
 
   const submit = async () => {
     if (!selectedUser) { toast({ title: "Mitarbeiter wählen", variant: "destructive" }); return; }
     if (!selectedTemplate) { toast({ title: "Auftragsvorlage wählen", variant: "destructive" }); return; }
+    if (alreadyAssigned.has(selectedTemplate)) {
+      toast({ title: "Bereits zugewiesen", description: "Dieser Mitarbeiter hat diesen Auftrag schon.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { data, error } = await supabase
       .from("task_assignments")
@@ -136,6 +144,11 @@ export function AssignTaskDialog({
                   <option key={t.id} value={t.id}>{t.title}</option>
                 ))}
               </select>
+            )}
+            {!templateId && activeTemplates.length === 0 && selectedUser && (
+              <p className="text-[11px] text-muted-foreground">
+                Alle aktiven Aufträge sind diesem Mitarbeiter bereits zugewiesen.
+              </p>
             )}
           </div>
 
