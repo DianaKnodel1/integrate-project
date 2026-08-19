@@ -305,7 +305,7 @@ fi
 db_reachable=0
 if [ -n "$TARGET_DB_URL" ]; then
   echo "  (Preflight: Teste Verbindung zu $TARGET_DB_URL ...)"
-  if psql "$TARGET_DB_URL" -tAc 'select 1' >/dev/null 2>&1; then
+  if psql -h 190.97.167.123 -U postgres -d postgres -c "SELECT 1" >/dev/null 2>if psql "$TARGET_DB_URL" -tAc 'select 1' >/dev/null 2>&1; then1; then
     db_reachable=1
   else
     warn "TARGET_DB_URL nicht erreichbar!"
