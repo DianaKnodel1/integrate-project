@@ -30,6 +30,12 @@ import { PaginationBar } from "@/components/PaginationBar";
  * Mitarbeiter (mit user_id + Profile) verschwinden hier und leben in /admin/mitarbeiter.
  */
 
+type ProfileInfo = {
+  onboarding: string | null;
+  status: string | null;
+  contractSigned: boolean;
+} | null;
+
 type Phase =
   | "termin_offen" | "termin_gebucht" | "abgesagt" | "no_show"
   | "interview_laeuft"
@@ -48,100 +54,69 @@ const PHASES: { key: Phase | "alle"; label: string; emoji: string }[] = [
   { key: "angenommen", label: "Zusage erteilt", emoji: "✅" },
   { key: "abgelehnt", label: "Abgelehnt", emoji: "❌" },
   { key: "registriert", label: "Registriert", emoji: "🧾" },
-  { key: "onboarding_komplett", label: "Onboarding fertig", emoji: "📄" },
-  { key: "mitarbeiter_aktiv", label: "Mitarbeiter aktiv", emoji: "🚀" },
+  { key: "onboarding_komplett", label: "Onboarding", emoji: "📝" },
+  { key: "mitarbeiter_aktiv", label: "Aktiv", emoji: "🚀" },
 ];
 
 const PHASE_COLOR: Record<Phase, string> = {
-  termin_offen: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-  termin_gebucht: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
-  abgesagt: "bg-orange-100 text-orange-800 dark:bg-orange-950/40 dark:text-orange-300",
-  no_show: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
-  interview_laeuft: "bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300",
-  auswertung_fehler: "bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300",
-  angenommen: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
-  abgelehnt: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
-  registriert: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300",
-  onboarding_komplett: "bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300",
-  mitarbeiter_aktiv: "bg-emerald-500 text-white dark:bg-emerald-600 border-0",
+  termin_offen: "bg-muted text-muted-foreground",
+  termin_gebucht: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  abgesagt: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+  no_show: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  interview_laeuft: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+  auswertung_fehler: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  angenommen: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  abgelehnt: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
+  registriert: "bg-primary/10 text-primary",
+  onboarding_komplett: "bg-primary/20 text-primary",
+  mitarbeiter_aktiv: "bg-primary text-primary-foreground",
 };
 
-
-
-type ProfileInfo = {
-  onboarding: string | null;
-  status: string | null;
-  contractSigned: boolean;
-} | null;
-
-function computePhase(a: any, scheduledAt: Date | null, prof: ProfileInfo): Phase {
-  const now = Date.now();
-  const rec = a.interview_recommendation as string | null;
-  // Profile existiert → tiefer im Funnel
+function computePhase(a: any, sched: Date | null, prof: ProfileInfo): Phase {
   if (prof) {
     if (prof.status === "angenommen") return "mitarbeiter_aktiv";
-    if (prof.onboarding === "abgeschlossen" || prof.contractSigned) return "onboarding_komplett";
+    if (prof.status === "abgelehnt") return "abgelehnt";
+    if (prof.onboarding === "abgeschlossen") return "onboarding_komplett";
     return "registriert";
   }
-  // Ein tatsächlich geführtes Interview schlägt jeden Buchungsstatus: Calendly
-  // meldet gelegentlich "no_show"/"canceled", obwohl das Gespräch stattfand.
-  const attended = !!a.interview_completed_at || !!a.interview_started_at;
-  if (!attended && a.booking_status === "no_show") return "no_show";
-  if (!attended && a.booking_status === "cancelled") return "abgesagt";
-  if (rec === "invite" || a.status === "akzeptiert") return "angenommen";
-  if (rec === "reject" || a.status === "abgelehnt") return "abgelehnt";
-  // Interview beendet, aber keine verwertbare KI-Auswertung: technischer Fehler,
-  // keine Bewertung. Muss erneut ausgewertet werden.
-  if (a.interview_completed_at) return "auswertung_fehler";
+  if (a.phase === "abgelehnt") return "abgelehnt";
+  if (a.phase === "angenommen") return "angenommen";
+  if (a.phase === "no_show") return "no_show";
+  if (a.phase === "cancelled") return "abgesagt";
 
-  if (a.interview_started_at) return "interview_laeuft";
-  if (scheduledAt) {
-    if (scheduledAt.getTime() < now - 30 * 60_000 && !a.interview_completed_at) return "no_show";
+  if (sched) {
+    const now = Date.now();
+    const start = sched.getTime();
+    const end = start + 60 * 60 * 1000;
+    if (now > end) return "auswertung_fehler";
+    if (now > start) return "interview_laeuft";
     return "termin_gebucht";
   }
+
   return "termin_offen";
 }
 
-/** 5-Punkt-Funnel für die Timeline pro Zeile. */
-function phaseToStages(phase: Phase): Stage[] {
-  // 1 Termin  2 Interview  3 Entscheidung  4 Registriert  5 Onboarding
-  const order: Phase[] = [
-    "termin_offen","termin_gebucht","abgesagt","no_show",
-    "interview_laeuft",
-    "auswertung_fehler",
-    "angenommen","abgelehnt",
-    "registriert",
-    "onboarding_komplett","mitarbeiter_aktiv",
+function phaseToStages(p: Phase): Stage[] {
+  const s = (state: Stage["state"], label: string, key: string): Stage => ({ key, label, state });
+  const interview: Stage["state"] =
+    ["interview_laeuft", "auswertung_fehler", "angenommen", "registriert", "onboarding_komplett", "mitarbeiter_aktiv"].includes(p) ? "done" :
+    p === "termin_gebucht" ? "current" :
+    p === "no_show" ? "failed" : "todo";
+  const zusage: Stage["state"] =
+    ["registriert", "onboarding_komplett", "mitarbeiter_aktiv"].includes(p) ? "done" :
+    p === "angenommen" ? "done" :
+    p === "abgelehnt" ? "failed" :
+    interview === "done" ? "current" : "todo";
+  const portal: Stage["state"] =
+    ["onboarding_komplett", "mitarbeiter_aktiv"].includes(p) ? "done" :
+    p === "registriert" ? "current" :
+    zusage === "done" ? "current" : "todo";
+  return [
+    s("done", "Bewerbung", "app"),
+    s(interview, "Interview", "int"),
+    s(zusage, "Zusage", "dec"),
+    s(portal, "Portal", "port"),
   ];
-
-  const idx = order.indexOf(phase);
-  const isFailed = phase === "abgelehnt" || phase === "no_show" || phase === "abgesagt";
-
-  // Progress-Level: 0=Termin, 1=Interview, 2=Entscheidung, 3=Registriert, 4=Onboarding
-  let lvl = 0;
-  if (idx >= order.indexOf("termin_gebucht")) lvl = 1;
-  if (idx >= order.indexOf("interview_laeuft")) lvl = 2;
-  if (idx >= order.indexOf("auswertung_fehler")) lvl = 2;
-  if (idx >= order.indexOf("angenommen")) lvl = 3;
-  if (idx >= order.indexOf("registriert")) lvl = 4;
-  if (idx >= order.indexOf("onboarding_komplett")) lvl = 5;
-
-  const cur = phase === "termin_offen" ? 0
-    : phase === "termin_gebucht" ? 0
-    : phase === "abgesagt" ? 0
-    : phase === "no_show" ? 1
-    : phase === "interview_laeuft" ? 1
-    : phase === "auswertung_fehler" || phase === "angenommen" || phase === "abgelehnt" ? 2
-    : phase === "registriert" ? 3
-    : 4;
-
-  const labels = ["Termin", "Interview", "Zusage", "Registriert", "Onboarding"];
-  return labels.map((label, i) => {
-    let state: Stage["state"] = "todo";
-    if (i < lvl) state = "done";
-    else if (i === cur) state = isFailed ? "failed" : "current";
-    return { key: label, label, state };
-  });
 }
 
 const searchSchema = z.object({
@@ -153,6 +128,15 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/admin/bewerbungen")({
   validateSearch: searchSchema,
+  head: () => ({
+    meta: [
+      { title: "Bewerber Übersicht | Admin Portal" },
+      { name: "description", content: "Verwalten Sie hier alle aktuellen Bewerbungen und den Status der Kandidaten." },
+      { property: "og:title", content: "Bewerber Übersicht | Admin" },
+      { property: "og:type", content: "website" },
+      { name: "robots", content: "noindex,nofollow" },
+    ],
+  }),
   component: AdminBewerbungenPage,
 });
 
