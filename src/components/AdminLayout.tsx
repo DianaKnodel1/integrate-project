@@ -45,7 +45,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "Aufträge",
+    label: "Auftragszuweisung",
     items: [
       { title: "Aufträge", url: "/admin/tasks", icon: ClipboardList },
       { title: "Prüfungen", url: "/admin/reviews", icon: CheckSquare },
