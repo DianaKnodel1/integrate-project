@@ -172,7 +172,7 @@ function AdminTasksPage() {
     <div className="p-5 space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-heading font-bold text-foreground">Aufgaben-Vorlagen</h1>
+          <h1 className="text-lg font-heading font-bold text-foreground">Auftrags-Übersicht</h1>
           <p className="text-xs text-muted-foreground">{templates.length} Vorlagen</p>
         </div>
         <div className="flex gap-2">
