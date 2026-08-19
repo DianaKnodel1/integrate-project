@@ -225,7 +225,7 @@ function AdminTasksPage() {
                       <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => duplicateTemplate(tpl)}>
                         <Copy className="h-3 w-3" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigate(`/admin/mitarbeiter`)}>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAssignTemplateId(tpl.id)}>
                         <UserCheck className="h-3 w-3 mr-1" /> Zuweisen
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => deleteTemplate(tpl)}>
