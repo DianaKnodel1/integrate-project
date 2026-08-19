@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAdminData } from "@/contexts/AdminDataContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Clock, User, Phone, ExternalLink } from "lucide-react";
+import { CalendarDays, Clock, User, Phone, ExternalLink, Briefcase } from "lucide-react";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/SkeletonLoaders";
 import { useNavigate } from "@/lib/router-compat";
 import { Button } from "@/components/ui/button";
@@ -86,16 +86,26 @@ function AdminAppointmentsPage() {
                     <Badge variant={b.status === "cancelled" ? "destructive" : "secondary"}>
                       {b.status === "cancelled" ? "Storniert" : b.status === "no_show" ? "No-Show" : "Bestätigt"}
                     </Badge>
-                    {(b.application_id || b.user_id) && (
+                    <div className="flex gap-1 ml-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-8 gap-1.5"
-                        onClick={() => navigate(`/admin/personen/${b.user_id || b.application_id}`)}
+                        onClick={() => navigate(`/admin/mitarbeiter`)}
                       >
-                        Details <ExternalLink className="h-3 w-3" />
+                        <Briefcase className="h-3.5 w-3.5" /> Zuweisen
                       </Button>
-                    )}
+                      {(b.application_id || b.user_id) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1.5"
+                          onClick={() => navigate(`/admin/personen/${b.user_id || b.application_id}`)}
+                        >
+                          Details <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
