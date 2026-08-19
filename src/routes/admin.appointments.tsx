@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAdminData } from "@/contexts/AdminDataContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,15 @@ function AdminAppointmentsPage() {
   const [assignFor, setAssignFor] = useState<Slot | null>(null);
   const [autoRunning, setAutoRunning] = useState(false);
 
+  // Filter-Zustand bleibt erhalten (verpasste Termine sollen sichtbar bleiben).
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem("admin-appointments-hide-past") : null;
+    if (saved !== null) setHidePast(saved === "1");
+  }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined") window.localStorage.setItem("admin-appointments-hide-past", hidePast ? "1" : "0");
+  }, [hidePast]);
+
   const slots = useMemo<Slot[]>(() => {
     return (allBookings as any[])
       .filter((b) => b.user_id && !b.application_id)
@@ -75,6 +84,11 @@ function AdminAppointmentsPage() {
   }, [allBookings, profiles]);
 
   const assignmentIds = useMemo(() => new Set(assignments.map((a) => a.id)), [assignments]);
+  const assignmentGroups = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const a of assignments as any[]) m.set(a.id, a.assignment_group === "automatisch" ? "automatisch" : "manuell");
+    return m;
+  }, [assignments]);
   const now = Date.now();
 
   const filtered = slots.filter((s) => {
@@ -155,7 +169,7 @@ function AdminAppointmentsPage() {
             Nur offene
           </Button>
           <Button size="sm" variant={hidePast ? "default" : "outline"} className="h-8 text-xs" onClick={() => setHidePast((v) => !v)}>
-            Vergangene ausblenden
+            {hidePast ? "Vergangene anzeigen" : "Vergangene ausblenden"}
           </Button>
         </div>
       </div>
@@ -179,6 +193,7 @@ function AdminAppointmentsPage() {
                   const isPast = s.ts < now;
                   const cancelled = s.status === "cancelled";
                   const hasAssignment = !!s.assignmentId && assignmentIds.has(s.assignmentId);
+                  const group = s.assignmentId ? assignmentGroups.get(s.assignmentId) : undefined;
                   return (
                     <div
                       key={s.id}
@@ -203,11 +218,15 @@ function AdminAppointmentsPage() {
                         className={cn(
                           "text-[10px] border",
                           hasAssignment
-                            ? "bg-status-success/15 text-status-success border-status-success/30"
+                            ? group === "automatisch"
+                              ? "bg-status-info/10 text-status-info border-status-info/25"
+                              : "bg-status-success/15 text-status-success border-status-success/30"
                             : "bg-muted text-muted-foreground border-border",
                         )}
                       >
-                        {hasAssignment ? "Auftrag zugewiesen" : "Offen"}
+                        {hasAssignment
+                          ? group === "automatisch" ? "Auto zugewiesen" : "Manuell zugewiesen"
+                          : "Offen"}
                       </Badge>
 
                       <div className="flex items-center gap-1 ml-auto">
